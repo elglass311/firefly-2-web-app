@@ -1198,8 +1198,9 @@
       <!-- Guided session -->
       <section class="card" aria-labelledby="guided-h">
         <h2 id="guided-h">Guided session — step-up ladder</h2>
-        <p class="card-sub">Starting low is where the flavor compounds release; climbing in steps extracts more at each stage; finishing at 390°F keeps the whole session under your ceiling and well below combustion (~446°F). Before every step up, you'll stir the bowl — so the heat never climbs onto an unstirred bowl.</p>
-        <p class="muted" style="margin:0 0 12px;" id="guidedFlow">350°F → stir → 370°F → stir → 390°F → stir &amp; finish</p>
+        <p class="card-sub">Starting low is where the flavor compounds release; climbing in steps extracts more at each stage; finishing at 370°F keeps the whole session under your ceiling and well below combustion (~446°F). Before every step up, you'll stir the bowl — so the heat never climbs onto an unstirred bowl.</p>
+        <p class="muted" style="margin:0 0 12px;" id="guidedFlow">340°F → stir → 360°F → stir → 370°F → stir &amp; finish</p>
+        <p class="muted" style="margin:0 0 12px;">Tuned from live session feedback: after several draws soaking at 350°F with a full pack and the cover on, the next step up brought a burnt taste — so this ladder now runs gentler and tops out at 370°F.</p>
         <div class="mini-msg" id="guidedLockNote">Guided session is locked until this connection is authenticated. Each step is a temperature change, and your Firefly ignores temperature changes from an unauthenticated connection — connect above, then tap Authenticate, and the guided session unlocks here.</div>
         <div id="guidedControls" hidden>
           <p class="device-now" id="guidedState" style="text-align:left;">Ready when you are.</p>
@@ -1226,7 +1227,7 @@
           <button class="btn btn-primary" id="guidedStepUpBtn" type="button" style="margin-top:12px;" hidden>Step up now</button>
           <button class="btn btn-primary" id="guidedStirBtn" type="button" style="margin-top:12px;" hidden>Stirred — step up</button>
           <button class="btn btn-ghost" id="guidedEndBtn" type="button" style="margin-top:10px;" hidden>End session</button>
-          <div class="mini-msg" id="guidedStatus" role="status" aria-live="polite">A guided session never sends above 390°F. Every temperature step counts only when your Firefly reads it back. Ending a session leaves the temperature where it is.</div>
+          <div class="mini-msg" id="guidedStatus" role="status" aria-live="polite">A guided session never sends above 370°F. Every temperature step counts only when your Firefly reads it back. Ending a session leaves the temperature where it is.</div>
         </div>
       </section>
 
@@ -3146,16 +3147,16 @@
         });
 
         /* ================= Guided session — step-up ladder =================
-           Ladder 350 → stir → 370 → stir → 390 → stir & finish. Every
+           Ladder 340 → stir → 360 → stir → 370 → stir & finish. Every
            temperature step goes through the exact same SET_PROFILE pipeline
            as a manual set (ceiling + compensation apply, read-back confirms),
-           and the guided cap is 390°F — it never sends above 390. A stir
+           and the guided cap is 370°F — it never sends above 370. A stir
            stage is display/gate only: it sends NO Bluetooth writes; the next
            temperature is written only after the user taps the Stirred button. */
         var GUIDED_LADDER = [
-          { f: 350, label: "flavor stage" },
-          { f: 370, label: "deeper extraction" },
-          { f: 390, label: "full extraction" }
+          { f: 340, label: "flavor stage" },
+          { f: 360, label: "deeper extraction" },
+          { f: 370, label: "full extraction" }
         ];
         var guided = {
           active: false,
@@ -3206,7 +3207,7 @@
             txt = "Step " + (guided.stepIndex + 1) + " of 3 · " + fmtTemp(step.f) + " — " + step.label;
             if (guided.stepIndex === 2) txt += " · Final step — full extraction, still below the scorch zone.";
           }
-          else if (guided.phase === "stir") txt = guided.stirFinish ? "Final stir — at " + fmtTemp(390) + ", no hotter step follows." : "Stir the bowl before stepping up to " + fmtTemp(GUIDED_LADDER[guided.stirTarget].f) + ".";
+          else if (guided.phase === "stir") txt = guided.stirFinish ? "Final stir — at " + fmtTemp(370) + ", no hotter step follows." : "Stir the bowl before stepping up to " + fmtTemp(GUIDED_LADDER[guided.stirTarget].f) + ".";
           else if (guided.phase === "complete") txt = "Fully extracted — session complete";
           else if (guided.phase === "failed") txt = "A step didn't confirm — auto-advance is paused.";
           else txt = "Ready when you are.";
@@ -3217,7 +3218,7 @@
           guidedStepUpBtn.hidden = guided.phase !== "waiting";
           guidedStepUpBtn.textContent = guided.stepIndex === 2 ? "Stir & finish" : "Step up now";
           guidedStirBtn.hidden = guided.phase !== "stir";
-          guidedStirBtn.textContent = guided.stirFinish ? "Stirred — finish at 390°F" : "Stirred — step up to " + GUIDED_LADDER[Math.max(0, guided.stirTarget)].f + "°F";
+          guidedStirBtn.textContent = guided.stirFinish ? "Stirred — finish at 370°F" : "Stirred — step up to " + GUIDED_LADDER[Math.max(0, guided.stirTarget)].f + "°F";
           guidedEndBtn.hidden = !guided.active && guided.phase !== "complete";
           guidedCountdownEl.hidden = guided.phase !== "waiting";
           if (guided.phase === "waiting") {
@@ -3248,8 +3249,8 @@
           if (guided.stepIndex >= 2) {
             guided.stirFinish = true;
             guided.stirTarget = -1;
-            setGuidedStatus("busy", "Time for the final stir at 390°F. Stir the bowl, then tap “Stirred — finish at 390°F” — no temperature is sent for the finish.");
-            log("Guided session: final stir stage reached at 390°F. No write sent — stir stages never write.", "info");
+            setGuidedStatus("busy", "Time for the final stir at 370°F. Stir the bowl, then tap “Stirred — finish at 370°F” — no temperature is sent for the finish.");
+            log("Guided session: final stir stage reached at 370°F. No write sent — stir stages never write.", "info");
           } else {
             guided.stirFinish = false;
             guided.stirTarget = guided.stepIndex + 1;
@@ -3336,7 +3337,7 @@
           guided.stepIndex = -1;
           guided.stirFinish = false;
           guided.stirTarget = -1;
-          log("Guided session started — ladder 350°F → stir → 370°F → stir → 390°F → stir & finish. The guided cap is 390°F.", "info");
+          log("Guided session started — ladder 340°F → stir → 360°F → stir → 370°F → stir & finish. The guided cap is 370°F.", "info");
           sendGuidedStep(0);
         });
         guidedStepUpBtn.addEventListener("click", function () {
@@ -3348,8 +3349,8 @@
           if (guided.stirFinish) {
             guided.phase = "complete";
             guided.active = false;
-            setGuidedStatus("ok", "Fully extracted — session complete. The final stir is done and the temperature stays at 390°F. No temperature was sent for the finish.");
-            log("Guided session complete: final stir confirmed at 390°F — no write sent for the finish. Fully extracted.", "ok");
+            setGuidedStatus("ok", "Fully extracted — session complete. The final stir is done and the temperature stays at 370°F. No temperature was sent for the finish.");
+            log("Guided session complete: final stir confirmed at 370°F — no write sent for the finish. Fully extracted.", "ok");
             renderGuided();
           } else {
             var target = guided.stirTarget;
