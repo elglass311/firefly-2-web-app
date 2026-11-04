@@ -1699,6 +1699,7 @@
         </summary>
         <div class="diag-body">
           <div class="log" id="log" aria-live="polite"></div>
+          <p class="muted" style="margin:12px 0 0;">Temperature changes made on the Firefly itself — from its touch sensors, which step through its built-in presets (320, 340, 360, 380, 400, 420, 500°F) — are recorded in this log when the device reports them.</p>
           <div class="log-actions">
             <button class="btn-small" id="clearLogBtn" type="button">Clear log</button>
             <button class="btn-small" id="copyLogBtn" type="button">Copy log</button>
@@ -1965,8 +1966,15 @@
 
         /* ---- Pending set confirmations: a set only counts on read-back ---- */
         var pending = null; // { kind: 'temp'|'activation'|'coil', byte, timer }
+        /* The last temperature profile byte THIS app sent (a manual set, a
+           terpene/mood pick, or a guided-session step — all of them start a
+           temp pending) and when. The settings handler uses it, together
+           with `pending` and the pulse state, to tell a change the app
+           itself made from one made on the device's own touch sensors. */
+        var lastAppTemp = { byte: null, at: 0 };
         function startPending(p) {
           cancelPending();
+          if (p.kind === "temp") { lastAppTemp.byte = p.byte; lastAppTemp.at = Date.now(); }
           p.timer = window.setTimeout(function () { onPendingTimeout(p); }, 6000);
           pending = p;
         }
@@ -2437,6 +2445,7 @@
           if (typeof onGuidedDisconnect === "function") onGuidedDisconnect();
           devState = freshDevState();
           profileTable = {};
+          lastAppTemp.byte = null; lastAppTemp.at = 0;
           authState = "locked";
           ffCount = 0;
           rxBuffer = [];
@@ -2575,7 +2584,29 @@
             f1Seen = true;
             log("First settings report received — temperature " + (next.tempF !== null ? next.tempF + "°F" : "profile byte 0x" + f[1].toString(16)) + ", sensors " + (next.activation !== null ? ACTIVATION_NAMES[next.activation] : "?") + ", battery " + (next.battery !== null ? BATTERY_NAMES[next.battery] : "?") + ", coil calibration " + next.coilValue + "%.", "ok");
           } else {
-            if (prev.profileByte !== null && prev.profileByte !== next.profileByte) log("Device reports a new temperature profile: " + (next.tempF !== null ? next.tempF + "°F" : "byte 0x" + f[1].toString(16)) + ".");
+            if (prev.profileByte !== null && prev.profileByte !== next.profileByte) {
+              /* On-device change detection (logging only — nothing is ever
+                 written back). A profile change is explained by the app
+                 itself when it matches the temp write still awaiting
+                 read-back (`pending`), the app write the device just
+                 confirmed (`lastAppTemp`, 10 s grace), or the pulse state
+                 (the 200°F dip or the restore byte). Anything else was set
+                 on the device itself, from its touch sensors. This runs
+                 before checkPending below, so `pending` is still intact. */
+              var nb = next.profileByte;
+              var appExplained =
+                (pending && pending.kind === "temp" && pending.byte === nb) ||
+                (lastAppTemp.byte === nb && Date.now() - lastAppTemp.at <= 10000) ||
+                (typeof pulse !== "undefined" && pulse.active &&
+                  (nb === pulse.expectByte || nb === pulse.savedByte || nb === FLOOR_BYTE));
+              if (appExplained) {
+                log("Device reports a new temperature profile: " + (next.tempF !== null ? next.tempF + "°F" : "byte 0x" + f[1].toString(16)) + ".");
+              } else {
+                var fromTxt = prev.tempF !== null ? prev.tempF + "°F" : "profile byte 0x" + prev.profileByte.toString(16).toUpperCase();
+                var toTxt = next.tempF !== null ? next.tempF + "°F" : "profile byte 0x" + f[1].toString(16).toUpperCase();
+                log("Temperature changed on the device itself: " + fromTxt + " → " + toTxt + " — set from the touch sensors, not sent by the app.", "info");
+              }
+            }
             if (prev.battery !== null && prev.battery !== next.battery) log("Battery now reads " + BATTERY_NAMES[next.battery] + ".");
             if (prev.coilValue !== null && prev.coilValue !== next.coilValue) log("Device reports coil calibration is now " + next.coilValue + "%.");
           }
@@ -2643,6 +2674,7 @@
           if (!match) return;
           cancelPending();
           if (p.kind === "temp") {
+            lastAppTemp.byte = p.byte; lastAppTemp.at = Date.now(); // just-confirmed app write — refresh the on-device detector's memory
             setSetStatus("ok", "Confirmed — your Firefly read back " + fmtTemp(p.sendF) + " and is now set to it." + (p.pickedF !== p.sendF ? " (You picked " + fmtTemp(p.pickedF) + "; Burn Guard compensation sent " + fmtTemp(p.sendF) + ".)" : ""));
             log("Temperature CONFIRMED by read-back: the Firefly now reports " + p.sendF + "°F.", "ok");
             if (p.guided && typeof onGuidedConfirmed === "function") onGuidedConfirmed(p);
