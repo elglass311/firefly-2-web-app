@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" href="data:," />
+    <title>Firefly BLE Picker Test</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: #ffffff;
+        color: #000000;
+        font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+        font-size: 20px;
+        line-height: 1.45;
+        padding: 20px 16px 40px;
+      }
+      h1 { font-size: 30px; margin: 0 0 10px; }
+      p.instructions { font-size: 20px; margin: 0 0 24px; }
+      button {
+        display: block;
+        width: 100%;
+        min-height: 72px;
+        font-size: 22px;
+        font-weight: 600;
+        padding: 18px 12px;
+        margin: 0 0 18px;
+        background: #ffffff;
+        color: #000000;
+        border: 3px solid #000000;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:active { background: #e8e8e8; }
+      h2 { font-size: 22px; margin: 26px 0 8px; }
+      #log {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 17px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        border: 2px solid #000000;
+        padding: 12px;
+        min-height: 200px;
+      }
+      #log div { margin-bottom: 6px; }
+    </style>
+  </head>
+  <body>
+    <h1>Firefly BLE Picker Test</h1>
+    <p class="instructions">Open in Bluefy, tap a test button — try Test C first — tap FF2_6D960D05 if a list appears, then screenshot the log.</p>
+
+    <button id="btnA" type="button">Test A — acceptAllDevices</button>
+    <button id="btnB" type="button">Test B — name filter</button>
+    <button id="btnC" type="button">Test C — genuine app call</button>
+
+    <h2>Log</h2>
+    <div id="log" aria-live="polite"></div>
+
+    <script>
+      var logEl = document.getElementById('log');
+
+      function stamp() {
+        var d = new Date();
+        function pad(n) { return (n < 10 ? '0' : '') + n; }
+        return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + ('00' + d.getMilliseconds()).slice(-3);
+      }
+
+      function log(msg) {
+        var line = document.createElement('div');
+        line.textContent = '[' + stamp() + '] ' + msg;
+        logEl.appendChild(line);
+      }
+
+      function watchPromise(testLabel, promise) {
+        var settled = false;
+        setTimeout(function () {
+          if (!settled) {
+            log(testLabel + ': 20 seconds passed — the promise never settled (no resolve, no reject).');
+          }
+        }, 20000);
+        promise.then(function (device) {
+          settled = true;
+          log(testLabel + ': promise RESOLVED. Device name: "' + (device && device.name != null ? device.name : '(no name)') + '", id: "' + (device ? device.id : '(none)') + '"');
+        }).catch(function (err) {
+          settled = true;
+          log(testLabel + ': promise REJECTED. Error name: "' + (err && err.name ? err.name : '(unknown)') + '", message: "' + (err && err.message ? err.message : String(err)) + '"');
+        });
+      }
+
+      document.getElementById('btnA').addEventListener('click', function () {
+        log('Test A: button tapped.');
+        try {
+          var promise = navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e'] });
+        } catch (err) {
+          log('Test A: requestDevice threw synchronously (no promise returned). Error name: "' + (err && err.name ? err.name : '(unknown)') + '", message: "' + (err && err.message ? err.message : String(err)) + '"');
+          return;
+        }
+        log('Test A: requestDevice called with { acceptAllDevices: true }. Waiting for the promise to settle…');
+        watchPromise('Test A', promise);
+      });
+
+      document.getElementById('btnB').addEventListener('click', function () {
+        log('Test B: button tapped.');
+        try {
+          var promise = navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'FF2' }], optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e'] });
+        } catch (err) {
+          log('Test B: requestDevice threw synchronously (no promise returned). Error name: "' + (err && err.name ? err.name : '(unknown)') + '", message: "' + (err && err.message ? err.message : String(err)) + '"');
+          return;
+        }
+        log('Test B: requestDevice called with { filters: [{ namePrefix: "FF2" }] }. Waiting for the promise to settle…');
+        watchPromise('Test B', promise);
+      });
+
+      document.getElementById('btnC').addEventListener('click', function () {
+        log('Test C: button tapped.');
+        try {
+          var promise = navigator.bluetooth.requestDevice({ filters: [{ services: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e'] }] });
+        } catch (err) {
+          log('Test C: requestDevice threw synchronously (no promise returned). Error name: "' + (err && err.name ? err.name : '(unknown)') + '", message: "' + (err && err.message ? err.message : String(err)) + '"');
+          return;
+        }
+        log('Test C: requestDevice called with { filters: [{ services: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"] }] }. Waiting for the promise to settle…');
+        watchPromise('Test C', promise);
+      });
+
+      log('Page loaded. navigator.bluetooth exists: ' + ('bluetooth' in navigator && !!navigator.bluetooth) + '.');
+    </script>
+  </body>
+</html>
