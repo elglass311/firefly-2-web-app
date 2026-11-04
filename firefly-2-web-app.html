@@ -713,6 +713,53 @@
         max-width: 62%;
         margin-left: auto;
       }
+
+      /* ---------- Battery health tracker ---------- */
+      .bh-estimate {
+        font-size: 24px;
+        line-height: 1.25;
+        font-weight: 800;
+        margin: 14px 0 0;
+        letter-spacing: -0.01em;
+      }
+      .bh-steps { display: grid; gap: 6px; margin-top: 10px; }
+      .bh-step-row {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr 1fr;
+        gap: 8px;
+        align-items: center;
+        padding: 9px 12px;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-variant-numeric: tabular-nums;
+      }
+      .bh-step-row.head {
+        background: transparent;
+        border: 0;
+        padding: 0 12px;
+        color: var(--ink-faint);
+        font-weight: 700;
+        font-size: 12.5px;
+      }
+      .bh-step-row .bh-num { text-align: right; font-family: var(--mono); font-size: 13px; }
+      .bh-runs { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+      .bh-runs li {
+        display: flex; justify-content: space-between; gap: 12px;
+        padding: 9px 12px;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 13.5px;
+      }
+      .bh-runs li .bh-run-total { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+      .bh-actions { display: grid; gap: 8px; margin-top: 14px; }
+      .btn-ghost.armed {
+        border-color: #8a4438;
+        background: rgba(224, 108, 90, 0.12);
+        color: var(--ink);
+      }
       .nick-row { display: flex; gap: 8px; align-items: stretch; }
       .text-input {
         flex: 1; min-width: 0;
@@ -1574,6 +1621,51 @@
         </p>
       </section>
 
+      <!-- Battery health tracker (read-only inference from the F1 gauge byte) -->
+      <section class="card" aria-labelledby="bh-h">
+        <h2 id="bh-h">Battery health tracker</h2>
+        <p class="card-sub">Your Firefly reports <strong>only</strong> its five-step gauge — no battery health, no voltage, no cycle count exists in what it sends, so there is nothing of that kind to read. This tracker is an honest <strong>inference</strong> instead: it watches how long each gauge step lasts during your real use and compares that against your own early baseline. It is read-only — it never sends anything to the Firefly; it only watches the gauge the device already reports.</p>
+
+        <div class="switch-row" style="margin-top:0;">
+          <div>
+            <div class="sw-label">Tracker</div>
+            <div class="sw-sub">On by default. While on, it quietly logs gauge timing whenever this app is connected. While off, nothing is logged — and your saved history below is kept unless you clear it.</div>
+          </div>
+          <button class="switch" id="bhSwitch" type="button" role="switch" aria-checked="true" aria-label="Battery health tracker"></button>
+        </div>
+
+        <p class="bh-estimate" id="bhEstimate">Still learning — no estimate yet</p>
+        <p class="muted" id="bhLearn" style="margin:6px 0 0;"></p>
+        <p class="muted" id="bhCounts" style="margin:10px 0 0;"></p>
+        <p class="muted" id="bhRunState" style="margin:6px 0 0;"></p>
+
+        <h3 class="bg-h3">Typical minutes per gauge step</h3>
+        <p class="muted" style="margin:0;">
+          How long each step of the gauge typically lasted. <strong style="color:var(--ink);">Baseline</strong> is the
+          median across your first 3 completed runs; <strong style="color:var(--ink);">Recent</strong> is the median across
+          your most recent runs after those (up to 3). A completed run goes all the way from
+          Full down to Redline, and only time observed while this app is connected counts.
+        </p>
+        <div class="bh-steps" id="bhSteps"></div>
+
+        <h3 class="bg-h3">Recent completed runs</h3>
+        <ul class="bh-runs" id="bhRunsList"></ul>
+        <p class="muted" id="bhSessionLine" style="margin:10px 0 0;"></p>
+
+        <div class="bh-actions">
+          <button class="btn btn-ghost" id="bhResetBtn" type="button">New battery — reset baseline</button>
+          <button class="btn btn-ghost" id="bhClearBtn" type="button">Clear battery history</button>
+        </div>
+        <div class="mini-msg" id="bhStatus" role="status" aria-live="polite" hidden></div>
+
+        <div class="honest-box">
+          <strong>What this can and can't know</strong>
+          <p>The Firefly reports only its 5-step gauge — <strong>no health, voltage, or cycle data exists to read</strong>. This tracker estimates health from how long each gauge step lasts during real use, and it can only observe while this app is connected — time on the Firefly with the app closed is invisible to it, so totals are <em>observed</em> minutes, not the battery's whole life between charges.</p>
+          <p>Cold weather and heavier draws shorten gauge steps on any healthy battery, so a low reading after a cold, hard session may say more about the session than the pack. Treat the estimate as a <strong>trend, not a lab measurement</strong>.</p>
+          <p>And the baseline is <strong>your own early performance</strong> with this pack — the median of your first 3 completed Full → Redline runs — not a factory specification. Swap in a fresh removable pack and use “New battery — reset baseline” so the new pack is judged against itself.</p>
+        </div>
+      </section>
+
       <!-- Diagnostics -->
       <details class="card" id="diagPanel">
         <summary>All Bluetooth services — the technical list
@@ -1915,6 +2007,377 @@
         };
         function pulseBusy() { return pulse.active; }
 
+        /* ================= Battery health tracker =================
+           READ-ONLY inference from the F1 settings frame's battery byte
+           (byte 5, steps 0–4) — the only battery data the Firefly reports.
+           There is NO health, voltage, or cycle data to read. This block
+           never calls writeFrame and never writes anything to the device;
+           it only consumes the already-parsed gauge value from
+           handleSettings, plus connect/disconnect timing.
+           Persistence is app-side only, in this browser's local storage
+           (key ff2.battHealth.v1), exactly as the user asked:
+             · sessions — one per connection (cap 60): start/end gauge
+               steps, timestamps, observed minutes per gauge step.
+             · runs — a run starts when Full (4) is observed and completes
+               when Redline (0) is observed; it may span connections, and
+               only time observed while connected is accumulated.
+             · baseline — the median total observed minutes of the first
+               3 completed runs. The estimate compares the median of the
+               most recent post-baseline runs (up to 3) against it. */
+        var BH_KEY = "ff2.battHealth.v1";
+        var BATTERY_STEP_LABELS = { 4: "Full → ¾", 3: "¾ → ½", 2: "½ → ¼", 1: "¼ → Redline" };
+        function bhEmptySteps() { return { "4": 0, "3": 0, "2": 0, "1": 0, "0": 0 }; }
+        function bhCopySteps(m) {
+          var out = bhEmptySteps();
+          if (m) ["4", "3", "2", "1", "0"].forEach(function (k) { if (typeof m[k] === "number" && isFinite(m[k])) out[k] = m[k]; });
+          return out;
+        }
+        var bhState = { enabled: true, sessions: [], runs: [], activeRun: null, currentSession: null };
+        var bhRuntime = { lastStep: null, lastAt: null, lastSaveAt: 0 };
+        function bhSave() {
+          bhRuntime.lastSaveAt = Date.now();
+          store.set(BH_KEY, JSON.stringify(bhState));
+        }
+        (function bhLoad() {
+          try {
+            var raw = store.get(BH_KEY);
+            if (raw) {
+              var p = JSON.parse(raw);
+              if (p && typeof p === "object") {
+                if (typeof p.enabled === "boolean") bhState.enabled = p.enabled;
+                if (Array.isArray(p.sessions)) bhState.sessions = p.sessions;
+                if (Array.isArray(p.runs)) bhState.runs = p.runs;
+                if (p.activeRun && typeof p.activeRun === "object") {
+                  bhState.activeRun = { startedAt: p.activeRun.startedAt, minutesByStep: bhCopySteps(p.activeRun.minutesByStep) };
+                }
+                if (p.currentSession && typeof p.currentSession === "object") bhState.currentSession = p.currentSession;
+              }
+            }
+          } catch (e) { /* a corrupt saved record starts the tracker fresh rather than breaking the page */ }
+          /* A session left open by a closed page ends at its last
+             observation — the time after that was never observed. */
+          if (bhState.currentSession) {
+            var s = bhState.currentSession;
+            bhState.sessions.push({
+              startedAt: s.startedAt,
+              endedAt: typeof s.lastAt === "number" ? s.lastAt : s.startedAt,
+              startStep: s.startStep, endStep: s.endStep,
+              minutesByStep: bhCopySteps(s.minutesByStep)
+            });
+            if (bhState.sessions.length > 60) bhState.sessions = bhState.sessions.slice(bhState.sessions.length - 60);
+            bhState.currentSession = null;
+          }
+        })();
+        function bhMedian(nums) {
+          if (!nums.length) return null;
+          var a = nums.slice().sort(function (x, y) { return x - y; });
+          var mid = Math.floor(a.length / 2);
+          return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
+        }
+        function bhRunTotal(run) {
+          if (!run || !run.minutesByStep) return 0;
+          var t = 0;
+          [4, 3, 2, 1].forEach(function (s) { t += run.minutesByStep[String(s)] || 0; });
+          return t;
+        }
+        function bhSessionTotal(session) {
+          if (!session || !session.minutesByStep) return 0;
+          var t = 0;
+          ["4", "3", "2", "1", "0"].forEach(function (k) { t += session.minutesByStep[k] || 0; });
+          return t;
+        }
+        function bhStepMedians(runsArr) {
+          var out = { 4: null, 3: null, 2: null, 1: null };
+          [4, 3, 2, 1].forEach(function (s) {
+            var vals = [];
+            runsArr.forEach(function (r) {
+              if (r.minutesByStep && typeof r.minutesByStep[String(s)] === "number") vals.push(r.minutesByStep[String(s)]);
+            });
+            out[s] = bhMedian(vals);
+          });
+          return out;
+        }
+        function bhComputeHealth() {
+          var runs = bhState.runs;
+          var baselineRuns = runs.slice(0, 3);
+          var baselineMedian = runs.length >= 3 ? bhMedian(baselineRuns.map(function (r) { return r.totalMin; })) : null;
+          var laterRuns = runs.slice(3);
+          var recentRuns = laterRuns.slice(-3);
+          var recentMedian = recentRuns.length ? bhMedian(recentRuns.map(function (r) { return r.totalMin; })) : null;
+          var pct = (baselineMedian !== null && baselineMedian > 0 && recentMedian !== null)
+            ? Math.round(recentMedian / baselineMedian * 100) : null;
+          return {
+            runCount: runs.length,
+            baselineRuns: baselineRuns,
+            baselineMedian: baselineMedian,
+            recentRuns: recentRuns,
+            recentMedian: recentMedian,
+            pct: pct,
+            baselineSteps: bhStepMedians(baselineRuns),
+            recentSteps: recentRuns.length ? bhStepMedians(recentRuns) : { 4: null, 3: null, 2: null, 1: null }
+          };
+        }
+        function bhFmtMin(m) {
+          if (m === null || m === undefined || !isFinite(m)) return "—";
+          var r = Math.round(m * 10) / 10;
+          return (r % 1 === 0 ? String(Math.round(r)) : r.toFixed(1)) + " min";
+        }
+        function bhFmtWhen(ts) {
+          if (typeof ts !== "number" || !isFinite(ts)) return "—";
+          var d = new Date(ts);
+          return d.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) + ", " +
+            d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        }
+        /* Credit the time since the last observation to the gauge step
+           that was showing during it — in the open session, and in the
+           in-progress run if one is running. Disconnected time is never
+           credited: a new session resets lastAt when it starts. */
+        function bhAccrue(now) {
+          var s = bhState.currentSession;
+          if (!s || bhRuntime.lastStep === null || bhRuntime.lastAt === null) return;
+          var elapsed = (now - bhRuntime.lastAt) / 60000;
+          if (elapsed < 0) elapsed = 0;
+          if (elapsed > 0) {
+            var key = String(bhRuntime.lastStep);
+            s.minutesByStep[key] = (s.minutesByStep[key] || 0) + elapsed;
+            if (bhState.activeRun) {
+              bhState.activeRun.minutesByStep[key] = (bhState.activeRun.minutesByStep[key] || 0) + elapsed;
+            }
+          }
+          bhRuntime.lastAt = now;
+          s.lastAt = now;
+        }
+        function bhObserve(step, nowMs) {
+          if (!bhState.enabled) return;
+          if (step === null || step === undefined || step < 0 || step > 4) return;
+          var now = typeof nowMs === "number" ? nowMs : Date.now();
+          if (!bhState.currentSession) {
+            bhState.currentSession = {
+              startedAt: now, endedAt: null, startStep: step, endStep: step,
+              minutesByStep: bhEmptySteps(), lastAt: now
+            };
+            bhRuntime.lastStep = step;
+            bhRuntime.lastAt = now;
+            if (step === 4 && !bhState.activeRun) {
+              bhState.activeRun = { startedAt: now, minutesByStep: bhEmptySteps() };
+            }
+            bhSave();
+            renderBattHealth();
+            return;
+          }
+          var prevStep = bhRuntime.lastStep;
+          bhAccrue(now);
+          var changed = step !== prevStep;
+          bhState.currentSession.endStep = step;
+          if (step === 4 && !bhState.activeRun) {
+            bhState.activeRun = { startedAt: now, minutesByStep: bhEmptySteps() };
+            changed = true;
+          }
+          if (step === 0 && bhState.activeRun) {
+            var total = bhRunTotal(bhState.activeRun);
+            bhState.runs.push({
+              startedAt: bhState.activeRun.startedAt, endedAt: now,
+              minutesByStep: bhCopySteps(bhState.activeRun.minutesByStep), totalMin: total
+            });
+            bhState.activeRun = null;
+            changed = true;
+            log("Battery health tracker: a Full → Redline run just completed — " + bhFmtMin(total) + " observed while connected. " + bhState.runs.length + " completed run(s) on record.", "ok");
+          }
+          bhRuntime.lastStep = step;
+          if (changed || now - bhRuntime.lastSaveAt >= 15000) {
+            bhSave();
+            renderBattHealth();
+          }
+        }
+        function bhEndSession(nowMs) {
+          var s = bhState.currentSession;
+          if (!s) return;
+          var now = typeof nowMs === "number" ? nowMs : Date.now();
+          bhAccrue(now);
+          s.endedAt = now;
+          s.endStep = bhRuntime.lastStep !== null ? bhRuntime.lastStep : s.endStep;
+          bhState.sessions.push({
+            startedAt: s.startedAt, endedAt: s.endedAt,
+            startStep: s.startStep, endStep: s.endStep,
+            minutesByStep: bhCopySteps(s.minutesByStep)
+          });
+          if (bhState.sessions.length > 60) bhState.sessions = bhState.sessions.slice(bhState.sessions.length - 60);
+          bhState.currentSession = null;
+          bhRuntime.lastStep = null;
+          bhRuntime.lastAt = null;
+          bhSave();
+          renderBattHealth();
+        }
+        function bhResetBaseline() {
+          bhState.runs = [];
+          bhState.activeRun = null;
+          bhState.enabled = true; // a reset for a fresh pack keeps the tracker on
+          bhSave();
+          renderBattHealth();
+        }
+        function bhClearAll() {
+          bhState.sessions = [];
+          bhState.runs = [];
+          bhState.activeRun = null;
+          bhState.currentSession = null;
+          bhRuntime.lastStep = null;
+          bhRuntime.lastAt = null;
+          bhSave();
+          renderBattHealth();
+        }
+        function bhSetEnabled(on) {
+          if (bhState.enabled === on) { renderBattHealth(); return; }
+          bhState.enabled = on;
+          if (!on) {
+            bhEndSession(); // close out the open session; history is kept
+            log("Battery health tracker OFF — no logging while it's off. Saved history is kept.", "info");
+          } else {
+            bhSave();
+            log("Battery health tracker ON — gauge timing is logged while this app is connected.", "info");
+            if (isConnected && devState.battery !== null && !bhState.currentSession) bhObserve(devState.battery);
+          }
+          renderBattHealth();
+        }
+
+        /* ---- Battery health tracker UI ---- */
+        var bhSwitchEl = document.getElementById("bhSwitch");
+        var bhEstimateEl = document.getElementById("bhEstimate");
+        var bhLearnEl = document.getElementById("bhLearn");
+        var bhCountsEl = document.getElementById("bhCounts");
+        var bhRunStateEl = document.getElementById("bhRunState");
+        var bhStepsEl = document.getElementById("bhSteps");
+        var bhRunsListEl = document.getElementById("bhRunsList");
+        var bhSessionLineEl = document.getElementById("bhSessionLine");
+        var bhStatusEl = document.getElementById("bhStatus");
+        function bhSetStatus(kind, text) {
+          bhStatusEl.hidden = false;
+          if (kind) bhStatusEl.setAttribute("data-kind", kind); else bhStatusEl.removeAttribute("data-kind");
+          bhStatusEl.textContent = text;
+        }
+        function renderBattHealth() {
+          if (!bhSwitchEl) return;
+          bhSwitchEl.setAttribute("aria-checked", bhState.enabled ? "true" : "false");
+          var h = bhComputeHealth();
+          if (h.pct !== null) {
+            bhEstimateEl.textContent = "Estimated capacity vs your baseline: ~" + h.pct + "%";
+            bhLearnEl.textContent = "Recent runs (median " + bhFmtMin(h.recentMedian) + " of observed discharge, from " +
+              h.recentRuns.length + " run" + (h.recentRuns.length === 1 ? "" : "s") + " after the baseline) against your baseline median of " +
+              bhFmtMin(h.baselineMedian) + ". A trend, not a lab measurement — cold weather and heavier draws shorten steps on any healthy pack.";
+          } else {
+            bhEstimateEl.textContent = "Still learning — no estimate yet";
+            if (h.runCount < 3) {
+              var needBase = 3 - h.runCount;
+              bhLearnEl.textContent = h.runCount + " completed full run" + (h.runCount === 1 ? "" : "s") + " recorded. " +
+                "Your baseline is set by the first 3 completed Full → Redline runs (" + needBase + " more to go), and the first estimate appears after 1 further run beyond the baseline — " +
+                (4 - h.runCount) + " more completed run" + (4 - h.runCount === 1 ? "" : "s") + " in total. Until then, no number is shown rather than a guessed one.";
+            } else {
+              bhLearnEl.textContent = "Your baseline is set — median " + bhFmtMin(h.baselineMedian) + " across your first 3 completed runs. " +
+                "One more completed Full → Redline run after the baseline gives the first estimate.";
+            }
+          }
+          bhCountsEl.textContent = "Completed full runs: " + h.runCount + " · Baseline: " +
+            (h.baselineMedian !== null ? "set (median " + bhFmtMin(h.baselineMedian) + " from your first 3 runs)" : "not set yet") +
+            (bhState.enabled ? "" : " · Tracker is OFF — nothing is being logged; the history below is kept.");
+          if (bhState.activeRun) {
+            bhRunStateEl.textContent = "A Full → Redline run is in progress — started " + bhFmtWhen(bhState.activeRun.startedAt) + ", " +
+              bhFmtMin(bhRunTotal(bhState.activeRun)) + " observed so far. A run can span connections; only time observed while connected counts.";
+          } else {
+            bhRunStateEl.textContent = "No run in progress — a run starts the moment the gauge is observed at Full and completes when Redline is observed.";
+          }
+          var stepHtml = '<div class="bh-step-row head"><span>Gauge step</span><span class="bh-num">Baseline</span><span class="bh-num">Recent</span></div>';
+          [4, 3, 2, 1].forEach(function (s) {
+            stepHtml += '<div class="bh-step-row"><span>' + BATTERY_STEP_LABELS[s] + '</span>' +
+              '<span class="bh-num">' + bhFmtMin(h.baselineSteps[s]) + '</span>' +
+              '<span class="bh-num">' + bhFmtMin(h.recentSteps[s]) + '</span></div>';
+          });
+          bhStepsEl.innerHTML = stepHtml;
+          if (!bhState.runs.length) {
+            bhRunsListEl.innerHTML = '<li><span>No completed Full → Redline runs yet.</span><span class="bh-run-total">—</span></li>';
+          } else {
+            var recent = bhState.runs.slice(-5).reverse();
+            var runsHtml = "";
+            recent.forEach(function (r) {
+              runsHtml += '<li><span>' + bhFmtWhen(r.endedAt) + '</span><span class="bh-run-total">' + bhFmtMin(r.totalMin) + " observed</span></li>";
+            });
+            bhRunsListEl.innerHTML = runsHtml;
+          }
+          var sessionBits = "Sessions logged: " + bhState.sessions.length + " (the most recent 60 are kept).";
+          if (bhState.currentSession) {
+            sessionBits += " A session is open right now — started " + bhFmtWhen(bhState.currentSession.startedAt) +
+              ", currently at " + BATTERY_NAMES[bhState.currentSession.endStep] + ", " + bhFmtMin(bhSessionTotal(bhState.currentSession)) + " observed so far.";
+          } else if (bhState.sessions.length) {
+            var last = bhState.sessions[bhState.sessions.length - 1];
+            sessionBits += " Last session: " + bhFmtWhen(last.startedAt) + ", " + BATTERY_NAMES[last.startStep] + " → " + BATTERY_NAMES[last.endStep] +
+              ", " + bhFmtMin(bhSessionTotal(last)) + " observed.";
+          }
+          bhSessionLineEl.textContent = sessionBits;
+        }
+        /* Paint the saved learning state on page load, before any gauge
+           observation arrives — otherwise bhLearn/bhCounts, the per-step
+           table, and the runs list stay empty until the first F1 frame. */
+        renderBattHealth();
+        bhSwitchEl.addEventListener("click", function () { bhSetEnabled(!bhState.enabled); });
+        /* Two-tap in-page confirmation for the destructive controls —
+           the first tap arms the button, the second (within 5 seconds)
+           carries it out. */
+        var bhResetBtnEl = document.getElementById("bhResetBtn");
+        var bhClearBtnEl = document.getElementById("bhClearBtn");
+        var BH_RESET_LABEL = "New battery — reset baseline";
+        var BH_CLEAR_LABEL = "Clear battery history";
+        function bhArmButton(btn, armedLabel, timerKey) {
+          btn.textContent = armedLabel;
+          btn.classList.add("armed");
+          window.clearTimeout(bhArmButton[timerKey]);
+          bhArmButton[timerKey] = window.setTimeout(function () {
+            btn.textContent = btn === bhResetBtnEl ? BH_RESET_LABEL : BH_CLEAR_LABEL;
+            btn.classList.remove("armed");
+            btn.removeAttribute("data-armed");
+          }, 5000);
+        }
+        function bhDisarmButton(btn, label, timerKey) {
+          window.clearTimeout(bhArmButton[timerKey]);
+          btn.textContent = label;
+          btn.classList.remove("armed");
+          btn.removeAttribute("data-armed");
+        }
+        bhResetBtnEl.addEventListener("click", function () {
+          if (bhResetBtnEl.getAttribute("data-armed") !== "1") {
+            bhResetBtnEl.setAttribute("data-armed", "1");
+            bhArmButton(bhResetBtnEl, "Tap again to confirm — reset the baseline for a new battery", "resetTimer");
+            return;
+          }
+          bhDisarmButton(bhResetBtnEl, BH_RESET_LABEL, "resetTimer");
+          bhResetBaseline();
+          bhSetStatus("ok", "Baseline and run history cleared for the new battery — the tracker stays on and will learn a fresh baseline from the next 3 completed Full → Redline runs. Your session log was kept.");
+          log("Battery health tracker: baseline and run history reset for a new battery. Tracker stays on; session log kept.", "info");
+        });
+        bhClearBtnEl.addEventListener("click", function () {
+          if (bhClearBtnEl.getAttribute("data-armed") !== "1") {
+            bhClearBtnEl.setAttribute("data-armed", "1");
+            bhArmButton(bhClearBtnEl, "Tap again to confirm — clear all battery history", "clearTimer");
+            return;
+          }
+          bhDisarmButton(bhClearBtnEl, BH_CLEAR_LABEL, "clearTimer");
+          bhClearAll();
+          bhSetStatus("ok", "All battery history cleared — sessions, completed runs, any in-progress run, and the baseline are gone. The tracker setting itself is unchanged.");
+          log("Battery health tracker: all battery history cleared.", "info");
+        });
+        /* Test hook for the mock harness — lets scripted F1 battery
+           sequences (with a fake clock) drive the tracker exactly the way
+           handleSettings does, and read the computed health back. */
+        if (typeof window !== "undefined") {
+          window.__fireflyBattHealth = {
+            observe: bhObserve,
+            endSession: bhEndSession,
+            compute: bhComputeHealth,
+            setEnabled: bhSetEnabled,
+            resetBaseline: bhResetBaseline,
+            clearAll: bhClearAll,
+            median: bhMedian,
+            getState: function () { return bhState; }
+          };
+        }
+
         /* ================= Connection state UI ================= */
         var STATE_LABELS = {
           ready: "Ready",
@@ -1980,6 +2443,7 @@
 
         function onDisconnected() {
           isConnected = false;
+          bhEndSession(); // battery tracker: close the session; any in-progress run stays open for the next connection
           resetConnectionState();
           setState("disconnected");
           deviceNameEl.textContent = "—";
@@ -2120,6 +2584,7 @@
           }
           updateAuthUI();
           renderDeviceState();
+          if (next.battery !== null) bhObserve(next.battery); // battery health tracker — read-only, consumes the parsed gauge byte
           checkPending(f);
           if (typeof pulseOnSettings === "function") pulseOnSettings(f);
         }
@@ -3830,8 +4295,10 @@
         renderComp();
         renderTemp();
         renderDeviceState();
+        renderBattHealth();
         updateAuthUI();
         setState("ready");
+        log("Battery health tracker is " + (bhState.enabled ? "ON" : "OFF") + " — it only watches the five-step gauge your Firefly already reports (no health, voltage, or cycle data exists to read) and never sends anything to the device.", "info");
 
         if (md2SelfTest()) {
           log("MD2 self-test passed — the RFC 1319 vectors and the exact answer that authenticated your real Firefly on 2026-11-04. Authentication is ready.", "ok");
