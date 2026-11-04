@@ -966,7 +966,20 @@
         </p>
         <div class="browser-opts">
           <div class="browser-opt">
-            <h3>On iPhone — Safari + beacio</h3>
+            <h3>On iPhone — Bluefy (recommended)</h3>
+            <p>
+              Open this page's address <strong>directly in the Bluefy browser app</strong> and
+              bookmark it there. Opened directly in Bluefy, the device picker works — pick your
+              Firefly (FF2_…) and you're in.
+            </p>
+            <p style="margin:10px 0 0;">
+              <strong>If the picker hangs:</strong> that happens when this page is opened inside
+              another app's built-in browser or through a link wrapper — in that case copy this
+              page's address and open it directly in Bluefy instead.
+            </p>
+          </div>
+          <div class="browser-opt">
+            <h3>On iPhone — Safari + beacio (alternative)</h3>
             <p>
               Plain Safari can't do Web Bluetooth on its own, but the free
               <strong>beacio</strong> extension (search the App Store for
@@ -979,12 +992,6 @@
               <li style="margin:5px 0;">Back on this page, tap <strong style="color:var(--ink);">beacio</strong> in the address bar → <strong style="color:var(--ink);">Enable BLE</strong> → <strong style="color:var(--ink);">"Always allow on this site"</strong>.</li>
               <li style="margin:5px 0;"><strong style="color:var(--ink);">Reload this page</strong>, then tap Connect.</li>
             </ol>
-            <p style="margin:10px 0 0;">
-              <strong>Alternative — Bluefy:</strong> the Bluefy browser app can also open this
-              page, but its device picker has a known problem with this device — your Firefly
-              can show in the list yet your tap never reaches the page. If you use Bluefy and
-              get stuck there, switch to the beacio route above.
-            </p>
           </div>
           <div class="browser-opt">
             <h3>On desktop or Android — Chrome / Edge</h3>
@@ -997,7 +1004,7 @@
         <p>
           <strong>Opened this link from inside another app?</strong> If you tapped the link in a
           chat or mail app, you're in that app's built-in browser, where extensions can't run —
-          copy this page's link and open it in the real Safari app instead.
+          copy this page's address and open it directly in Bluefy (or in the real Safari app with beacio) instead.
         </p>
         <p class="muted">
           Nothing is broken — this browser just can't see Bluetooth devices.
@@ -1049,9 +1056,10 @@
         <div class="connect-msg" id="pickerStuckBox" data-kind="err" hidden>
           <strong>The picker never answered.</strong>
           <span style="display:block; margin-top:4px;">
-            Your Firefly showed in the list, but tapping it never reached this page — Bluefy's
-            picker sometimes drops the tap instead of handing your choice back, and then no tap
-            inside the picker can fix it. Nothing is wrong with your Firefly. Recover like this:
+            The picker didn't hand your choice back to this page. This happens when the page
+            runs inside another app's built-in browser or through a link wrapper — reopen the
+            page directly in Bluefy (or Safari + beacio) and try again. Nothing is wrong with
+            your Firefly. Recover like this:
           </span>
           <ol style="margin:10px 0 12px; padding-left:20px;">
             <li style="margin:5px 0;">Close the picker (Cancel). If it won't close, force-close Bluefy — swipe it away — and reopen this page in Bluefy.</li>
@@ -1140,6 +1148,41 @@
         </div>
       </section>
 
+      <!-- Guided session -->
+      <section class="card" aria-labelledby="guided-h">
+        <h2 id="guided-h">Guided session — step-up ladder</h2>
+        <p class="card-sub">Starting low is where the flavor compounds release; climbing in steps extracts more at each stage; finishing at 390°F keeps the whole session under your ceiling and well below combustion (~446°F). Before every step up, you'll stir the bowl — so the heat never climbs onto an unstirred bowl.</p>
+        <p class="muted" style="margin:0 0 12px;" id="guidedFlow">350°F → stir → 370°F → stir → 390°F → stir &amp; finish</p>
+        <div class="mini-msg" id="guidedLockNote">Guided session is locked until this connection is authenticated. Each step is a temperature change, and your Firefly ignores temperature changes from an unauthenticated connection — connect above, then tap Authenticate, and the guided session unlocks here.</div>
+        <div id="guidedControls" hidden>
+          <p class="device-now" id="guidedState" style="text-align:left;">Ready when you are.</p>
+          <p class="muted" id="guidedCountdown" style="margin:6px 0 0;" hidden></p>
+          <div id="guidedStirBox" class="warn-line" style="border-style:solid;" hidden>
+            <span><strong>Stir the bowl</strong> — open the lid, stir and fluff the material, level the surface, close the lid. No heat change is sent until you confirm.</span>
+          </div>
+          <div id="guidedConfig">
+            <div class="switch-row">
+              <div>
+                <div class="sw-label">Auto-advance</div>
+                <div class="sw-sub">Move to the next stir stage on its own when the timer runs out</div>
+              </div>
+              <button class="switch" id="guidedAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-advance"></button>
+            </div>
+            <p class="pulse-label">Time at each temperature</p>
+            <div class="seg-control" role="group" aria-label="Guided session step interval">
+              <button type="button" data-guided-int="60" aria-pressed="false">60 sec</button>
+              <button type="button" data-guided-int="120" aria-pressed="true">120 sec</button>
+              <button type="button" data-guided-int="180" aria-pressed="false">180 sec</button>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="guidedStartBtn" type="button" style="margin-top:12px;">Start guided session</button>
+          <button class="btn btn-primary" id="guidedStepUpBtn" type="button" style="margin-top:12px;" hidden>Step up now</button>
+          <button class="btn btn-primary" id="guidedStirBtn" type="button" style="margin-top:12px;" hidden>Stirred — step up</button>
+          <button class="btn btn-ghost" id="guidedEndBtn" type="button" style="margin-top:10px;" hidden>End session</button>
+          <div class="mini-msg" id="guidedStatus" role="status" aria-live="polite">A guided session never sends above 390°F. Every temperature step counts only when your Firefly reads it back. Ending a session leaves the temperature where it is.</div>
+        </div>
+      </section>
+
       <!-- Pulse -->
       <section class="card" aria-labelledby="pulse-h">
         <h2 id="pulse-h">Pulse</h2>
@@ -1222,8 +1265,8 @@
           isn't capped by this.
         </p>
         <div class="ceil-row" style="margin-top:8px;">
-          <input type="range" id="ceilSlider" min="300" max="500" step="10" value="430" aria-label="Flower ceiling in degrees Fahrenheit" />
-          <span class="ceil-value" id="ceilValue">430°F</span>
+          <input type="range" id="ceilSlider" min="300" max="500" step="10" value="420" aria-label="Flower ceiling in degrees Fahrenheit" />
+          <span class="ceil-value" id="ceilValue">420°F</span>
         </div>
         <p class="muted" style="margin:10px 0 0;">
           <strong style="color:var(--ink);">Step up, don't jump.</strong> The gentlest
@@ -1657,10 +1700,17 @@
           set: function (k, v) { try { window.localStorage.setItem(k, v); return true; } catch (e) { return false; } },
           del: function (k) { try { window.localStorage.removeItem(k); } catch (e) { /* ignore */ } }
         };
-        var settings = { ceilingF: 430, cal: {}, comp: false, nickname: "" };
+        var settings = { ceilingF: 420, cal: {}, comp: false, nickname: "", ceilingManual: false };
+        var ceilingMigrated = false;
         (function loadSettings() {
+          settings.ceilingManual = store.get("ff2.ceilingManual") === "1";
           var c = parseInt(store.get("ff2.ceilingF") || "", 10);
           if (c >= 300 && c <= 500) settings.ceilingF = Math.round(c / 10) * 10;
+          if (settings.ceilingF === 430 && !settings.ceilingManual) {
+            settings.ceilingF = 420;
+            ceilingMigrated = true;
+            try { window.localStorage.setItem("ff2.ceilingF", "420"); } catch (e) { /* ignore */ }
+          }
           try {
             var cal = JSON.parse(store.get("ff2.cal") || "{}");
             if (cal && typeof cal === "object") settings.cal = cal;
@@ -1671,6 +1721,7 @@
         function saveSettings() {
           var ok = true;
           if (!store.set("ff2.ceilingF", String(settings.ceilingF))) ok = false;
+          if (!store.set("ff2.ceilingManual", settings.ceilingManual ? "1" : "0")) ok = false;
           if (!store.set("ff2.cal", JSON.stringify(settings.cal))) ok = false;
           if (!store.set("ff2.comp", settings.comp ? "1" : "0")) ok = false;
           if (!store.set("ff2.nickname", settings.nickname)) ok = false;
@@ -1825,6 +1876,10 @@
         function onPendingTimeout(p) {
           if (pending !== p) return;
           pending = null;
+          if (p.guided) {
+            if (typeof onGuidedReadbackFailed === "function") onGuidedReadbackFailed(p);
+            return;
+          }
           if (p.kind === "temp") {
             setSetStatus("err", "The Firefly didn't confirm " + fmtTemp(p.sendF) + " within 6 seconds — it still reports " + currentTempText() + ". Unauthenticated connections are ignored by the device: tap Authenticate above, then Set again.");
             log("Set temperature did NOT confirm by read-back (still " + currentTempText() + "). Nothing was applied as far as the device reports.", "err");
@@ -1902,11 +1957,13 @@
             authState === "authenticating" ? "Authenticating…" :
             isConnected ? "Locked — not authenticated" : "—";
           if (typeof renderPulse === "function") renderPulse();
+          if (typeof renderGuided === "function") renderGuided();
         }
 
         function resetConnectionState() {
           cancelPending();
           if (typeof resetPulse === "function") resetPulse();
+          if (typeof onGuidedDisconnect === "function") onGuidedDisconnect();
           devState = freshDevState();
           profileTable = {};
           authState = "locked";
@@ -2115,6 +2172,7 @@
           if (p.kind === "temp") {
             setSetStatus("ok", "Confirmed — your Firefly read back " + fmtTemp(p.sendF) + " and is now set to it." + (p.pickedF !== p.sendF ? " (You picked " + fmtTemp(p.pickedF) + "; Burn Guard compensation sent " + fmtTemp(p.sendF) + ".)" : ""));
             log("Temperature CONFIRMED by read-back: the Firefly now reports " + p.sendF + "°F.", "ok");
+            if (p.guided && typeof onGuidedConfirmed === "function") onGuidedConfirmed(p);
           } else if (p.kind === "activation") {
             setActStatus("ok", "Confirmed — your Firefly read back: " + ACTIVATION_LONG[p.value] + ".");
             log("Activation CONFIRMED by read-back: " + ACTIVATION_LONG[p.value] + ".", "ok");
@@ -2313,6 +2371,9 @@
 
         setTempBtn.addEventListener("click", function () {
           if (!isConnected || !rxChar) return;
+          if (typeof guided !== "undefined" && guided && guided.active && typeof endGuidedSession === "function") {
+            endGuidedSession("manual");
+          }
           if (pulseBusy()) {
             setSetStatus("err", "A pulse is running — its restore is the next temperature write. Stop the pulse first, then set a new temperature.");
             return;
@@ -2619,6 +2680,236 @@
           writePulseRestore();
         });
 
+        /* ================= Guided session — step-up ladder =================
+           Ladder 350 → stir → 370 → stir → 390 → stir & finish. Every
+           temperature step goes through the exact same SET_PROFILE pipeline
+           as a manual set (ceiling + compensation apply, read-back confirms),
+           and the guided cap is 390°F — it never sends above 390. A stir
+           stage is display/gate only: it sends NO Bluetooth writes; the next
+           temperature is written only after the user taps the Stirred button. */
+        var GUIDED_LADDER = [
+          { f: 350, label: "flavor stage" },
+          { f: 370, label: "deeper extraction" },
+          { f: 390, label: "full extraction" }
+        ];
+        var guided = {
+          active: false,
+          phase: "idle", // idle | sending | waiting | stir | complete | failed
+          stepIndex: -1,
+          stirTarget: -1,
+          stirFinish: false,
+          auto: true,
+          intervalSecs: 120,
+          deadline: 0,
+          tickTimer: null,
+          dropNote: ""
+        };
+        var guidedLockNoteEl = document.getElementById("guidedLockNote");
+        var guidedControlsEl = document.getElementById("guidedControls");
+        var guidedStateEl = document.getElementById("guidedState");
+        var guidedCountdownEl = document.getElementById("guidedCountdown");
+        var guidedStirBoxEl = document.getElementById("guidedStirBox");
+        var guidedStatusEl = document.getElementById("guidedStatus");
+        var guidedStartBtn = document.getElementById("guidedStartBtn");
+        var guidedStepUpBtn = document.getElementById("guidedStepUpBtn");
+        var guidedStirBtn = document.getElementById("guidedStirBtn");
+        var guidedEndBtn = document.getElementById("guidedEndBtn");
+        var guidedAutoSwitch = document.getElementById("guidedAutoSwitch");
+        var guidedIntBtns = Array.prototype.slice.call(guidedControlsEl.querySelectorAll("[data-guided-int]"));
+
+        function setGuidedStatus(kind, text) { setMiniMsg(guidedStatusEl, kind, text); }
+        function clearGuidedTimers() {
+          if (guided.tickTimer !== null) { window.clearInterval(guided.tickTimer); guided.tickTimer = null; }
+        }
+        function guidedSecsLeft() { return Math.max(0, Math.ceil((guided.deadline - Date.now()) / 1000)); }
+        function renderGuided() {
+          if (!guidedControlsEl) return;
+          var avail = (isConnected && authState === "authenticated") || guided.active;
+          guidedLockNoteEl.hidden = avail;
+          if (!avail) {
+            guidedLockNoteEl.textContent = guided.dropNote
+              ? guided.dropNote
+              : isConnected
+                ? "Connected, but not authenticated yet — your Firefly ignores temperature changes until you authenticate, and each guided step is a temperature change. Tap Authenticate on the connect card above and the guided session unlocks here."
+                : "Guided session is locked until this connection is authenticated. Each step is a temperature change, and your Firefly ignores temperature changes from an unauthenticated connection — connect above, then tap Authenticate, and the guided session unlocks here.";
+          }
+          guidedControlsEl.hidden = !avail;
+          var step = guided.stepIndex >= 0 ? GUIDED_LADDER[guided.stepIndex] : null;
+          var txt = "";
+          if (guided.phase === "sending" && step) txt = "Sending " + fmtTemp(step.f) + " — waiting for your Firefly to read it back…";
+          else if (guided.phase === "waiting" && step) {
+            txt = "Step " + (guided.stepIndex + 1) + " of 3 · " + fmtTemp(step.f) + " — " + step.label;
+            if (guided.stepIndex === 2) txt += " · Final step — full extraction, still below the scorch zone.";
+          }
+          else if (guided.phase === "stir") txt = guided.stirFinish ? "Final stir — at " + fmtTemp(390) + ", no hotter step follows." : "Stir the bowl before stepping up to " + fmtTemp(GUIDED_LADDER[guided.stirTarget].f) + ".";
+          else if (guided.phase === "complete") txt = "Fully extracted — session complete";
+          else if (guided.phase === "failed") txt = "A step didn't confirm — auto-advance is paused.";
+          else txt = "Ready when you are.";
+          guidedStateEl.textContent = txt;
+          guidedStirBoxEl.hidden = guided.phase !== "stir";
+          guidedStartBtn.hidden = !(guided.phase === "idle" || guided.phase === "failed" || guided.phase === "complete");
+          guidedStartBtn.textContent = guided.phase === "failed" ? "Restart guided session" : "Start guided session";
+          guidedStepUpBtn.hidden = guided.phase !== "waiting";
+          guidedStepUpBtn.textContent = guided.stepIndex === 2 ? "Stir & finish" : "Step up now";
+          guidedStirBtn.hidden = guided.phase !== "stir";
+          guidedStirBtn.textContent = guided.stirFinish ? "Stirred — finish at 390°F" : "Stirred — step up to " + GUIDED_LADDER[Math.max(0, guided.stirTarget)].f + "°F";
+          guidedEndBtn.hidden = !guided.active && guided.phase !== "complete";
+          guidedCountdownEl.hidden = guided.phase !== "waiting";
+          if (guided.phase === "waiting") {
+            guidedCountdownEl.textContent = guided.auto
+              ? (guided.stepIndex === 2 ? "Stir & finish in " + guidedSecsLeft() + "s (auto-advance)…" : "Next stir stage in " + guidedSecsLeft() + "s (auto-advance)…")
+              : "Auto-advance is off — tap " + (guided.stepIndex === 2 ? "Stir & finish" : "Step up now") + " when you're ready.";
+          }
+          guidedIntBtns.forEach(function (b) { b.disabled = guided.active; });
+        }
+        function startGuidedCountdown() {
+          clearGuidedTimers();
+          guided.deadline = Date.now() + guided.intervalSecs * 1000;
+          renderGuided();
+          guided.tickTimer = window.setInterval(function () {
+            if (!guided.active || guided.phase !== "waiting") { clearGuidedTimers(); return; }
+            if (Date.now() >= guided.deadline) {
+              clearGuidedTimers();
+              enterGuidedStir();
+            } else {
+              renderGuided();
+            }
+          }, 250);
+        }
+        function enterGuidedStir() {
+          if (!guided.active || guided.phase !== "waiting") return;
+          clearGuidedTimers();
+          guided.phase = "stir";
+          if (guided.stepIndex >= 2) {
+            guided.stirFinish = true;
+            guided.stirTarget = -1;
+            setGuidedStatus("busy", "Time for the final stir at 390°F. Stir the bowl, then tap “Stirred — finish at 390°F” — no temperature is sent for the finish.");
+            log("Guided session: final stir stage reached at 390°F. No write sent — stir stages never write.", "info");
+          } else {
+            guided.stirFinish = false;
+            guided.stirTarget = guided.stepIndex + 1;
+            setGuidedStatus("busy", "Stir first: stir the bowl, then tap “Stirred — step up to " + GUIDED_LADDER[guided.stirTarget].f + "°F”. Nothing has been sent yet — the heat never climbs onto an unstirred bowl.");
+            log("Guided session: stir stage before stepping up to " + GUIDED_LADDER[guided.stirTarget].f + "°F. No write sent — waiting for the Stirred confirmation.", "info");
+          }
+          renderGuided();
+        }
+        function sendGuidedStep(idx) {
+          var target = GUIDED_LADDER[idx];
+          if (material === "flower" && target.f > settings.ceilingF) {
+            guided.phase = "failed";
+            setGuidedStatus("err", "Refused — Burn Guard: " + fmtTemp(target.f) + " is above your flower ceiling of " + fmtTemp(settings.ceilingF) + ". Nothing was sent, and auto-advance is paused. Raise the ceiling in Burn Guard or end the session.");
+            log("Guided step REFUSED by Burn Guard flower ceiling (" + target.f + "°F > " + settings.ceilingF + "°F). Nothing was sent.", "err");
+            renderGuided();
+            return;
+          }
+          var sendF = effectiveSendF(target.f);
+          var byte = fToProfileByte(sendF);
+          guided.phase = "sending";
+          guided.stepIndex = idx;
+          startPending({ kind: "temp", byte: byte, sendF: sendF, pickedF: target.f, guided: true, guidedIndex: idx });
+          writeFrame([0x00, 0x02, byte], "guided session — set temperature " + sendF + "°F (profile byte 0x" + byte.toString(16).toUpperCase() + ")");
+          setGuidedStatus("busy", "Step " + (idx + 1) + " of 3: setting " + fmtTemp(target.f) + " — waiting for the Firefly to read it back." + (sendF !== target.f ? " (Compensated: sent " + fmtTemp(sendF) + ".)" : ""));
+          log("Guided session step " + (idx + 1) + " requested: " + sendF + "°F — waiting for read-back confirmation.", "info");
+          renderGuided();
+        }
+        function onGuidedConfirmed(p) {
+          if (!guided.active) return;
+          guided.stepIndex = p.guidedIndex;
+          guided.phase = "waiting";
+          var step = GUIDED_LADDER[guided.stepIndex];
+          setGuidedStatus("ok", "Confirmed — your Firefly read back " + fmtTemp(p.sendF) + ". Step " + (guided.stepIndex + 1) + " of 3 · " + fmtTemp(step.f) + " — " + step.label + "." +
+            (guided.stepIndex === 2 ? " This is the final step — full extraction, still below the scorch zone. The session stays here until the final stir or you end it." : ""));
+          log("Guided session step " + (guided.stepIndex + 1) + " CONFIRMED by read-back: " + p.sendF + "°F.", "ok");
+          renderGuided();
+          if (guided.auto) startGuidedCountdown();
+        }
+        function onGuidedReadbackFailed(p) {
+          if (!guided.active) return;
+          clearGuidedTimers();
+          guided.phase = "failed";
+          setGuidedStatus("err", "That step did not confirm: your Firefly didn't read back " + fmtTemp(p.sendF) + " within 6 seconds, so auto-advance is paused and this page won't claim the step happened. It currently reports " + currentTempText() + ". You can restart the guided session or end it — ending leaves the temperature where it is.");
+          log("Guided session step did NOT confirm by read-back (" + p.sendF + "°F). Auto-advance paused. The device reports " + currentTempText() + ".", "err");
+          renderGuided();
+        }
+        function endGuidedSession(reason) {
+          if (!guided.active && guided.phase !== "complete") return;
+          clearGuidedTimers();
+          var atF = guided.stepIndex >= 0 ? GUIDED_LADDER[guided.stepIndex].f : null;
+          guided.active = false;
+          guided.phase = "idle";
+          guided.stirFinish = false;
+          guided.stirTarget = -1;
+          if (reason === "manual") {
+            setGuidedStatus("ok", "Guided session ended — you set a temperature manually, so you took over. The guided ladder stopped and your manual set is what counts.");
+            log("Guided session ended: the user set a temperature manually (user took over).", "info");
+          } else if (reason === "complete-end") {
+            setGuidedStatus("ok", "Session ended. The temperature was left where it is" + (atF !== null ? " — " + fmtTemp(atF) : "") + ".");
+          } else {
+            setGuidedStatus("ok", "Session ended — the temperature is left where it is" + (atF !== null ? ", at " + fmtTemp(atF) : "") + ". Nothing else was sent.");
+            log("Guided session ended by the user — temperature left where it is" + (atF !== null ? " (" + atF + "°F)" : "") + ".", "info");
+          }
+          renderGuided();
+        }
+        function onGuidedDisconnect() {
+          if (!guided.active && guided.phase !== "complete") return;
+          clearGuidedTimers();
+          guided.active = false;
+          guided.phase = "idle";
+          guided.stirFinish = false;
+          guided.stirTarget = -1;
+          guided.dropNote = "The connection dropped, so the guided session ended and its timers were cleared. The Firefly keeps the last temperature it confirmed. Reconnect and authenticate to start a new guided session.";
+          log("Guided session ended: the connection dropped mid-session. Timers cleared.", "err");
+          renderGuided();
+        }
+        guidedStartBtn.addEventListener("click", function () {
+          if (!isConnected || !rxChar) return;
+          if (authState !== "authenticated") { setGuidedStatus("err", "Not authenticated — tap Authenticate on the connect card first."); return; }
+          if (pulseBusy()) { setGuidedStatus("err", "A pulse is running — stop it first, then start the guided session."); return; }
+          if (pending) { setGuidedStatus("err", "Another change is still waiting for its read-back — give it a second, then start."); return; }
+          guided.dropNote = "";
+          guided.active = true;
+          guided.stepIndex = -1;
+          guided.stirFinish = false;
+          guided.stirTarget = -1;
+          log("Guided session started — ladder 350°F → stir → 370°F → stir → 390°F → stir & finish. The guided cap is 390°F.", "info");
+          sendGuidedStep(0);
+        });
+        guidedStepUpBtn.addEventListener("click", function () {
+          if (!guided.active || guided.phase !== "waiting") return;
+          enterGuidedStir();
+        });
+        guidedStirBtn.addEventListener("click", function () {
+          if (!guided.active || guided.phase !== "stir") return;
+          if (guided.stirFinish) {
+            guided.phase = "complete";
+            guided.active = false;
+            setGuidedStatus("ok", "Fully extracted — session complete. The final stir is done and the temperature stays at 390°F. No temperature was sent for the finish.");
+            log("Guided session complete: final stir confirmed at 390°F — no write sent for the finish. Fully extracted.", "ok");
+            renderGuided();
+          } else {
+            var target = guided.stirTarget;
+            guided.stirTarget = -1;
+            log("Guided session: stir confirmed — now stepping up to " + GUIDED_LADDER[target].f + "°F.", "info");
+            sendGuidedStep(target);
+          }
+        });
+        guidedEndBtn.addEventListener("click", function () {
+          endGuidedSession(guided.phase === "complete" ? "complete-end" : "user");
+        });
+        guidedAutoSwitch.addEventListener("click", function () {
+          guided.auto = !guided.auto;
+          guidedAutoSwitch.setAttribute("aria-checked", guided.auto ? "true" : "false");
+          if (guided.active && guided.phase === "waiting") {
+            if (guided.auto) startGuidedCountdown(); else { clearGuidedTimers(); renderGuided(); }
+          }
+        });
+        guidedIntBtns.forEach(function (b) {
+          b.addEventListener("click", function () {
+            guided.intervalSecs = parseInt(b.getAttribute("data-guided-int"), 10);
+            guidedIntBtns.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+          });
+        });
+
         /* ================= Activation (touch sensors) ================= */
         var actGridEl = document.getElementById("actGrid");
         var actNowEl = document.getElementById("actNow");
@@ -2660,6 +2951,7 @@
         ceilSlider.value = String(settings.ceilingF);
         ceilValueEl.textContent = settings.ceilingF + "°F";
         ceilSlider.addEventListener("input", function () {
+          settings.ceilingManual = true;
           settings.ceilingF = parseInt(ceilSlider.value, 10);
           ceilValueEl.textContent = settings.ceilingF + "°F";
           renderTemp();
@@ -3120,7 +3412,7 @@
           }, 12000));
           pickerWatchdogTimers.push(window.setTimeout(function () {
             setState("searching", "Picker not answering");
-            setConnectMsg("busy", "Still on Searching — and you already tapped your Firefly in the list? Then the tap never reached this page: Bluefy's picker sometimes shows its list but drops the tap instead of handing your choice back. That's the picker failing, not your Firefly, and no further tap inside the picker will fix it. Cancel the picker — recovery steps are coming up here if it stays stuck.");
+            setConnectMsg("busy", "Still on Searching — and you already tapped your Firefly in the list? Then the picker didn't hand your choice back to this page — that can happen when the page runs inside another app's browser or a link wrapper. That's not your Firefly, and no further tap inside the picker will fix it. Cancel the picker — recovery steps are coming up here if it stays stuck.");
           }, 30000));
           pickerWatchdogTimers.push(window.setTimeout(function () {
             pickerStuckBoxEl.hidden = false;
@@ -3579,6 +3871,7 @@
           }).catch(function () { /* getDevices is best-effort */ });
         }
 
+        if (ceilingMigrated) log("Burn Guard ceiling updated: the old 430°F default is now 420°F for this unit (you had never set the ceiling yourself, so the new default was applied). If you set the ceiling manually it is never overridden.", "info");
         log("Ready. Put the Firefly in pairing mode (both sensors, green blink), then tap Connect. Once connected, authenticate — then temperature and sensor changes apply, each confirmed by the Firefly's own read-back.", "ok");
       })();
     </script>
