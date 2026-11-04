@@ -1081,6 +1081,165 @@
         color: var(--ink-faint);
       }
       .photo-credit a { color: var(--ink-soft); }
+
+      /* ---------- Strains library ---------- */
+      .str-search {
+        width: 100%;
+        font: inherit;
+        font-size: 16px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: var(--surface-2);
+        color: var(--ink);
+        margin: 0 0 10px;
+      }
+      .str-search::placeholder { color: var(--ink-faint); }
+      .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+      .chip-row .chip { min-height: 44px; }
+      .str-count { font-size: 13px; color: var(--ink-faint); margin: 2px 0 10px; }
+      .str-list { display: grid; gap: 8px; }
+      .str-card {
+        appearance: none; cursor: pointer; font: inherit; text-align: left;
+        display: flex; align-items: center; gap: 12px;
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: var(--surface-2);
+        color: var(--ink);
+        padding: 10px 12px;
+      }
+      .str-card:active { border-color: var(--ember-deep); }
+      .str-mono { flex: none; width: 46px; height: 46px; border-radius: 11px; overflow: hidden; }
+      .str-mono svg { display: block; width: 100%; height: 100%; }
+      .str-card-main { flex: 1; min-width: 0; }
+      .str-card-name { font-weight: 800; font-size: 15.5px; }
+      .str-card-sub { color: var(--ink-soft); font-size: 12.5px; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .str-fav {
+        appearance: none; cursor: pointer; font: inherit;
+        flex: none; width: 44px; height: 44px; border-radius: 11px;
+        border: 1px solid var(--line); background: var(--surface);
+        color: var(--ink-faint); font-size: 21px; line-height: 1;
+      }
+      .str-fav[aria-pressed="true"] { color: #ffd166; border-color: #8a6a2a; background: rgba(255, 209, 102, 0.08); }
+      .str-empty { color: var(--ink-faint); font-size: 14px; padding: 18px 4px; text-align: center; }
+
+      /* ---------- Strain sheet (guide / questionnaire / entry) ---------- */
+      .sheet {
+        position: fixed; inset: 0; z-index: 60;
+        background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+        overflow-y: auto; -webkit-overflow-scrolling: touch;
+        padding: 12px 12px 60px;
+      }
+      .sheet-inner { max-width: 640px; margin: 0 auto; }
+      .sheet-head {
+        position: sticky; top: 0; z-index: 2;
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 0 10px;
+        background: linear-gradient(180deg, var(--bg) 82%, transparent);
+      }
+      .sheet-head .btn { margin: 0; }
+      .sheet-title { font-weight: 800; font-size: 18px; }
+      .str-hero { display: flex; gap: 14px; align-items: center; margin: 2px 0 12px; }
+      .str-hero .str-mono { width: 84px; height: 84px; border-radius: 18px; }
+      .str-hero h3 { margin: 0 0 2px; font-size: 22px; }
+      .str-hero .alias { color: var(--ink-soft); font-size: 13px; }
+      .kv { display: grid; gap: 8px; margin: 0 0 4px; }
+      .kv-row {
+        background: var(--surface-2); border: 1px solid var(--line);
+        border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--ink-soft);
+      }
+      .kv-row .k { display: block; font-size: 11.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ember); font-weight: 800; margin-bottom: 3px; }
+      .kv-row .v { color: var(--ink); }
+      .tagrow { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; }
+      .tag {
+        font-size: 12.5px; font-weight: 700;
+        border: 1px solid var(--line); border-radius: 999px;
+        padding: 5px 11px; color: var(--ink-soft); background: var(--surface-2);
+      }
+      .tag.hot { border-color: var(--ember-deep); color: var(--ember); }
+      .src-line { font-size: 12.5px; color: var(--ink-faint); margin: 10px 0 0; }
+      .src-line a { color: var(--ink-soft); }
+      .grade {
+        display: inline-block; min-width: 30px; text-align: center;
+        font-size: 12px; font-weight: 800; border-radius: 7px;
+        padding: 3px 7px; margin-right: 8px; vertical-align: 1px;
+      }
+      .grade.gA { background: rgba(111,206,98,0.16); color: var(--leaf); border: 1px solid var(--leaf-deep); }
+      .grade.gB { background: rgba(245,168,60,0.14); color: var(--ember); border: 1px solid var(--ember-deep); }
+      .grade.gC { background: rgba(126,200,232,0.12); color: #7ec8e8; border: 1px solid #3d6a84; }
+      .grade.gF { background: rgba(138,168,126,0.10); color: var(--ink-faint); border: 1px solid var(--line); }
+      .pick-row { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 8px 0; font-size: 13.5px; color: var(--ink-soft); }
+      .pick-row strong { color: var(--ink); }
+      .plan-card { border: 1px solid var(--ember-deep); border-radius: 12px; padding: 12px; margin: 10px 0; background: var(--ember-soft); }
+      .plan-card h4 { margin: 0 0 6px; font-size: 15px; color: var(--ink); }
+      .plan-card p { margin: 0 0 8px; font-size: 13.5px; color: var(--ink-soft); }
+      .plan-steps { font-family: var(--mono); font-weight: 700; font-size: 14px; color: var(--ember); margin: 0 0 8px; }
+
+      /* ---------- Questionnaire ---------- */
+      .q-block { margin: 0 0 18px; }
+      .q-label { font-weight: 800; font-size: 14px; margin: 0 0 8px; color: var(--ink); }
+      .q-label .q-sub { display: block; font-weight: 600; font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+      .q-auto {
+        background: var(--surface-2); border: 1px dashed var(--line); border-radius: 10px;
+        padding: 10px 12px; font-size: 13.5px; color: var(--ink-soft); margin: 0 0 14px;
+      }
+      .q-auto strong { color: var(--ink); }
+      .q-text, .q-num, .q-area {
+        width: 100%; font: inherit; font-size: 15px;
+        border: 1px solid var(--line); border-radius: 10px;
+        background: var(--surface-2); color: var(--ink);
+        padding: 10px 12px;
+      }
+      .q-area { min-height: 84px; resize: vertical; }
+      .q-num { width: 110px; }
+      .verdict-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 13.5px; }
+      .verdict-row .v-name { flex: 1; color: var(--ink); font-weight: 700; }
+      .ph-slot { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+      .ph-thumb {
+        width: 72px; height: 72px; border-radius: 10px; object-fit: cover;
+        border: 1px solid var(--line); background: var(--surface);
+        flex: none;
+      }
+      .ph-btns { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+      .ph-empty { color: var(--ink-faint); font-size: 13px; }
+
+      /* ---------- Log list ---------- */
+      .log-row {
+        appearance: none; cursor: pointer; font: inherit; text-align: left;
+        display: flex; align-items: center; gap: 12px; width: 100%;
+        border: 1px solid var(--line); border-radius: 12px;
+        background: var(--surface-2); color: var(--ink);
+        padding: 10px 12px; margin: 0 0 8px;
+      }
+      .log-row .lr-main { flex: 1; min-width: 0; }
+      .log-row .lr-name { font-weight: 800; font-size: 15px; }
+      .log-row .lr-sub { color: var(--ink-soft); font-size: 12.5px; margin-top: 1px; }
+      .stars { color: #ffd166; letter-spacing: 2px; font-size: 14px; white-space: nowrap; }
+      .stars .off { color: var(--ink-faint); opacity: 0.4; }
+      .del-arm { border-color: #8a4438 !important; color: #e08a7a !important; }
+
+      /* ---------- Reference panels ---------- */
+      .ref-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0 18px; }
+      @media (max-width: 480px) { .ref-grid { grid-template-columns: 1fr 1fr 1fr; gap: 6px; } }
+      .ref-panel {
+        border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2);
+        padding: 8px; text-align: center;
+      }
+      .ref-panel svg { width: 100%; height: auto; display: block; }
+      .ref-panel .rp-t { font-weight: 800; font-size: 12.5px; margin: 6px 0 2px; color: var(--ink); }
+      .ref-panel .rp-d { font-size: 11.5px; color: var(--ink-soft); line-height: 1.35; }
+      .ref-panel.good { border-color: var(--leaf-deep); }
+      .ref-panel.good .rp-t { color: var(--leaf); }
+      .ref-sub { font-size: 13px; color: var(--ink-soft); margin: 0 0 4px; font-weight: 800; }
+
+      .vapebox {
+        border: 1px solid var(--ember-deep); border-radius: 12px;
+        background: var(--ember-soft); padding: 12px 14px; margin: 12px 0;
+        font-size: 14px; color: var(--ink-soft);
+      }
+      .vapebox strong { color: var(--ink); }
+      .vapebox .vb-range { font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--ember); }
       [hidden] { display: none !important; }
     </style>
   </head>
@@ -1170,8 +1329,9 @@
 
       <nav class="tabbar" role="tablist" aria-label="App sections">
         <button type="button" role="tab" id="tab-session" aria-selected="true" aria-controls="panel-session">Session<small>Connect &amp; session</small></button>
-        <button type="button" role="tab" id="tab-burnguard" aria-selected="false" aria-controls="panel-burnguard">Burn Guard<small>Ceiling &amp; calibration</small></button>
+        <button type="button" role="tab" id="tab-strains" aria-selected="false" aria-controls="panel-strains">Strains<small>Guide · picker · log</small></button>
         <button type="button" role="tab" id="tab-terpene" aria-selected="false" aria-controls="panel-terpene">Terpenes<small>What heat releases</small></button>
+        <button type="button" role="tab" id="tab-burnguard" aria-selected="false" aria-controls="panel-burnguard">Burn Guard<small>Ceiling &amp; calibration</small></button>
         <button type="button" role="tab" id="tab-device" aria-selected="false" aria-controls="panel-device">Device<small>Details &amp; log</small></button>
       </nav>
 
@@ -1285,6 +1445,7 @@
         <h2 id="guided-h">Guided session — step-up ladder</h2>
         <p class="card-sub">Starting low is where the flavor compounds release; climbing in steps extracts more at each stage; finishing at 370°F keeps the whole session under your ceiling and well below combustion (~446°F). Before every step up, you'll stir the bowl — so the heat never climbs onto an unstirred bowl.</p>
         <p class="muted" style="margin:0 0 12px;" id="guidedFlow">340°F → stir → 360°F → stir → 370°F → stir &amp; finish</p>
+        <p class="mini-msg" id="guidedStrainNote" hidden style="margin:0 0 12px;"></p>
         <p class="muted" style="margin:0 0 12px;">Tuned from live session feedback: after several draws soaking at 350°F with a full pack and the cover on, the next step up brought a burnt taste — so this ladder now runs gentler and tops out at 370°F.</p>
         <div class="mini-msg" id="guidedLockNote">Guided session is locked until this connection is authenticated. Each step is a temperature change, and your Firefly ignores temperature changes from an unauthenticated connection — connect above, then tap Authenticate, and the guided session unlocks here.</div>
         <div id="guidedControls" hidden>
@@ -1370,6 +1531,106 @@
           <p>A pulse only ever sends two things: the 200°F floor, and your own temperature back. No other command is involved.</p>
         </div>
       </div><!-- /panel-session -->
+
+      <!-- ================= Tab: Strains ================= -->
+      <div id="panel-strains" role="tabpanel" aria-labelledby="tab-strains" hidden>
+
+      <section class="card" aria-labelledby="strains-h">
+        <h2 id="strains-h">Strain library</h2>
+        <p class="card-sub">150 documented strains. Search them, favorite the ones you like, pick the effects you want from each strain's own reported list — and the app suggests a temperature range plus a step-up workflow from the research. Temperatures assume flower stored at 58% RH.</p>
+        <input id="strainSearch" type="search" class="str-search" placeholder="Search 150 strains by name or alias…" aria-label="Search strains" autocomplete="off" />
+        <div class="chip-row" id="strainTypeChips" role="group" aria-label="Filter by type">
+          <button type="button" class="chip" data-sttype="all" aria-pressed="true">All</button>
+          <button type="button" class="chip" data-sttype="0" aria-pressed="false">Indica</button>
+          <button type="button" class="chip" data-sttype="1" aria-pressed="false">Sativa</button>
+          <button type="button" class="chip" data-sttype="2" aria-pressed="false">Hybrid</button>
+          <button type="button" class="chip" data-sttype="fav" aria-pressed="false">Favorites ★</button>
+        </div>
+        <p class="str-count" id="strainCount"></p>
+        <div class="str-list" id="strainList"></div>
+      </section>
+
+      <section class="card" aria-labelledby="strlog-h">
+        <h2 id="strlog-h">Session log</h2>
+        <p class="card-sub">Sessions you've logged, stored only on this device. Open one from its strain's guide ("Log a session") after you vape.</p>
+        <div id="strainLogEntries"></div>
+      </section>
+
+      <section class="card" aria-labelledby="strref-h">
+        <h2 id="strref-h">Grind &amp; fill reference</h2>
+        <p class="card-sub">What to aim for when you photograph your grind and your bowl. The app stores your photos and shows these references — it never judges your grind or fill automatically.</p>
+        <p class="ref-sub">Grind size</p>
+        <div class="ref-grid">
+          <div class="ref-panel">
+            <svg viewBox="0 0 120 90" role="img" aria-hidden="true"><polygon points="15.9,27.1 25.3,30.3 13.1,20.6 11.9,16.4 21.8,12.4 15.4,25.3" fill="#8ad67e" stroke="#2c5c2a" stroke-width="1"/><polygon points="62.7,31.0 48.0,24.0 50.4,19.7 60.5,17.3 52.5,22.7 51.8,20.7" fill="#6fce62" stroke="#2c5c2a" stroke-width="1"/><polygon points="91.4,27.7 103.9,29.6 104.8,28.4 100.4,13.7 87.2,20.4 83.1,18.9" fill="#6fce62" stroke="#2c5c2a" stroke-width="1"/><polygon points="9.7,45.8 23.0,54.9 23.4,38.3 22.1,50.5 11.8,48.6 12.5,60.8" fill="#8ad67e" stroke="#2c5c2a" stroke-width="1"/><polygon points="64.0,44.3 44.3,46.6 50.5,43.8 68.4,61.4 51.8,55.6 53.9,62.4" fill="#4a9a44" stroke="#2c5c2a" stroke-width="1"/><polygon points="88.7,53.4 85.9,49.2 84.2,59.8 78.5,47.0 94.2,56.3 78.9,38.5" fill="#8ad67e" stroke="#2c5c2a" stroke-width="1"/><polygon points="29.9,71.1 29.3,78.4 8.4,75.3 23.0,71.3 14.0,73.6 10.6,69.1" fill="#4a9a44" stroke="#2c5c2a" stroke-width="1"/><polygon points="61.9,82.4 50.2,65.9 53.2,84.4 50.2,68.2 46.9,67.2 61.5,86.4" fill="#6fce62" stroke="#2c5c2a" stroke-width="1"/></svg>
+            <div class="rp-t">Too coarse</div>
+            <div class="rp-d">Big chunks heat unevenly — hot outside, raw inside.</div>
+          </div>
+          <div class="ref-panel good">
+            <svg viewBox="0 0 120 90" role="img" aria-hidden="true"><circle cx="69.1" cy="44.4" r="5.3" fill="#8ad67e"/><circle cx="94.8" cy="62.9" r="5.9" fill="#6fce62"/><circle cx="36.2" cy="48.6" r="5.2" fill="#3d7f38"/><circle cx="77.5" cy="56.5" r="6.2" fill="#8ad67e"/><circle cx="54.3" cy="45.9" r="5.4" fill="#4a9a44"/><circle cx="19.9" cy="19.1" r="6.7" fill="#4a9a44"/><circle cx="14.7" cy="56.2" r="5.2" fill="#6fce62"/><circle cx="26.2" cy="68.5" r="6.7" fill="#3d7f38"/><circle cx="51.8" cy="64.6" r="5.2" fill="#6fce62"/><circle cx="94.5" cy="22.1" r="7.4" fill="#6fce62"/><circle cx="50.9" cy="21.2" r="6.1" fill="#3d7f38"/><circle cx="67.6" cy="26.0" r="5.4" fill="#8ad67e"/><circle cx="17.7" cy="37.3" r="7.0" fill="#6fce62"/><circle cx="85.1" cy="37.0" r="6.5" fill="#8ad67e"/><circle cx="102.1" cy="46.0" r="5.2" fill="#4a9a44"/><circle cx="41.7" cy="54.9" r="7.4" fill="#6fce62"/></svg>
+            <div class="rp-t">Proper medium</div>
+            <div class="rp-d">Even, coarse-salt grains. Hot air passes through evenly.</div>
+          </div>
+          <div class="ref-panel">
+            <svg viewBox="0 0 120 90" role="img" aria-hidden="true"><circle cx="45.9" cy="41.1" r="1.6" fill="#8ad67e"/><circle cx="15.2" cy="40.7" r="1.8" fill="#3d7f38"/><circle cx="102.4" cy="52.3" r="2.2" fill="#4a9a44"/><circle cx="54.1" cy="57.6" r="2.4" fill="#8ad67e"/><circle cx="70.7" cy="67.7" r="2.1" fill="#3d7f38"/><circle cx="92.4" cy="62.9" r="1.3" fill="#3d7f38"/><circle cx="36.4" cy="43.1" r="1.9" fill="#3d7f38"/><circle cx="58.9" cy="37.2" r="1.5" fill="#8ad67e"/><circle cx="95.0" cy="55.9" r="1.5" fill="#6fce62"/><circle cx="61.5" cy="28.3" r="1.5" fill="#3d7f38"/><circle cx="73.4" cy="44.5" r="2.2" fill="#6fce62"/><circle cx="45.6" cy="71.8" r="1.9" fill="#8ad67e"/><circle cx="78.7" cy="32.6" r="1.5" fill="#6fce62"/><circle cx="83.9" cy="50.2" r="2.4" fill="#4a9a44"/><circle cx="79.1" cy="24.8" r="1.3" fill="#6fce62"/><circle cx="64.9" cy="55.7" r="1.4" fill="#3d7f38"/><circle cx="23.4" cy="18.7" r="1.5" fill="#3d7f38"/><circle cx="54.5" cy="28.0" r="1.3" fill="#3d7f38"/><circle cx="88.6" cy="69.3" r="1.3" fill="#4a9a44"/><circle cx="24.9" cy="59.3" r="1.9" fill="#4a9a44"/><circle cx="85.4" cy="38.5" r="2.3" fill="#8ad67e"/><circle cx="101.2" cy="29.2" r="1.5" fill="#6fce62"/><circle cx="28.4" cy="27.4" r="1.3" fill="#6fce62"/><circle cx="17.0" cy="33.6" r="1.5" fill="#3d7f38"/><circle cx="69.5" cy="19.4" r="1.5" fill="#6fce62"/><circle cx="17.7" cy="58.8" r="1.8" fill="#3d7f38"/><circle cx="92.9" cy="35.8" r="2.0" fill="#8ad67e"/><circle cx="17.4" cy="22.8" r="1.5" fill="#6fce62"/><circle cx="103.3" cy="39.8" r="1.8" fill="#6fce62"/><circle cx="31.3" cy="37.5" r="2.1" fill="#3d7f38"/><circle cx="83.9" cy="29.0" r="1.9" fill="#8ad67e"/><circle cx="28.6" cy="47.7" r="1.9" fill="#6fce62"/><circle cx="34.7" cy="63.4" r="1.3" fill="#6fce62"/><circle cx="40.9" cy="56.1" r="1.7" fill="#3d7f38"/><circle cx="60.7" cy="62.3" r="1.5" fill="#8ad67e"/><circle cx="99.8" cy="65.0" r="2.4" fill="#4a9a44"/><circle cx="57.2" cy="70.3" r="1.6" fill="#3d7f38"/><circle cx="80.1" cy="59.0" r="2.2" fill="#6fce62"/><circle cx="70.8" cy="30.7" r="2.0" fill="#8ad67e"/><circle cx="48.5" cy="25.9" r="1.8" fill="#4a9a44"/><circle cx="37.5" cy="18.5" r="2.2" fill="#8ad67e"/><circle cx="45.8" cy="49.7" r="2.0" fill="#3d7f38"/><circle cx="50.4" cy="18.4" r="2.2" fill="#6fce62"/><circle cx="29.1" cy="67.4" r="2.3" fill="#8ad67e"/><circle cx="86.7" cy="18.8" r="1.8" fill="#3d7f38"/><circle cx="73.6" cy="52.3" r="1.8" fill="#8ad67e"/><circle cx="17.4" cy="71.8" r="1.3" fill="#4a9a44"/><circle cx="95.6" cy="25.3" r="1.7" fill="#3d7f38"/><circle cx="42.8" cy="31.8" r="2.3" fill="#3d7f38"/><circle cx="80.3" cy="70.3" r="1.9" fill="#8ad67e"/><circle cx="104.6" cy="21.0" r="1.4" fill="#4a9a44"/><circle cx="56.3" cy="22.2" r="1.6" fill="#3d7f38"/><circle cx="50.4" cy="34.8" r="1.6" fill="#8ad67e"/><circle cx="56.7" cy="48.4" r="1.9" fill="#8ad67e"/><circle cx="96.4" cy="42.3" r="2.2" fill="#4a9a44"/><circle cx="60.2" cy="30.7" r="2.4" fill="#8ad67e"/><circle cx="15.9" cy="65.2" r="1.3" fill="#3d7f38"/><circle cx="71.8" cy="59.7" r="2.1" fill="#8ad67e"/><circle cx="47.8" cy="61.1" r="1.5" fill="#6fce62"/><circle cx="40.3" cy="67.5" r="1.8" fill="#6fce62"/></svg>
+            <div class="rp-t">Too fine</div>
+            <div class="rp-d">Powder packs tight and chokes airflow — harsh, thin draws.</div>
+          </div>
+        </div>
+        <p class="ref-sub">Bowl fill</p>
+        <div class="ref-grid">
+          <div class="ref-panel">
+            <svg viewBox="0 0 120 90" role="img" aria-hidden="true"><polygon points="20,62 100,62 86,78 34,78" fill="#4a9a44" opacity="0.85"/><polygon points="14,20 106,20 86,78 34,78" fill="none" stroke="#8aa87e" stroke-width="3" stroke-linejoin="round"/></svg>
+            <div class="rp-t">Underfilled</div>
+            <div class="rp-d">Thin layer — hot air channels around it instead of through it.</div>
+          </div>
+          <div class="ref-panel good">
+            <svg viewBox="0 0 120 90" role="img" aria-hidden="true"><polygon points="20,28 100,28 86,78 34,78" fill="#4a9a44" opacity="0.85"/><polygon points="14,20 106,20 86,78 34,78" fill="none" stroke="#8aa87e" stroke-width="3" stroke-linejoin="round"/></svg>
+            <div class="rp-t">Proper fill</div>
+            <div class="rp-d">Level, lightly tamped to the rim. Even heat, easy draw.</div>
+          </div>
+          <div class="ref-panel">
+            <svg viewBox="0 0 120 90" role="img" aria-hidden="true"><path d="M14,34 Q60,2 106,34 L100,38 L20,38 Z" fill="#4a9a44"/><polygon points="14,20 106,20 86,78 34,78" fill="none" stroke="#8aa87e" stroke-width="3" stroke-linejoin="round"/></svg>
+            <div class="rp-t">Over-tamped</div>
+            <div class="rp-d">Packed brick — the lid won't seat and draws turn harsh.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="strsci-h">
+        <h2 id="strsci-h">How the numbers are made</h2>
+        <div class="honest-box">
+          <strong>The 58% RH assumption</strong>
+          <p>All strain temperatures assume flower stored at 58% RH (water activity ≈ 0.58 — inside the ASTM D8197-22 safe band of 0.55–0.65). <strong>No temperature adjustment is applied for moisture</strong>: no peer-reviewed dry-herb-vaporizer study of moisture exists to base one on.</p>
+        </div>
+        <div class="honest-box">
+          <strong>Suggested starting temperature — a flavour/extraction heuristic, not a scientific optimum</strong>
+          <p>Each strain's range starts from its documented top-3 terpenes: 185°C if all three are volatile monoterpenes, 190°C for a mixed profile containing caryophyllene, 195°C if linalool or humulene is in the top-3 or the strain is CBD/balanced — floored at 180°C (extraction is poor below ~170°C) and capped at 210°C (efficient-delivery zone, below the pyrolysis-approach zone). Shown as a range (base −5/+10°C); start low for flavour, finish higher for fuller extraction.</p>
+          <p>Limits: terpene listings are database averages — your actual batch may differ; a lab COA for the batch overrides this dataset. Device error and gradients can exceed the 5–10°C steps here. Sesquiterpene boiling points (~256–275°C) are deliberately not targeted — chasing them needs destructive heat; they still evaporate at 185–205°C.</p>
+        </div>
+        <div class="honest-box">
+          <strong>The famous 157°C "THC boiling point" is a vacuum value</strong>
+          <p>157°C was measured at 0.05 Torr (Adams 1941; Gaoni &amp; Mechoulam 1964) — vacuum distillation, not a normal boiling point. The best atmospheric estimate is 245 ± 6°C (disputed; an EPA model predicts 375°C). Vaporizers work by evaporation below the boiling point — THC shows measurable vapour pressure from ~91–151°C — and measured extraction rises from ~22–24% at 170°C to ~71–77% at 230°C. That curve, not a boiling chart, is what guides this app.</p>
+        </div>
+        <div class="honest-box">
+          <strong>Effect-picker grades</strong>
+          <p><strong>A</strong> — human pharmacology / RCT evidence · <strong>B</strong> — aggregated user reports only · <strong>C</strong> — animal / in-vitro only · <strong>F</strong> — folklore, no compound-specific evidence. Only THC-driven effects (euphoric, hungry, dose-related tiredness) have strong human pharmacology. "Creative", "giggly", "tingly" and "aroused" have no compound-specific evidence — user-tag only.</p>
+        </div>
+        <p class="src-line" style="margin-top:14px;"><strong>Sources</strong> — strain data compiled 2026-11-04 from:</p>
+        <div class="src-line" id="strainSources"></div>
+      </section>
+
+      <div id="strainSheet" class="sheet" hidden>
+        <div class="sheet-inner">
+          <div class="sheet-head">
+            <button id="strainSheetBack" class="btn btn-ghost" type="button">‹ Strains</button>
+            <span class="sheet-title" id="strainSheetTitle"></span>
+          </div>
+          <div id="strainSheetBody"></div>
+        </div>
+      </div>
+
+      </div><!-- /panel-strains -->
 
       <!-- ================= Tab: Burn Guard ================= -->
       <div id="panel-burnguard" role="tabpanel" aria-labelledby="tab-burnguard" hidden>
@@ -1602,7 +1863,8 @@
             <strong>How solid is this?</strong>
             <p>Compounds actually start releasing <em>below</em> their boiling points, so every temperature here says "starts releasing around." The boiling points are lab measurements; the experiences are what people commonly report — not medical claims.</p>
             <p>The popular "entourage effect" — compounds boosting each other — is <strong>not proven science</strong> yet. One small early human trial hints limonene may take the edge off THC anxiety, and β-caryophyllene is known to act on the body's CB2 receptors in the lab — both are early, mechanism-level evidence, not guarantees.</p>
-            <p>Two numbers on many charts are misleading: β-caryophyllene (~266°F) and humulene (~222°F) were measured under vacuum. At normal air pressure they boil around 505–509°F — above this device's range — so they release gradually on the way up rather than switching on at those low numbers.</p>
+            <p>Two numbers on many charts are misleading: β-caryophyllene (~266°F) and humulene (~222°F) were measured under vacuum. At normal air pressure they boil around 493–527°F (~256–275°C) — above this device's range — so they largely remain in the bowl at flower temperatures, releasing gradually on the way up rather than switching on at those low numbers.</p>
+            <p>The famous THC “boiling point” of 157°C / 315°F is a 0.05 Torr vacuum-distillation value (1941/1964), not an atmospheric boiling point — the atmospheric estimate is disputed (245 ± 6°C vs a 375°C model). That is why this chart shows THC and CBD as gradual extraction across a range, not a single switch: measured extraction rises from ~22–24% at 170°C to ~71–77% at 230°C across studies.</p>
           </div>
         </section>
       </div><!-- /panel-terpene -->
@@ -3361,6 +3623,10 @@
           if (guided.tickTimer !== null) { window.clearInterval(guided.tickTimer); guided.tickTimer = null; }
         }
         function guidedSecsLeft() { return Math.max(0, Math.ceil((guided.deadline - Date.now()) / 1000)); }
+        function guidedFinalF() { return GUIDED_LADDER[GUIDED_LADDER.length - 1].f; }
+        function guidedLadderDesc() {
+          return GUIDED_LADDER.map(function (s) { return s.f + "°F"; }).join(" → stir → ") + " → stir & finish";
+        }
         function renderGuided() {
           if (!guidedControlsEl) return;
           var avail = (isConnected && authState === "authenticated") || guided.active;
@@ -3377,10 +3643,10 @@
           var txt = "";
           if (guided.phase === "sending" && step) txt = "Sending " + fmtTemp(step.f) + " — waiting for your Firefly to read it back…";
           else if (guided.phase === "waiting" && step) {
-            txt = "Step " + (guided.stepIndex + 1) + " of 3 · " + fmtTemp(step.f) + " — " + step.label;
-            if (guided.stepIndex === 2) txt += " · Final step — full extraction, still below the scorch zone.";
+            txt = "Step " + (guided.stepIndex + 1) + " of " + GUIDED_LADDER.length + " · " + fmtTemp(step.f) + " — " + step.label;
+            if (guided.stepIndex === GUIDED_LADDER.length - 1) txt += " · Final step — full extraction, still below the scorch zone.";
           }
-          else if (guided.phase === "stir") txt = guided.stirFinish ? "Final stir — at " + fmtTemp(370) + ", no hotter step follows." : "Stir the bowl before stepping up to " + fmtTemp(GUIDED_LADDER[guided.stirTarget].f) + ".";
+          else if (guided.phase === "stir") txt = guided.stirFinish ? "Final stir — at " + fmtTemp(guidedFinalF()) + ", no hotter step follows." : "Stir the bowl before stepping up to " + fmtTemp(GUIDED_LADDER[guided.stirTarget].f) + ".";
           else if (guided.phase === "complete") txt = "Fully extracted — session complete";
           else if (guided.phase === "failed") txt = "A step didn't confirm — auto-advance is paused.";
           else txt = "Ready when you are.";
@@ -3389,15 +3655,15 @@
           guidedStartBtn.hidden = !(guided.phase === "idle" || guided.phase === "failed" || guided.phase === "complete");
           guidedStartBtn.textContent = guided.phase === "failed" ? "Restart guided session" : "Start guided session";
           guidedStepUpBtn.hidden = guided.phase !== "waiting";
-          guidedStepUpBtn.textContent = guided.stepIndex === 2 ? "Stir & finish" : "Step up now";
+          guidedStepUpBtn.textContent = guided.stepIndex === GUIDED_LADDER.length - 1 ? "Stir & finish" : "Step up now";
           guidedStirBtn.hidden = guided.phase !== "stir";
-          guidedStirBtn.textContent = guided.stirFinish ? "Stirred — finish at 370°F" : "Stirred — step up to " + GUIDED_LADDER[Math.max(0, guided.stirTarget)].f + "°F";
+          guidedStirBtn.textContent = guided.stirFinish ? "Stirred — finish at " + guidedFinalF() + "°F" : "Stirred — step up to " + GUIDED_LADDER[Math.max(0, guided.stirTarget)].f + "°F";
           guidedEndBtn.hidden = !guided.active && guided.phase !== "complete";
           guidedCountdownEl.hidden = guided.phase !== "waiting";
           if (guided.phase === "waiting") {
             guidedCountdownEl.textContent = guided.auto
-              ? (guided.stepIndex === 2 ? "Stir & finish in " + guidedSecsLeft() + "s (auto-advance)…" : "Next stir stage in " + guidedSecsLeft() + "s (auto-advance)…")
-              : "Auto-advance is off — tap " + (guided.stepIndex === 2 ? "Stir & finish" : "Step up now") + " when you're ready.";
+              ? (guided.stepIndex === GUIDED_LADDER.length - 1 ? "Stir & finish in " + guidedSecsLeft() + "s (auto-advance)…" : "Next stir stage in " + guidedSecsLeft() + "s (auto-advance)…")
+              : "Auto-advance is off — tap " + (guided.stepIndex === GUIDED_LADDER.length - 1 ? "Stir & finish" : "Step up now") + " when you're ready.";
           }
           guidedIntBtns.forEach(function (b) { b.disabled = guided.active; });
         }
@@ -3419,11 +3685,11 @@
           if (!guided.active || guided.phase !== "waiting") return;
           clearGuidedTimers();
           guided.phase = "stir";
-          if (guided.stepIndex >= 2) {
+          if (guided.stepIndex >= GUIDED_LADDER.length - 1) {
             guided.stirFinish = true;
             guided.stirTarget = -1;
-            setGuidedStatus("busy", "Time for the final stir at 370°F. Stir the bowl, then tap “Stirred — finish at 370°F” — no temperature is sent for the finish.");
-            log("Guided session: final stir stage reached at 370°F. No write sent — stir stages never write.", "info");
+            setGuidedStatus("busy", "Time for the final stir at " + guidedFinalF() + "°F. Stir the bowl, then tap “Stirred — finish at " + guidedFinalF() + "°F” — no temperature is sent for the finish.");
+            log("Guided session: final stir stage reached at " + guidedFinalF() + "°F. No write sent — stir stages never write.", "info");
           } else {
             guided.stirFinish = false;
             guided.stirTarget = guided.stepIndex + 1;
@@ -3447,7 +3713,7 @@
           guided.stepIndex = idx;
           startPending({ kind: "temp", byte: byte, sendF: sendF, pickedF: target.f, guided: true, guidedIndex: idx });
           writeFrame([0x00, 0x02, byte], "guided session — set temperature " + sendF + "°F (profile byte 0x" + byte.toString(16).toUpperCase() + ")");
-          setGuidedStatus("busy", "Step " + (idx + 1) + " of 3: setting " + fmtTemp(target.f) + " — waiting for the Firefly to read it back." + (sendF !== target.f ? " (Compensated: sent " + fmtTemp(sendF) + ".)" : ""));
+          setGuidedStatus("busy", "Step " + (idx + 1) + " of " + GUIDED_LADDER.length + ": setting " + fmtTemp(target.f) + " — waiting for the Firefly to read it back." + (sendF !== target.f ? " (Compensated: sent " + fmtTemp(sendF) + ".)" : ""));
           log("Guided session step " + (idx + 1) + " requested: " + sendF + "°F — waiting for read-back confirmation.", "info");
           renderGuided();
         }
@@ -3456,8 +3722,8 @@
           guided.stepIndex = p.guidedIndex;
           guided.phase = "waiting";
           var step = GUIDED_LADDER[guided.stepIndex];
-          setGuidedStatus("ok", "Confirmed — your Firefly read back " + fmtTemp(p.sendF) + ". Step " + (guided.stepIndex + 1) + " of 3 · " + fmtTemp(step.f) + " — " + step.label + "." +
-            (guided.stepIndex === 2 ? " This is the final step — full extraction, still below the scorch zone. The session stays here until the final stir or you end it." : ""));
+          setGuidedStatus("ok", "Confirmed — your Firefly read back " + fmtTemp(p.sendF) + ". Step " + (guided.stepIndex + 1) + " of " + GUIDED_LADDER.length + " · " + fmtTemp(step.f) + " — " + step.label + "." +
+            (guided.stepIndex === GUIDED_LADDER.length - 1 ? " This is the final step — full extraction, still below the scorch zone. The session stays here until the final stir or you end it." : ""));
           log("Guided session step " + (guided.stepIndex + 1) + " CONFIRMED by read-back: " + p.sendF + "°F.", "ok");
           renderGuided();
           if (guided.auto) startGuidedCountdown();
@@ -3511,7 +3777,7 @@
           guided.stepIndex = -1;
           guided.stirFinish = false;
           guided.stirTarget = -1;
-          log("Guided session started — ladder 340°F → stir → 360°F → stir → 370°F → stir & finish. The guided cap is 370°F.", "info");
+          log("Guided session started — ladder " + guidedLadderDesc() + ". The guided cap is " + guidedFinalF() + "°F.", "info");
           sendGuidedStep(0);
         });
         guidedStepUpBtn.addEventListener("click", function () {
@@ -3525,8 +3791,8 @@
           if (guided.stirFinish) {
             guided.phase = "complete";
             guided.active = false;
-            setGuidedStatus("ok", "Fully extracted — session complete. The final stir is done and the temperature stays at 370°F. No temperature was sent for the finish.");
-            log("Guided session complete: final stir confirmed at 370°F — no write sent for the finish. Fully extracted.", "ok");
+            setGuidedStatus("ok", "Fully extracted — session complete. The final stir is done and the temperature stays at " + guidedFinalF() + "°F. No temperature was sent for the finish.");
+            log("Guided session complete: final stir confirmed at " + guidedFinalF() + "°F — no write sent for the finish. Fully extracted.", "ok");
             renderGuided();
           } else {
             var target = guided.stirTarget;
@@ -4265,14 +4531,16 @@
         /* ================= Tabs ================= */
         var tabBtns = {
           session: document.getElementById("tab-session"),
-          burnguard: document.getElementById("tab-burnguard"),
+          strains: document.getElementById("tab-strains"),
           terpene: document.getElementById("tab-terpene"),
+          burnguard: document.getElementById("tab-burnguard"),
           device: document.getElementById("tab-device")
         };
         var tabPanels = {
           session: document.getElementById("panel-session"),
-          burnguard: document.getElementById("panel-burnguard"),
+          strains: document.getElementById("panel-strains"),
           terpene: document.getElementById("panel-terpene"),
+          burnguard: document.getElementById("panel-burnguard"),
           device: document.getElementById("panel-device")
         };
         function switchTab(name) {
@@ -4287,6 +4555,1083 @@
           tabBtns[k].addEventListener("click", function () { switchTab(k); });
         });
 
+/* Cannabis strain dataset — 150 strains, research date 2026-11-04.
+   Source of truth: the research report (Leafly + AllBud + Wikileaf/Weedmaps + breeder/seed-bank
+   listings + Herb/Leafwell). THC/CBD are published consensus ranges, not points.
+   Fields: [id, name, aliases, type(0=indica,1=sativa,2=hybrid), typeLabel, lineage, thc, cbd,
+            terps[3], effects[], flavors[], description, vapeC, phenotypes, srcKeys, note] */
+var STRAINS = [
+/* ---- Classics & foundations (1-34) ---- */
+[1,"OG Kush","Premium OG Kush",2,"Hybrid · ~55% indica / 45% sativa (splits vary)","Lineage disputed — Leafly: Chemdawg × Hindu Kush; other listings add Lemon Thai","19–26%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Hungry","Sleepy","Euphoric"],["Earthy","Pine","Sour lemon","Woody"],"1990s California cornerstone from bag seed; parent of much of the OG family. Lab aggregate: median THC 20.9%, middle half 18.1–23.4% — inside the span above.",190,"","H1,OG","Lineage disputed across sources."],
+[2,"Sour Diesel","Sour D",2,"Sativa-dominant hybrid · ~90/10 sativa/indica (AllBud)","Chemdawg 91 × Super Skunk (commonly reported, origin disputed)","19–25%","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Energetic","Uplifted","Euphoric","Creative"],["Diesel","Pungent","Citrus","Skunky"],"1990s East-Coast staple famous for pungent fuel aroma and fast, talkative reputation.",190,"","L1","Origin story disputed."],
+[3,"Northern Lights","",0,"Indica · ~95/5","Afghani × Thai landrace lines (Sensi Seeds stabilisation)","16–21%","0–<1%",["Myrcene","Caryophyllene","Pinene"],["Relaxed","Sleepy","Happy","Euphoric"],["Sweet","Earthy","Pine","Spicy"],"One of the most influential 1980s indicas; resinous, fast-finishing Amsterdam classic.",190,"","",""],
+[4,"White Widow","",2,"Hybrid · 50/50 (AllBud 60/40 sativa in some listings)","Brazilian sativa × South Indian indica (Green House Seeds, 1990s)","15–20%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Energetic","Euphoric","Creative"],["Earthy","Woody","Pine","Flowery"],"Dutch coffeeshop icon named for its white trichome coating; Cannabis Cup winner 1995.",190,"","",""],
+[5,"Jack Herer","JH, The Jack",2,"Sativa-dominant hybrid — split disputed: Leafly ~55% sativa, AllBud 80/20, Sensi 50/50","Haze × (Northern Lights #5 × Shiva Skunk), Sensi Seeds, mid-1990s","15–24% (Leafly 18%; Weedmaps 21–26% — span shown is Leafly/AllBud consensus)","0–<1%",["Terpinolene","Caryophyllene","Pinene"],["Creative","Energetic","Happy","Focused"],["Pine","Spicy","Woody","Citrus"],"Named for activist Jack Herer, author of The Emperor Wears No Clothes; among the most decorated Cup strains.",190,"","JH","Indica/sativa split disputed across sources."],
+[6,"Blue Dream","",2,"Sativa-dominant hybrid · 60/40 sativa/indica","Blueberry × Haze (California)","17–24%","0–2% (most listings <1%; AllBud popular-list cites up to ~2%)",["Myrcene","Pinene","Caryophyllene"],["Creative","Euphoric","Happy","Relaxed"],["Blueberry","Berry","Sweet","Vanilla"],"Leafly’s best-selling strain in the US for three years to 2025; the defining 2010s West-Coast hybrid.",190,"","A1,L1",""],
+[7,"Granddaddy Purple","GDP, Grand Daddy Purp",2,"Indica-dominant hybrid · ~80/20 indica/sativa","Most sources: Purple Urkle × Big Bud, Ken Estes, 2003; Leafly instead lists Mendo Purps × Skunk × Afghanistan","17–23% (lab median 17.9%, middle half 15.0–21.6%)","0–<1%",["Myrcene","Caryophyllene","Pinene"],["Sleepy","Relaxed","Hungry","Euphoric"],["Grape","Berry","Sweet","Plum"],"California purple icon with grape aroma and deep purple colouration.",190,"","GDP,L1","Parentage disputed across sources."],
+[8,"AK-47","",2,"Sativa-dominant hybrid · 65/35","Colombian × Mexican × Thai × Afghani (Serious Seeds, 1992)","13–20%","0–1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Uplifted","Relaxed","Creative"],["Earthy","Sour","Flowery","Woody"],"Despite the name, a mellow, long-Cup-winning Dutch hybrid first released in 1992.",190,"","",""],
+[9,"Amnesia Haze","",2,"Sativa-dominant hybrid · ~80/20","Jamaican × Laotian × Afghan Hawaiian (via Soma / Sensi lineage, commonly reported)","20–25%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Happy","Energetic","Euphoric","Giggly"],["Citrus","Lemon","Earthy","Sweet"],"Long-flowering Haze hybrid and multiple Cannabis Cup winner, known for bright citrus.",190,"","",""],
+[10,"Bubba Kush","",2,"Indica-dominant hybrid · ~85/15","OG Kush × Northern Lights-type indica (commonly reported; original breeder history disputed)","15–22%","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Sleepy","Happy","Hungry"],["Coffee","Chocolate","Earthy","Hash"],"1990s Los Angeles indica staple with coffee-chocolate notes and heavy reputation.",190,"","",""],
+[11,"Durban Poison","",1,"Sativa · landrace-derived (~100% sativa as listed)","South African Durban landrace, stabilised in the Netherlands","15–25%","0–<1%",["Terpinolene","Myrcene","Ocimene"],["Energetic","Uplifted","Creative","Focused"],["Citrus","Pine","Sweet","Anise/licorice"],"Pure-ish African sativa famous for sweet anise aroma, clear reputation and THCV content in some cuts.",185,"","A2","Ocimene: no pressure-explicit atmospheric value documented."],
+[12,"Pineapple Express","",2,"Sativa-dominant hybrid · 60/40","Trainwreck × Hawaiian","18–25%","0–<1%",["Caryophyllene","Limonene","Pinene"],["Happy","Energetic","Euphoric","Uplifted"],["Pineapple","Tropical","Citrus","Cedar"],"Popularised by the 2008 film of the same name; tropical-fruit hybrid from G13 Labs lineage listings.",190,"","L1",""],
+[13,"Trainwreck","",2,"Sativa-dominant hybrid · ~80/20","Mexican × Thai × Afghani (Northern California)","18–25%","0–<1%",["Terpinolene","Myrcene","Pinene"],["Euphoric","Happy","Creative","Uplifted"],["Lemon","Pine","Spicy","Earthy"],"Fast-hitting Humboldt hybrid named, in lore, after a wreck near the original grow site.",185,"","",""],
+[14,"Strawberry Cough","",2,"Sativa-dominant hybrid · ~80/20","Strawberry Fields × Haze (Kyle Kushman, commonly credited)","15–20%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Uplifted","Euphoric","Energetic"],["Strawberry","Berry","Sweet","Skunky"],"Named for its strawberry aroma and famously expansive, cough-inducing smoke/vapour reputation.",190,"","L1",""],
+[15,"Girl Scout Cookies","GSC, Cookies",2,"Indica-dominant hybrid · 60/40 indica/sativa","OG Kush × Durban Poison (Cookie Fam, San Francisco)","19–28%","0–<1%",["Caryophyllene","Limonene","Humulene"],["Euphoric","Happy","Creative","Relaxed"],["Sweet","Earthy","Mint","Chocolate"],"The dessert-strain progenitor of the 2010s.",195,"Thin Mint and Platinum are noted phenotypes.","",""],
+[16,"Gorilla Glue #4","GG4, Original Glue",2,"Hybrid · ~50/50 to 60/40 indica","Chem’s Sister × Sour Dubb × Chocolate Diesel (GG Strains; accidental pollination lore)","20–28%","0–<1%",["Caryophyllene","Myrcene","Limonene"],["Relaxed","Euphoric","Happy","Uplifted"],["Earthy","Pine","Diesel","Chocolate"],"Named for resin so sticky it “glued” trimming scissors; multiple Cup winner from 2014.",190,"","",""],
+[17,"Wedding Cake","Pink Cookies in Canada",2,"Indica-dominant hybrid · 60/40","Triangle Kush × Animal Mints (Seed Junky; breeder also describes Triangle Mints #23 lineage)","24–27% (listings 19–27%)","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Euphoric","Happy","Hungry"],["Vanilla","Sweet","Earthy","Peppery"],"Leafly Strain of the Year 2019; vanilla-cake dessert hybrid that anchors many modern crosses.",190,"","L2,L1",""],
+[18,"Gelato","Gelato 33/41 family",2,"Hybrid · ~50/50 (slightly indica-leaning listings)","Sunset Sherbet × Thin Mint GSC (Cookie Fam / Sherbinski, Bay Area)","20–26%","0–<1%",["Caryophyllene","Limonene","Humulene"],["Relaxed","Euphoric","Happy","Creative"],["Sweet","Citrus","Berry","Creamy"],"Leafly’s first Strain of the Year (2018).",195,"Numbered phenotypes (#33 “Larry Bird”, #41 “Bacio”) are sold separately.","H2,L2,L1",""],
+[19,"Zkittlez","The Original Z",2,"Indica-dominant hybrid · 70/30","Grape Ape × Grapefruit × undisclosed strain (3rd Gen Family / Terp Hogz)","19–24%","0–<1%",["Caryophyllene","Linalool","Humulene"],["Relaxed","Happy","Sleepy","Euphoric"],["Berry","Grape","Citrus","Candy"],"Candy-fruit Cup winner (2015) that, crossed with Gelato, produced Runtz.",195,"","",""],
+[20,"Runtz","Runtz OG",2,"Hybrid · 50/50","Zkittlez × Gelato (Runtz crew, Los Angeles, ~2017)","19–29%","0–<1%",["Caryophyllene","Limonene","Linalool"],["Euphoric","Happy","Relaxed","Giggly"],["Candy","Fruity","Sweet","Tropical"],"Leafly Strain of the Year 2020; defined candy-forward “bag appeal” breeding.",195,"","H2,L2",""],
+[21,"Bruce Banner","Banner, OG Banner",2,"Sativa-dominant hybrid · 60/40","OG Kush × Strawberry Diesel (Dark Horse Genetics)","24–29%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Euphoric","Happy","Creative","Energetic"],["Diesel","Berry","Sweet","Earthy"],"Named for the Hulk’s alter ego for its strength; long marketed among the highest-THC flower strains.",190,"","",""],
+[22,"Lemon Haze","",2,"Sativa-dominant hybrid · ~80/20","Lemon Skunk × Silver Haze","15–20%","0–<1%",["Terpinolene","Ocimene","Caryophyllene"],["Happy","Energetic","Euphoric","Uplifted"],["Lemon","Citrus","Sweet","Lime"],"Zesty Haze cross built from two lemon-leaning parents; a coffeeshop staple.",190,"","A2","Ocimene: no pressure-explicit atmospheric value documented."],
+[23,"Purple Haze","",2,"Sativa-dominant hybrid · ~85/15","Purple Thai × Haze (1960s–70s lineage, commonly reported)","14–19%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Euphoric","Creative","Energetic"],["Berry","Earthy","Sweet","Lavender"],"Named in the era of the Jimi Hendrix song (the song itself predates/is not proven to be about the strain).",190,"","",""],
+[24,"Chemdawg","Chemdog",2,"Hybrid · ~50/50","Origin not documented — 1991 Massachusetts/Dead-tour seed lore; Thai × Nepalese parentage is speculation","15–20%","0–<1%",["Caryophyllene","Myrcene","Limonene"],["Happy","Relaxed","Euphoric","Creative"],["Diesel","Chemical","Earthy","Pungent"],"Foundational parent of Sour Diesel and OG Kush lines despite its undocumented origin.",190,"","",""],
+[25,"Green Crack","Green Crush",2,"Sativa-dominant hybrid · ~65/35 to 75/25","Skunk #1 × Afghani-type indica (commonly reported)","15–25%","0–<1%",["Myrcene","Caryophyllene","Pinene"],["Energetic","Happy","Focused","Uplifted"],["Citrus","Mango","Earthy","Sweet"],"Tangy, daytime-reputed sativa hybrid originally called Cush/Green Cush.",190,"","",""],
+[26,"Maui Wowie","Maui Waui",2,"Sativa-dominant hybrid / landrace-derived","Hawaiian landrace lineage (exact parents not documented)","13–19%","0–<1%",["Myrcene","Pinene","Limonene"],["Happy","Energetic","Euphoric","Creative"],["Pineapple","Tropical","Citrus","Lavender"],"Volcanic-soil Hawaiian classic of the 1960s–70s, among the first recognised high-THC sativas.",185,"","",""],
+[27,"Acapulco Gold","",1,"Sativa-dominant / landrace","Mexican (Acapulco/Guerrero) landrace; exact lineage not documented","19–24% (modern seed listings; vintage material untested)","0–<1%",["Caryophyllene","Myrcene","Limonene"],["Happy","Energetic","Euphoric","Uplifted"],["Coffee","Toffee","Earthy","Woody"],"Legendary gold-coloured Mexican landrace of the 1960s–70s; now rare in pure form.",190,"","",""],
+[28,"Hindu Kush","",0,"Indica · 100% (landrace)","Hindu Kush mountain landrace (Afghanistan/Pakistan border)","15–20%","0–<1%",["Caryophyllene","Limonene","Pinene"],["Relaxed","Sleepy","Happy","Euphoric"],["Earthy","Pine","Sandalwood","Spicy"],"Pure landrace indica that contributed resin and hardiness to countless Kush hybrids.",190,"","",""],
+[29,"Afghan Kush","Afghani",0,"Indica · ~95–100%","Afghani landrace (World of Seeds selection commonly listed)","15–20% (listings to 22%)","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Sleepy","Happy","Hungry"],["Earthy","Pine","Woody","Herbal"],"Heavily resinous landrace indica long used for hashish production.",190,"","",""],
+[30,"Blueberry","",2,"Indica-dominant hybrid · 80/20","Purple Thai × Thai × Afghani (DJ Short, 1970s work, released later)","16–24%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Happy","Euphoric","Sleepy"],["Blueberry","Berry","Sweet","Vanilla"],"DJ Short’s berry classic, Cannabis Cup winner 2000; parent of Blue Dream’s Blueberry side.",190,"","",""],
+[31,"Cheese","UK Cheese, Exodus Cheese",2,"Hybrid · 50/50","Skunk #1 phenotype (Exodus collective, UK, late 1980s)","15–20%","0–<1%",["Caryophyllene","Myrcene","Limonene"],["Relaxed","Happy","Euphoric","Creative"],["Cheese","Pungent","Earthy","Skunky"],"Clone-only Skunk #1 cut famous for an unmistakably savoury, cheese-like aroma.",190,"Clone-only Skunk #1 phenotype.","",""],
+[32,"Skunk #1","",2,"Hybrid · 65/35 sativa/indica (common listing)","Afghani × Acapulco Gold × Colombian Gold (Sam the Skunkman / Sacred Seeds, 1970s)","15–19%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Energetic","Relaxed","Uplifted"],["Skunky","Pungent","Earthy","Sweet"],"The stabilised hybrid that defined modern indoor breeding and seeded hundreds of descendants.",190,"","",""],
+[33,"Super Silver Haze","",2,"Sativa-dominant hybrid · ~70–80% sativa","Skunk #1 × Northern Lights × Haze (Green House Seeds)","18–23%","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Happy","Energetic","Euphoric","Creative"],["Citrus","Spicy","Earthy","Diesel"],"Three-time Cannabis Cup winner (1997–99) and the benchmark potent Haze hybrid.",190,"","",""],
+[34,"Chocolope","",2,"Sativa-dominant hybrid · ~95/5","OG Chocolate Thai × Cannalope Haze (DNA Genetics)","18–21%","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Happy","Energetic","Euphoric","Uplifted"],["Chocolate","Coffee","Sweet","Earthy"],"Chocolate-Thai revival cross with a notably short flowering time for a sativa-leaning plant.",190,"","",""],
+/* ---- Modern dessert / hype & Cookies-family (35-50) ---- */
+[35,"Tangie","",2,"Sativa-dominant hybrid · 70/30","California Orange × Skunk #1 (DNA Genetics, via Crockett)","19–22%","0–<1%",["Myrcene","Pinene","Limonene"],["Happy","Euphoric","Uplifted","Creative"],["Tangerine","Citrus","Orange","Sweet"],"Tangerine-aroma remake of 1990s Tangerine Dream; a concentrate favourite for its loud citrus.",185,"","",""],
+[36,"Cherry Pie","",2,"Indica-dominant hybrid · 80/20","Granddaddy Purple × F1 Durban (Durban Poison line)","16–24%","0–<1%",["Myrcene","Caryophyllene","Pinene"],["Happy","Relaxed","Euphoric","Giggly"],["Cherry","Berry","Sweet","Earthy"],"GDP × Durban cross that later contributed to Girl Scout Cookies lore and many pie crosses.",190,"","",""],
+[37,"Do-Si-Dos","",2,"Indica-dominant hybrid · 70/30","OG Kush Breath (GSC phenotype) × Face Off OG Bx1 (Archive Seed Bank)","19–30%","0–<1%",["Limonene","Caryophyllene","Linalool"],["Relaxed","Happy","Sleepy","Euphoric"],["Sweet","Earthy","Floral","Lime"],"Leafly Strain of the Year 2021; potent GSC-family hybrid with floral-lime notes.",195,"","L2",""],
+[38,"Mimosa","Mimosa EVO listings vary",2,"Sativa-dominant hybrid · 70/30","Clementine × Purple Punch (Symbiotic Genetics)","19–27%","0–<1%",["Myrcene","Pinene","Limonene"],["Happy","Energetic","Uplifted","Euphoric"],["Citrus","Tropical","Orange","Berry"],"Brunch-named citrus hybrid that became a popular morning-market and rosin strain.",185,"","",""],
+[39,"MAC","Miracle Alien Cookies, MAC 1 / “Cap’s Cut”",2,"Hybrid · 50/50","Alien Cookies × (Colombian × Starfighter) — Miracle 15 line (Capulator)","20–23%","0–<1%",["Limonene","Pinene","Caryophyllene"],["Happy","Euphoric","Uplifted","Creative"],["Citrus","Diesel","Floral","Peppery"],"The clone-only MAC 1 cut is prized for frosted buds and orange-diesel aroma.",190,"Clone-only MAC 1 cut.","",""],
+[40,"Ice Cream Cake","",2,"Indica-dominant hybrid · 75/25","Wedding Cake × Gelato #33 (Seed Junky)","20–25%","0–<1%",["Caryophyllene","Limonene","Linalool"],["Relaxed","Sleepy","Happy","Hungry"],["Vanilla","Creamy","Sweet","Doughy"],"Two dessert parents combined; among the most-listed modern evening hybrids.",195,"","",""],
+[41,"Gushers","White Gushers phenotype noted",2,"Indica-dominant hybrid · 60/40","Gelato #41 × Triangle Kush (Cookies Fam)","15–25%","0–<1%",["Caryophyllene","Limonene","Linalool"],["Relaxed","Happy","Euphoric","Tingly"],["Berry","Fruity","Sweet","Tropical"],"Named for the fruit candy; Gelato-line hybrid with tropical-berry listings.",195,"White Gushers phenotype noted.","",""],
+[42,"Jealousy","",2,"Hybrid · ~50/50 (indica-leaning listings exist)","Gelato 41 × Sherbert Bx1 (Seed Junky Genetics)","22–30% (Leafly ~25%; Weedmaps 22–30%)","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Happy","Euphoric","Creative"],["Sweet","Gassy","Berry","Earthy"],"Leafly Strain of the Year 2022; parent, with Biscotti/Sherb Bx, of Permanent Marker.",190,"","J,L2",""],
+[43,"Permanent Marker","",2,"Indica-dominant hybrid · 70/30 (AllBud)","(Biscotti × Sherb Bx1) × Jealousy (Seed Junky / JBeezy; selected by Doja Pak, released 2022)","19–25% consensus (Leafly 25%, Weedmaps 19–25%; AllBud’s 34–35% is an outlier — disagreement noted, not used)","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Euphoric","Happy","Sleepy"],["Chemical/marker","Soapy","Floral","Gassy"],"Leafly Strain of the Year 2023, named for its marker-like soapy-gas aroma.",190,"","PM,L2","THC: AllBud’s 34–35% is an outlier, not used in the span."],
+[44,"Lemon Cherry Gelato","",2,"Hybrid · ~60/40 indica-leaning (listings vary)","Lineage disputed — commonly listed as Sunset Sherbet × Girl Scout Cookies × undisclosed lemon-cherry parent (Backpack Boyz association)","19–29%","0–<1%",["Limonene","Caryophyllene","Linalool"],["Relaxed","Happy","Euphoric","Giggly"],["Lemon","Cherry","Berry","Creamy"],"One of the most-marketed Gelato-family names of the 2020s; exact parentage is not documented by a single breeder source.",195,"","A2","Parentage disputed."],
+[45,"Sunset Sherbet","Sherbet",2,"Indica-dominant hybrid · 85/15","GSC × Pink Panties (Sherbinski)","15–19%","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Happy","Euphoric","Creative"],["Sweet","Berry","Citrus","Creamy"],"The Sherbet parent behind Gelato and many Bx lines, with berry-creamy aroma.",190,"","",""],
+[46,"Biscotti","",2,"Indica-dominant hybrid · 80/20","Gelato #25 × South Florida OG (Cookies Fam / Connected lineage listings)","21–25%","0–<1%",["Caryophyllene","Limonene","Linalool"],["Relaxed","Happy","Euphoric","Creative"],["Sweet","Cookie","Nutty","Diesel"],"Dessert hybrid that became a parent of Permanent Marker.",195,"","",""],
+[47,"London Pound Cake","LPC 75",2,"Indica-dominant hybrid · 70/30","Sunset Sherbet × undisclosed heavy indica (Cookies / Lemonnade listings)","20–29%","0–<1%",["Limonene","Myrcene","Caryophyllene"],["Relaxed","Happy","Sleepy","Tingly"],["Berry","Grape","Lemon","Sweet"],"Berner-associated dessert strain named for its pound-cake sweetness.",190,"","",""],
+[48,"Gary Payton","",2,"Hybrid · 50/50","The Y (Y Griega line) × Snowman (Cookies / Powerzzzup)","20–25%","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Happy","Euphoric","Giggly"],["Diesel","Peppery","Earthy","Herbal"],"Named (with permission) for the NBA player; a 2019 Cookies-market standout.",190,"","",""],
+[49,"Cereal Milk","",2,"Hybrid · 50/50","Y Life (Cookies × Cherry Pie) × Snowman (Cookies)","18–23%","0–<1%",["Caryophyllene","Limonene","Pinene"],["Relaxed","Happy","Euphoric","Creative"],["Sweet","Creamy","Berry","Fruity"],"Named for the sweet-milk flavour of breakfast cereal; a social-media-era Cookies hybrid.",190,"","",""],
+[50,"White Runtz","",2,"Hybrid · 50/50","Zkittlez × Gelato (Runtz family phenotype/selection; listings treat it as a Runtz phenotype)","23–29%","0–<1%",["Limonene","Caryophyllene","Linalool"],["Relaxed","Happy","Euphoric","Tingly"],["Peach","Fruity","Sweet","Sour"],"The pale, frosty Runtz selection, often listed as the most potent Runtz phenotype.",195,"Runtz phenotype/selection.","",""],
+/* ---- Kush, OG & heavy hybrids (51-75) ---- */
+[51,"Kush Mints","",2,"Hybrid · 50/50","Animal Mints × Bubba Kush (Seed Junky)","22–28%","0–<1%",["Limonene","Linalool","Caryophyllene"],["Relaxed","Happy","Euphoric","Tingly"],["Mint","Coffee","Earthy","Gas"],"Mint-gas Seed Junky hybrid widely used in modern Kush crosses.",195,"","",""],
+[52,"Animal Mints","",2,"Hybrid · ~50/50 to indica-leaning","Animal Cookies × SinMint Cookies (Seed Junky)","25–32% (listings vary 23–32%)","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Happy","Sleepy","Euphoric"],["Mint","Sweet","Earthy","Diesel"],"A Wedding Cake parent (via Triangle Mints/Animal Mints lines) with mint-cookie aroma.",190,"","",""],
+[53,"Triangle Kush","Florida Triangle",2,"Indica-dominant hybrid · 85/15","Florida OG Kush cut (origin in 1990s Florida OG scene; exact parents not documented)","20–23%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Happy","Euphoric","Sleepy"],["Lemon","Earthy","Woody","Diesel"],"The Florida OG that parents Wedding Cake and Gushers.",190,"","",""],
+[54,"Face Off OG","Face Off OG Bx1",2,"Indica-dominant hybrid · 70/30","OG Kush selfed/Bx line from a 1990s Sacramento-area OG cut (Archive Seed Bank)","20–26%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Sleepy","Euphoric","Happy"],["Pine","Earthy","Diesel","Citrus"],"Archive’s potent OG backbone for Do-Si-Dos and many Bx projects.",190,"","",""],
+[55,"Tahoe OG","Tahoe OG Kush",2,"Indica-dominant hybrid · 90/10 (listings vary)","OG Kush phenotype (Lake Tahoe cut, via Cali Connection)","20–25%","0–<1%",["Limonene","Myrcene","Caryophyllene"],["Sleepy","Relaxed","Hungry","Euphoric"],["Lemon","Earthy","Pine","Woody"],"Fast-acting OG phenotype long marketed as a night-time OG (Leafly: 1,500+ reports).",190,"OG Kush phenotype (Lake Tahoe cut).","",""],
+[56,"SFV OG","San Fernando Valley OG",2,"Indica-dominant hybrid · 70/30","OG Kush phenotype (San Fernando Valley cut, via Cali Connection)","17–22%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Happy","Euphoric","Sleepy"],["Pine","Lemon","Earthy","Fuel"],"The lemon-pine Valley OG that parents many “SFV” seed lines.",190,"OG Kush phenotype (San Fernando Valley cut).","",""],
+[57,"Larry OG","Lemon Larry",2,"Hybrid · ~50/50 to indica-leaning","OG Kush × SFV OG Kush (Cali Connection)","20–26%","0–<1%",["Limonene","Myrcene","Caryophyllene"],["Relaxed","Happy","Euphoric","Uplifted"],["Lemon","Pine","Earthy","Diesel"],"Sour-lemon OG cross named, in lore, for an Orange County grower.",190,"","",""],
+[58,"Fire OG","",2,"Indica-dominant hybrid · 70/30","OG Kush × SFV OG Kush Bx (commonly reported)","20–27%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Euphoric","Happy","Sleepy"],["Lemon","Earthy","Pungent","Pine"],"Red-haired OG cross long marketed among the strongest OG cuts.",190,"","",""],
+[59,"Skywalker OG","Skywalker OG Kush",2,"Indica-dominant hybrid · 85/15","Skywalker (Blueberry × Mazar) × OG Kush","20–30%","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Relaxed","Sleepy","Happy","Euphoric"],["Diesel","Earthy","Spicy","Pine"],"Star Wars-named, gas-heavy OG hybrid (distinct from plain Skywalker).",190,"","",""],
+[60,"Master Kush","",2,"Indica-dominant hybrid · 90/10","Hindu Kush landrace lines (Nirvana / Dutch Passion selections)","15–20%","0–<1%",["Caryophyllene","Myrcene","Pinene"],["Relaxed","Happy","Sleepy","Euphoric"],["Earthy","Pungent","Citrus","Incense"],"1990s Amsterdam Kush classic, Cannabis Cup winner in the 1990s.",190,"","",""],
+[61,"LA Confidential","",0,"Indica · ~95–100%","OG LA Affie × Afghani (DNA Genetics)","19–25%","0–<1%",["Pinene","Myrcene","Caryophyllene"],["Relaxed","Sleepy","Happy","Euphoric"],["Pine","Earthy","Skunky","Spicy"],"Pure-indica-leaning DNA staple and repeated Cup winner of the 2000s.",190,"","",""],
+[62,"Purple Kush","",0,"Indica · 100% (listings)","Hindu Kush × Purple Afghani (British Columbia seed lineage commonly reported)","15–22%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Sleepy","Happy","Euphoric"],["Earthy","Grape","Berry","Sweet"],"Fully purple pure-indica classic from the West Coast.",190,"","",""],
+[63,"Grape Ape","",2,"Indica-dominant hybrid · 90/10","Mendocino Purps × Skunk × Afghani (Apothecary Genetics, commonly reported)","18–21%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Sleepy","Happy","Hungry"],["Grape","Berry","Sweet","Lavender"],"Dense purple indica known for grape-candy aroma.",190,"","",""],
+[64,"Purple Punch","",2,"Indica-dominant hybrid · 80/20","Larry OG × Granddaddy Purple (Supernova Gardens)","18–25%","0–<1%",["Caryophyllene","Limonene","Pinene"],["Relaxed","Sleepy","Happy","Euphoric"],["Grape","Blueberry","Vanilla","Candy"],"Dessert-purple hybrid that parents Mimosa (with Clementine).",190,"","",""],
+[65,"Blue Cheese","",2,"Indica-dominant hybrid · 80/20","Blueberry × UK Cheese (Big Buddha Seeds)","15–20%","0–<1%",["Caryophyllene","Myrcene","Limonene"],["Relaxed","Happy","Euphoric","Creative"],["Cheese","Blueberry","Berry","Pungent"],"Savoury-sweet cross combining the two named parents’ signature aromas.",190,"","",""],
+[66,"Big Bud","",2,"Indica-dominant hybrid · ~85/15","Afghani × Northern Lights × Skunk #1 (Sensi Seeds lineage commonly reported)","15–20%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Happy","Sleepy","Euphoric"],["Earthy","Spicy","Woody","Sweet"],"Yield-bred 1980s–90s classic; a Granddaddy Purple parent.",190,"","",""],
+[67,"Hash Plant","",0,"Indica · 90/10","Afghani × Northern Lights (Sensi Seeds)","13–19%","0–<1%",["Myrcene","Caryophyllene","Pinene"],["Relaxed","Sleepy","Happy","Euphoric"],["Earthy","Hash","Spicy","Woody"],"Fast, resin-caked indica bred for hash production.",190,"","",""],
+[68,"Black Domina","",0,"Indica · ~95/5","Northern Lights × Ortega × Hash Plant × Afghani (Sensi Seeds, 1996)","18–24%","0–<1%",["Myrcene","Caryophyllene","Pinene"],["Relaxed","Sleepy","Happy","Hungry"],["Earthy","Peppery","Woody","Citrus"],"Four-way dark indica known for near-black leaves.",190,"","",""],
+[69,"Critical Mass","",2,"Indica-dominant hybrid · 80/20","Afghani × Skunk #1 (Mr Nice / Shantibaba; Big Bud rework)","19–22%","0–5% in standard listings (CBD-rich phenotypes sold separately as CBD Critical Mass)",["Myrcene","Caryophyllene","Limonene"],["Relaxed","Happy","Sleepy","Creative"],["Earthy","Sweet","Citrus","Skunky"],"Heavy-yielding Skunk-Afghani.",190,"CBD-rich phenotypes sold separately as CBD Critical Mass — do not conflate.","A2","Standard vs CBD-selected chemotypes are different entries."],
+[70,"Kosher Kush","",0,"Indica","OG Kush lineage (DNA Genetics / Reserva Privada; exact parents not documented)","20–25%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Sleepy","Happy","Hungry"],["Earthy","Pine","Fruity","Pungent"],"Los Angeles OG that won Cannabis Cup Best Indica twice (2010–11).",190,"","",""],
+[71,"Godfather OG","",2,"Indica-dominant hybrid · 60/40","XXX OG × Alpha OG (California lineage commonly reported)","25–30% (listings to 34% are outliers)","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Relaxed","Sleepy","Euphoric","Hungry"],["Grape","Earthy","Pine","Spicy"],"Marketed as the “Don of OGs” for very high listed THC.",190,"","","Listings to 34% are outliers."],
+[72,"King Louis","King Louis XIII",2,"Indica-dominant hybrid · 70/30","OG Kush × LA Confidential (commonly reported)","20–28%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Sleepy","Happy","Euphoric"],["Earthy","Pine","Diesel","Spicy"],"Regal-named, pine-diesel OG hybrid from California.",190,"","",""],
+[73,"Platinum OG","",2,"Indica-dominant hybrid · 75/25","Master Kush × OG Kush × undisclosed third parent (Apothecary listings)","20–24%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Sleepy","Euphoric","Happy"],["Earthy","Pine","Diesel","Coffee"],"Silver-frosted OG hybrid of the Platinum Kush family.",190,"","",""],
+[74,"Banana OG","",2,"Indica-dominant hybrid · 70/30","OG Kush × Banana Kush (Banana × OG line listings)","23–27%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Sleepy","Happy","Hungry"],["Banana","Tropical","Sweet","Cinnamon"],"Banana-scented OG known for a notably heavy reputation.",190,"","",""],
+[75,"Strawberry Banana","Strawnana",2,"Indica-dominant hybrid · 70/30","Banana Kush × Strawberry Bubblegum phenotype (DNA / Crockett)","22–26%","0–<1%",["Limonene","Myrcene","Caryophyllene"],["Happy","Relaxed","Euphoric","Creative"],["Strawberry","Banana","Sweet","Berry"],"A concentrate favourite that has produced many award-winning rosins.",190,"","",""],
+/* ---- Fruit, gas & contemporary hybrids (76-100) ---- */
+[76,"Forbidden Fruit","",2,"Indica-dominant hybrid · 70/30","Cherry Pie × Tangie","23–27%","0–<1%",["Caryophyllene","Limonene","Linalool"],["Relaxed","Happy","Euphoric","Sleepy"],["Cherry","Citrus","Tropical","Sweet"],"Deep-purple, passionfruit-cherry hybrid prized for aroma over yield.",195,"","",""],
+[77,"Papaya","",2,"Indica-dominant hybrid · 70/30","Citral #13 × Ice #2 (Nirvana; Mango-line selection)","20–25%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Happy","Euphoric","Creative"],["Papaya","Tropical","Sweet","Spicy"],"Tropical-fruit, Mango-family hybrid used widely for hash/rosin.",190,"","",""],
+[78,"Slurricane","",2,"Indica-dominant hybrid · 60/40","Do-Si-Dos × Purple Punch (In House Genetics)","20–28%","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Sleepy","Happy","Euphoric"],["Berry","Grape","Sweet","Tropical"],"Frost-heavy dessert cross of two entries in this dataset (#37 × #64).",190,"","",""],
+[79,"Sundae Driver","",2,"Hybrid · 50/50","Fruity Pebbles OG × Grape Pie (Cannarado Genetics)","14–23%","0–<1%",["Limonene","Caryophyllene","Linalool"],["Relaxed","Happy","Euphoric","Giggly"],["Chocolate","Creamy","Grape","Sweet"],"Smooth, chocolate-grape hybrid named for a slow Sunday drive.",195,"","",""],
+[80,"Wedding Crasher","",2,"Indica-dominant hybrid · 60/40","Wedding Cake × Purple Punch (Symbiotic Genetics)","21–27%","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Happy","Relaxed","Euphoric","Giggly"],["Vanilla","Grape","Berry","Sweet"],"Cake-meets-grape cross bred from two dessert parents in this list.",190,"","",""],
+[81,"GMO Cookies","Garlic Cookies",2,"Indica-dominant hybrid · 90/10","GSC × Chemdawg (Mamiko Seeds)","20–30%","0–<1%",["Caryophyllene","Myrcene","Limonene"],["Relaxed","Happy","Euphoric","Sleepy"],["Garlic","Mushroom","Onion","Diesel"],"Famously savoury “garlic, mushroom, onion” aroma; a rosin benchmark.",190,"","",""],
+[82,"Grease Monkey","",2,"Indica-dominant hybrid · 70/30","GG4 × Cookies and Cream (Exotic Genetix)","25–27%","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Sleepy","Euphoric","Happy"],["Vanilla","Nutty","Earthy","Gas"],"Sticky, vanilla-gas descendant of GG4 (#16).",190,"","",""],
+[83,"Peanut Butter Breath","",2,"Hybrid · 50/50","Do-Si-Dos × Mendo Breath F2 (Thug Pug Genetics)","19–28%","0–<1%",["Limonene","Caryophyllene","Linalool"],["Relaxed","Happy","Sleepy","Euphoric"],["Nutty","Earthy","Herbal","Pine"],"Nutty-savoury Mendo Breath cross widely used in “Breath” breeding.",195,"","",""],
+[84,"Oreoz","Oreo Cookies",2,"Hybrid · ~50/50 to indica-leaning","Cookies and Cream × Secret Weapon (3rd Coast Genetics listings)","22–33% (most listings 25–30%)","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Happy","Euphoric","Giggly"],["Chocolate","Creamy","Diesel","Nutty"],"Extremely frosted chocolate-diesel hybrid of the early 2020s.",190,"","",""],
+[85,"Motorbreath","",2,"Indica-dominant hybrid · 80/20","Chemdawg × SFV OG Kush (Pisces Genetics)","25–30%","0–<1%",["Limonene","Myrcene","Caryophyllene"],["Relaxed","Sleepy","Euphoric","Happy"],["Diesel","Chemical","Earthy","Citrus"],"Named for overwhelming fuel aroma; among the gassiest Chemdawg crosses.",190,"","",""],
+[86,"Apple Fritter","",2,"Hybrid · 50/50","Sour Apple × Animal Cookies (Lumpy’s Flowers, California)","22–28%","0–<1%",["Caryophyllene","Limonene","Pinene"],["Relaxed","Happy","Euphoric","Tingly"],["Apple","Pastry","Sweet","Earthy"],"Leafly top-8 best-seller 2025; pastry-apple hybrid with balanced listings.",190,"","L1",""],
+[87,"Super Boof","Blockberry",2,"Hybrid · 50/50","Black Cherry Punch × Tropicana Cookies (Blockhead; originally “Blockberry”)","28% typical listing (range 24–30%)","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Giggly","Happy","Euphoric","Relaxed"],["Cherry","Citrus","Berry","Gassy"],"Leafly Strain of the Year 2024 (reigning winner in Leafly’s past-winners history).",190,"Originally “Blockberry”.","L2",""],
+[88,"Tropicana Cookies","Trop Cookies",2,"Sativa-dominant hybrid · 70/30","GSC × Tangie (Oni Seed Co / Harry Palms selection)","21–25%","0–<1%",["Caryophyllene","Limonene","Linalool"],["Happy","Energetic","Uplifted","Creative"],["Orange","Citrus","Tropical","Cookie"],"Purple, orange-zest hybrid that parents Super Boof (#87).",195,"","",""],
+[89,"Clementine","",2,"Sativa-dominant hybrid · 70/30","Tangie × Lemon Skunk (Crockett Family Farms)","17–19%","0–<1%",["Terpinolene","Ocimene","Limonene"],["Happy","Energetic","Uplifted","Focused"],["Citrus","Orange","Lemon","Sweet"],"Bright citrus concentrate favourite; a Mimosa parent (#38).",185,"","A2","Ocimene: no pressure-explicit atmospheric value documented."],
+[90,"Sour Tangie","",2,"Sativa-dominant hybrid · 80/20","East Coast Sour Diesel × Tangie (DNA / Crockett)","21–26%","0–<1%",["Myrcene","Limonene","Pinene"],["Happy","Energetic","Euphoric","Uplifted"],["Diesel","Citrus","Orange","Sour"],"Fuel-and-orange cross combining entries #2 and #35’s families.",185,"","",""],
+[91,"Headband","",2,"Hybrid · ~60/40 indica-leaning (listings vary)","OG Kush × Sour Diesel","20–27%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Happy","Euphoric","Relaxed","Creative"],["Lemon","Diesel","Earthy","Pine"],"Named for the reported pressure-around-the-head sensation in user reports.",190,"","",""],
+[92,"Death Star","",2,"Indica-dominant hybrid · 75/25","Sensi Star × Sour Diesel (Ohio / Team Death Star)","18–27%","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Relaxed","Happy","Sleepy","Euphoric"],["Diesel","Skunky","Earthy","Sweet"],"Ohio-bred, Star Wars-named diesel indica.",190,"","",""],
+[93,"Stardawg","",2,"Sativa-dominant hybrid · 60/40 (listings vary)","Chemdawg 4 × Tres Dawg (Top Dawg Seeds)","16–22%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Uplifted","Euphoric","Relaxed"],["Earthy","Pine","Diesel","Chemical"],"The UK-market Chemdawg workhorse of the 2010s.",190,"","",""],
+[94,"Alien OG","",2,"Hybrid · ~50/50 to indica-leaning","Tahoe OG × Alien Kush (Cali Connection)","20–28%","0–<1%",["Myrcene","Pinene","Limonene"],["Relaxed","Happy","Euphoric","Tingly"],["Pine","Earthy","Citrus","Woody"],"Potent Tahoe descendant with pine-citrus listings.",185,"","",""],
+[95,"Sensi Star","",2,"Indica-dominant hybrid · 90/10","Lineage not documented in detail (Paradise Seeds, 1995; Lemonogg-type lore is unconfirmed)","20–26%","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Relaxed","Happy","Euphoric","Sleepy"],["Citrus","Earthy","Metallic","Pine"],"Metallic-lemon Dutch indica and repeated Cup winner; a Death Star parent.",190,"","",""],
+[96,"Critical Kush","",2,"Indica-dominant hybrid · 90/10","Critical Mass × OG Kush (Barney’s Farm)","20–25%","0–<1%",["Myrcene","Caryophyllene","Pinene"],["Relaxed","Happy","Sleepy","Euphoric"],["Earthy","Spicy","Pine","Citrus"],"Yield-plus-potency cross of entries #69 and #1’s families.",190,"","",""],
+[97,"Lemon OG Kush","Lemon OG",2,"Indica-dominant hybrid · 60/40","Las Vegas Lemon Skunk × OG Kush (DNA Genetics)","17–24%","0–<1%",["Limonene","Myrcene","Caryophyllene"],["Relaxed","Happy","Sleepy","Euphoric"],["Lemon","Citrus","Skunky","Earthy"],"Fast-finishing lemon OG from DNA’s Kush programme.",190,"","",""],
+[98,"Donny Burger","",2,"Indica-dominant hybrid · 70/30","GMO × Han Solo Burger (Skunk House Genetics)","20–32% (most listings 25–30%)","0–<1%",["Caryophyllene","Limonene","Myrcene"],["Relaxed","Happy","Euphoric","Aroused"],["Garlic","Onion","Diesel","Spicy"],"Savoury GMO-line hybrid known for burger-like funk in listings.",190,"","",""],
+[99,"Gelato #33","“Larry Bird”",2,"Hybrid · ~50/50, sativa-leaning phenotype listings","Gelato phenotype: Sunset Sherbet × Thin Mint GSC, pheno #33","20–25%","0–<1%",["Caryophyllene","Limonene","Humulene"],["Happy","Relaxed","Euphoric","Uplifted"],["Citrus","Berry","Sweet","Diesel"],"The brighter, orange-leaning Gelato phenotype, sold as its own listing.",195,"Gelato phenotype #33.","",""],
+[100,"Gelato #41","Bacio Gelato",2,"Indica-dominant Gelato phenotype","Gelato phenotype #41: Sunset Sherbet × Thin Mint GSC","20–26%","0–<1%",["Caryophyllene","Linalool","Limonene"],["Relaxed","Happy","Sleepy","Euphoric"],["Berry","Sweet","Earthy","Gassy"],"The heavier Gelato phenotype; a Gushers and Jealousy parent.",195,"Gelato phenotype #41.","",""],
+/* ---- Sativas, Hazes & brights (101-125) ---- */
+[101,"Super Lemon Haze","",2,"Sativa-dominant hybrid · 80/20","Lemon Skunk × Super Silver Haze (Green House Seeds)","19–25%","0–<1%",["Terpinolene","Myrcene","Ocimene"],["Happy","Energetic","Euphoric","Uplifted"],["Lemon","Citrus","Zesty","Sweet"],"Two-time Cannabis Cup winner (2008–09) and the benchmark lemon sativa.",185,"","A2","Ocimene: no pressure-explicit atmospheric value documented."],
+[102,"Lemon Skunk","",2,"Sativa-dominant hybrid · 60/40","Skunk #1 lemon phenotypes (Las Vegas line via DNA/Green House listings)","15–22%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Happy","Energetic","Euphoric","Uplifted"],["Lemon","Citrus","Skunky","Sweet"],"Sharp-lemon Skunk selection; parent of Super Lemon Haze and Lemon OG.",190,"","",""],
+[103,"Ghost Train Haze","",2,"Sativa-dominant hybrid · 80/20","Ghost OG × Neville’s Wreck (Rare Dankness)","25–27%","0–<1%",["Terpinolene","Myrcene","Limonene"],["Happy","Energetic","Euphoric","Creative"],["Citrus","Pine","Floral","Spicy"],"Long marketed among the strongest Hazes; a Cup winner from 2014.",185,"","",""],
+[104,"Cinderella 99","C99, Cindy",2,"Sativa-dominant hybrid · ~85/15","Jack Herer seed-line selection (Brothers Grimm; “Princess” seed found in Amsterdam Jack Herer bud, in lore and breeder accounts)","16–23%","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Happy","Energetic","Euphoric","Dreamy"],["Pineapple","Citrus","Tropical","Earthy"],"Fast-finishing tropical sativa famous for defying Haze flowering times.",190,"","",""],
+[105,"Dutch Treat","",2,"Indica-dominant hybrid (listings vary; often listed hybrid 80/20 indica)","Northern Lights × Haze (Amsterdam lineage commonly reported)","18–25%","0–<1%",["Myrcene","Limonene","Terpinolene"],["Happy","Euphoric","Relaxed","Uplifted"],["Pine","Eucalyptus","Sweet","Earthy"],"Amsterdam coffeeshop hybrid that became a Pacific Northwest staple.",185,"","",""],
+[106,"XJ-13","",2,"Sativa-dominant hybrid · 50/50 (listings vary)","Jack Herer × G13 Haze (Oakland lineage commonly reported)","20–22%","0–<1%",["Terpinolene","Caryophyllene","Pinene"],["Happy","Euphoric","Creative","Uplifted"],["Citrus","Pine","Lime","Spicy"],"Lime-spice California hybrid in the Jack Herer family (#5).",190,"","",""],
+[107,"Jillybean","",2,"Hybrid · 60/40 sativa-leaning","Orange Velvet × Space Queen (TGA / Mz Jill)","11–18%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Euphoric","Giggly","Uplifted"],["Orange","Citrus","Mango","Candy"],"Moderate-THC orange-candy hybrid often cited for a giggly user-report profile.",190,"","",""],
+[108,"Agent Orange","",2,"Hybrid · 50/50","Orange Velvet × Jack the Ripper (TGA Subcool)","14–16% (listings to 19%)","0–<1%",["Myrcene","Pinene","Limonene"],["Happy","Energetic","Euphoric","Uplifted"],["Orange","Citrus","Spicy","Herbal"],"Motarebel/Subcool-era orange hybrid.",185,"","","Name refers to the herbicide — flagged in the research."],
+[109,"Chernobyl","",2,"Sativa-dominant hybrid · 80/20","Trainwreck × Jack the Ripper × Trinity (TGA Subcool)","16–21%","0–<1%",["Myrcene","Limonene","Pinene"],["Happy","Euphoric","Uplifted","Creative"],["Lime","Citrus","Earthy","Pine"],"Lime-sherbet sativa hybrid named for the disaster site.",185,"","","Name refers to the disaster site — flagged in the research."],
+[110,"Island Sweet Skunk","",2,"Sativa-dominant hybrid · 80/20","Sweet Pink Grapefruit × Big Skunk (Federation Seeds, Vancouver Island)","16–25%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Energetic","Euphoric","Creative"],["Grapefruit","Tropical","Sweet","Skunky"],"Canadian island-bred grapefruit sativa.",190,"","",""],
+[111,"Kali Mist","",2,"Sativa-dominant hybrid · 90/10","Southeast Asian sativa lines (Serious Seeds; exact parents not documented)","15–18%","0–<1%",["Myrcene","Caryophyllene","Pinene"],["Happy","Energetic","Creative","Uplifted"],["Citrus","Earthy","Spicy","Incense"],"Airy, incense-spice pure-sativa-style hybrid of the 1990s.",190,"","",""],
+[112,"Neville’s Haze","",2,"Sativa-dominant hybrid · ~75–90% sativa","Haze × Northern Lights #5 line (Neville Schoenmakers / Green House lineage)","18–21%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Euphoric","Energetic","Creative"],["Spicy","Earthy","Woody","Floral"],"Near-pure Haze for patient growers; a cornerstone of Haze breeding.",190,"","",""],
+[113,"Mango Haze","",2,"Sativa-dominant hybrid · 50/50 (listings vary)","Northern Lights #5 × Skunk × Haze (Mr Nice; sibling programme to Super Silver Haze)","17–23%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Euphoric","Creative","Uplifted"],["Mango","Tropical","Peppery","Citrus"],"Mango-pepper sibling of Super Silver Haze (#33).",190,"","",""],
+[114,"Lamb’s Bread","Lamb’s Breath",1,"Sativa · landrace-derived","Jamaican landrace lineage; exact lineage not documented","16–21%","0–<1%",["Myrcene","Caryophyllene","Pinene"],["Happy","Energetic","Euphoric","Creative"],["Earthy","Woody","Spicy","Citrus"],"Jamaican landrace popularly linked to Bob Marley in lore.",190,"","A2","Marley link is lore, not fact."],
+[115,"Panama Red","",1,"Sativa · landrace","Panamanian landrace; exact lineage not documented","10–16% (modern listings)","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Energetic","Euphoric","Uplifted"],["Earthy","Spicy","Woody","Tea"],"Red-haired 1960s–70s landrace, once famed, now rare in pure form.",190,"","",""],
+[116,"Colombian Gold","",1,"Sativa · landrace","Colombian (Santa Marta) landrace; exact lineage not documented","14–20% (modern seed listings)","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Happy","Energetic","Euphoric","Focused"],["Citrus","Skunky","Earthy","Sweet"],"A Skunk #1 grandparent (#32) and a defining 1970s import sativa.",190,"","",""],
+[117,"Alaskan Thunder Fuck","ATF, Matanuska Thunder Fuck",2,"Sativa-dominant hybrid","North American sativa × Russian ruderalis-type × Afghani (Alaska lore lineage, commonly reported)","16–23%","0–<1%",["Myrcene","Pinene","Limonene"],["Happy","Euphoric","Relaxed","Creative"],["Earthy","Pine","Menthol","Citrus"],"Matanuska Valley legend with menthol-pine listings.",185,"","",""],
+[118,"Chocolate Thai","Thai Stick lineage",1,"Sativa · landrace","Thai landrace; exact lineage not documented","10–15% (modern listings; vintage untested)","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Happy","Euphoric","Energetic","Uplifted"],["Chocolate","Coffee","Earthy","Spicy"],"The Thai parent behind Chocolope (#34), famed as 1970s “Thai stick”.",190,"","",""],
+[119,"Power Plant","",2,"Sativa-dominant hybrid","South African sativa lines (Dutch Passion)","15–20%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Energetic","Euphoric","Uplifted"],["Earthy","Peppery","Woody","Pungent"],"High-yielding African sativa hybrid of the 1990s Dutch scene.",190,"","",""],
+[120,"White Russian","",2,"Hybrid · ~50/50 to indica-leaning","White Widow × AK-47 (Serious Seeds)","19–25%","0–<1%",["Myrcene","Pinene","Caryophyllene"],["Happy","Euphoric","Relaxed","Creative"],["Earthy","Flowery","Spicy","Pungent"],"Cross of two entries in this list (#4 × #8); Cup winner 1996.",190,"","",""],
+[121,"Bubblegum","Bubble Gum",2,"Hybrid · ~50/50 to indica-leaning","Afghani × (Mexican × Colombian) lines via Indiana/Amsterdam (TH Seeds / Serious Seeds histories differ)","13–19%","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Happy","Euphoric","Relaxed","Creative"],["Bubblegum","Sweet","Berry","Flowery"],"Indiana-born sweet hybrid stabilised in Amsterdam.",190,"","",""],
+[122,"Grapefruit","",2,"Sativa-dominant hybrid · 70/30","Cinderella 99 × grapefruit sativa (BC Bud Depot / Female Seeds listings vary by breeder)","20–25%","0–<1%",["Myrcene","Caryophyllene","Limonene"],["Happy","Energetic","Euphoric","Uplifted"],["Grapefruit","Citrus","Tropical","Sweet"],"C99-descended citrus hybrid sold by several breeders under the same name.",190,"","A2","Batch/breeder variation is high — same name, different plants."],
+[123,"Casey Jones","",2,"Sativa-dominant hybrid · 80/20","Trainwreck × Thai × East Coast Sour Diesel (Head Seeds)","15–22%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Happy","Energetic","Euphoric","Uplifted"],["Citrus","Earthy","Fruity","Diesel"],"Named for the folk-hero train driver; a Trainwreck-family sativa.",190,"","",""],
+[124,"Sour Jack","",2,"Sativa-dominant hybrid · 70/30","Sour Diesel × Jack Herer","20–24%","0–<1%",["Terpinolene","Caryophyllene","Limonene"],["Happy","Energetic","Focused","Uplifted"],["Citrus","Diesel","Lemon","Pine"],"Direct cross of entries #2 and #5, with fuel-citrus listings.",190,"","",""],
+[125,"NYC Diesel","",2,"Hybrid · 60/40 sativa-leaning","Sour Diesel × Afghani × Hawaiian (Soma Seeds)","18–21%","0–<1%",["Myrcene","Limonene","Caryophyllene"],["Happy","Euphoric","Relaxed","Talkative"],["Grapefruit","Diesel","Citrus","Earthy"],"Soma’s grapefruit-diesel take on the Diesel family; Cup winner 2000s.",190,"","",""],
+/* ---- CBD-rich & balanced (126-150) ---- */
+[126,"Harlequin","",2,"Sativa-dominant hybrid · 75/25","Colombian Gold × Thai × Swiss landrace lines (commonly reported)","4–10%","8–16% (CBD:THC ~5:2 commonly cited)",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Happy","Clear-headed","Uplifted"],["Mango","Earthy","Woody","Citrus"],"The landmark balanced CBD strain of the early medical era.",195,"","CBD",""],
+[127,"ACDC","",2,"Hybrid · ~50/50 (sativa-leaning listings)","Cannatonic phenotype (high-CBD selection)","0.5–3% (most listings <1–1%)","14–20% (ratios to ~20:1 CBD:THC)",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Happy","Focused","Uplifted"],["Earthy","Pine","Lemon","Sweet"],"Clone-known Cannatonic selection bred for CBD with minimal intoxication in user reports.",195,"","CBD",""],
+[128,"Charlotte’s Web","",2,"Sativa-dominant hybrid · 70/30 (listings vary)","Hemp × undisclosed hybrid (Stanley Brothers, Colorado; exact parents not documented)","<1% (hemp versions <0.3%)","10–20% (most listings 15–20%)",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Happy","Focused"],["Earthy","Pine","Lemon","Sage"],"Developed in Colorado and named for Charlotte Figi; the strain that drove US CBD awareness in 2013 media coverage.",195,"","CBD","Description is historical, not a treatment claim."],
+[129,"Cannatonic","",2,"Hybrid · 50/50","MK Ultra × G13 Haze (Resin Seeds, Spain)","4–8% (phenotypes to 15% exist)","6–17% (high-CBD phenotypes ~1:1 to 2:1 CBD:THC)",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Happy","Uplifted","Focused"],["Earthy","Citrus","Pine","Sweet"],"The Spanish parent of ACDC.",195,"Phenotype variation is unusually wide — lab result for the actual batch matters more here than the name.","CBD","Ratios disagree by cut."],
+[130,"Ringo’s Gift","",2,"Hybrid · ~50/50 (listings vary)","Harlequin × ACDC (SoHum Seeds; named for breeder Lawrence Ringo)","1–5%","12–20% (ratios from ~1:1 to 20:1 by phenotype)",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Happy","Uplifted","Creative"],["Earthy","Pine","Citrus","Mint"],"Named for CBD pioneer Lawrence Ringo.",195,"Sold in multiple ratio phenotypes (~1:1 to 20:1 CBD:THC).","CBD","Ratios disagree by cut."],
+[131,"Sour Tsunami","",2,"Hybrid · ~50/50 to indica-leaning","Sour Diesel × NYC Diesel, backcrossed/stabilised for CBD (Lawrence Ringo, Humboldt)","3–10%","10–13% (high-CBD phenotypes ~1:1 or CBD-leading)",["Myrcene","Terpinolene","Pinene"],["Relaxed","Happy","Focused","Euphoric"],["Diesel","Earthy","Citrus","Pine"],"One of the first deliberately CBD-stabilised Diesel crosses (2010–11 era).",195,"","CBD",""],
+[132,"Harle-Tsu","",2,"Indica-dominant hybrid · 60/40","Harlequin × Sour Tsunami (Southern Humboldt Seed Collective)","<1–3%","18–22% (ratios to ~20:1+)",["Myrcene","Terpinolene","Pinene"],["Relaxed","Happy","Uplifted"],["Mango","Earthy","Pine","Citrus"],"Emerald Cup Best CBD Flower winner (2014, per breeder/competition listings).",195,"","CBD",""],
+[133,"Pennywise","",2,"Indica-dominant hybrid · 70/30","Harlequin × Jack the Ripper (TGA Subcool)","12–15%","12–15% (~1:1 phenotype commonly listed)",["Myrcene","Terpinolene","Pinene"],["Relaxed","Happy","Focused","Euphoric"],["Coffee","Peppery","Lemon","Earthy"],"A true 1:1 balanced strain (name is a Stephen King reference).",195,"","CBD",""],
+[134,"Remedy","",2,"Indica-dominant hybrid · 75/25","Breeder listings differ: Cannatonic × Afghan Skunk (commonly reported) vs Canberry × Alien Goddess line","<1%","12–18%",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Sleepy","Happy"],["Lemon","Earthy","Pine","Floral"],"High-CBD, near-zero-THC selection for users avoiding intoxication in reports.",195,"","CBD","Parentage differs by breeder listing."],
+[135,"Dancehall","",2,"Sativa-dominant hybrid · 60/40","Juanita La Lagrimosa × Kalijah (Reggae Seeds, Spain)","8–12%","8–12% (~1:1 commonly listed)",["Myrcene","Caryophyllene","Limonene"],["Happy","Creative","Energetic","Uplifted"],["Sweet","Fruity","Earthy","Diesel"],"Spanish 1:1 strain named for Jamaican dancehall culture.",195,"","CBD",""],
+[136,"Stephen Hawking Kush","SHK",2,"Indica-dominant hybrid · 70/30","Harle-Tsu × Sin City Kush (Alphakronik Genes)","5–10% (phenotype-dependent)","5–15% (three ratio phenotypes documented by breeder: ~1:1, 2:1, 3:1 CBD:THC)",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Happy","Creative","Uplifted"],["Berry","Mint","Earthy","Sweet"],"Named with the Hawking family’s permission in breeder accounts.",195,"Sold by ratio phenotype (~1:1, 2:1, 3:1 CBD:THC).","CBD",""],
+[137,"Medihaze","CBD Medihaze",2,"Sativa-dominant hybrid · 80/20","Super Silver Haze × Neville’s Haze × CBD-rich parent (CBD Crew)","4–8%","8–12% (~1:1 to 2:1)",["Myrcene","Pinene","Limonene"],["Happy","Energetic","Relaxed","Creative"],["Citrus","Pine","Spicy","Mint"],"CBD Crew’s Haze programme applied to a balanced chemotype.",195,"","CBD",""],
+[138,"Euphoria","",2,"Hybrid · ~50/50 (listings vary)","Royal Medic × Sharon Widow line (Dutch Passion CBD selection; breeder lineage as listed)","8–10%","8–12% (~1:1 commonly listed)",["Myrcene","Caryophyllene","Limonene"],["Happy","Euphoric","Relaxed","Uplifted"],["Sweet","Fruity","Earthy","Woody"],"Dutch Passion’s balanced-CBD release.",195,"","CBD","Name is a reported-effect claim by the breeder, not a guarantee."],
+[139,"CBD Critical Cure","",2,"Indica-dominant hybrid · 80/20","Critical Kush × CBD-rich ruderalis/CBD parent (Barney’s Farm / CBD Crew-type lineage as listed)","5–8%","8–12%",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Happy","Sleepy"],["Earthy","Sweet","Citrus","Pine"],"Barney’s balanced version of the Critical family.",195,"","CBD","Different chemotype from standard Critical Mass (#69)."],
+[140,"Juanita La Lagrimosa","“Juanita the Tearful”",2,"Sativa-dominant hybrid · 75/25","Reina Madre (Queen Mother) × NYC Diesel (Reggae Seeds)","6–9%","8–11% (~1:1 commonly listed)",["Myrcene","Limonene","Caryophyllene"],["Happy","Relaxed","Creative","Uplifted"],["Citrus","Fruity","Earthy","Hash"],"The Spanish balanced parent behind Dancehall (#135) and much CBD breeding.",195,"","CBD",""],
+[141,"Candida (CD-1)","",2,"Hybrid · indica-leaning (listings vary)","ACDC × Harlequin (Medical Marijuana Genetics)","<1% (breeder lists <0.5–1%)","10–20% (breeder lists phenotypes 10–20%)",["Myrcene","Caryophyllene","Limonene"],["Relaxed","Happy","Clear-headed"],["Citrus","Earthy","Sweet","Floral"],"Bred explicitly as a near-zero-THC, high-CBD seed line.",195,"","CBD",""],
+[142,"Elektra","Frida / AC/DC phenotype note — listed as Elektra",2,"Hybrid","Sour Tsunami × Early Resin Berry (Oregon CBD hemp line)","<0.3–1% (hemp listings)","13–18%",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Happy","Calm"],["Berry","Citrus","Earthy","Pine"],"Hemp-market CBD flower staple; included to represent documented hemp chemotypes sold for vaporisation.",195,"Hemp chemotype.","",""],
+[143,"Lifter","",2,"Hybrid · sativa-leaning (hemp listings)","Suver Haze × Early Resin Berry (Oregon CBD)","<0.3–1%","12–18%",["Myrcene","Caryophyllene","Pinene"],["Uplifted","Happy","Relaxed"],["Citrus","Earthy","Spicy","Sweet"],"Widely sold US hemp CBD flower; name reflects reported daytime character, not a guarantee.",195,"Hemp chemotype.","",""],
+[144,"Sour Space Candy","",2,"Hybrid · hemp","Sour Tsunami × Early Resin Berry (Oregon CBD)","<0.3–1%","12–17%",["Myrcene","Terpinolene","Caryophyllene"],["Happy","Relaxed","Uplifted"],["Citrus","Sour","Earthy","Sweet"],"Hemp CBD flower staple bred from Sour Tsunami (#131).",195,"Hemp chemotype.","",""],
+[145,"Widow Balance","White Widow CBD / CBD White Widow listings — listed as Widow Balance",2,"Hybrid · 50/50","White Widow × CBD-rich parent (multiple breeders sell a CBD White Widow; breeder must be specified per batch)","5–8%","5–10% (~1:1 listings)",["Myrcene","Pinene","Caryophyllene"],["Relaxed","Happy","Euphoric"],["Earthy","Woody","Pine","Flowery"],"Balanced remake of #4 sold by several seed banks.",195,"Multi-breeder name — specify breeder per batch.","","Same name covers different breeders’ plants; chemotype ≠ #4."],
+[146,"Blue Dream CBD","Blue Dream CBD listings — listed as Blue Dream CBD",2,"Sativa-dominant hybrid · 60/40","Blue Dream × CBD-rich parent (Humboldt Seed Organization CBD line as listed)","8–10%","8–10% (~1:1 listings)",["Myrcene","Pinene","Caryophyllene"],["Happy","Relaxed","Creative"],["Blueberry","Sweet","Earthy","Citrus"],"Balanced remake of #6.",195,"Multi-breeder name — specify breeder per batch.","","Do not merge its chemotype with THC-dominant Blue Dream (#6)."],
+[147,"OG Kush CBD","OG Kush CBD listings — listed as OG Kush CBD",2,"Hybrid · indica-leaning","OG Kush × CBD-rich parent (multiple breeders; specify per batch)","6–10%","6–12% (~1:1 listings)",["Myrcene","Limonene","Caryophyllene"],["Relaxed","Happy","Euphoric"],["Earthy","Pine","Lemon","Woody"],"Balanced remake of #1 sold under the famous name.",195,"Multi-breeder name — specify breeder per batch.","","Chemotype ≠ THC-dominant OG Kush (#1)."],
+[148,"Amnesia CBD","Amnesia CBD listings — listed as Amnesia CBD",2,"Sativa-dominant hybrid","Amnesia Haze × CBD-rich parent (Dinafem CBD line as listed)","5–10%","5–13% (~1:1 to 1:2 THC:CBD listings vary)",["Myrcene","Limonene","Caryophyllene"],["Happy","Relaxed","Uplifted"],["Lemon","Citrus","Earthy","Pine"],"Balanced remake of #9; ratio varies by breeder release.",195,"Multi-breeder name — specify breeder per batch.","","Chemotype ≠ THC-dominant Amnesia Haze (#9)."],
+[149,"Cheese CBD","Cheese CBD listings — listed as Cheese CBD",2,"Hybrid · 50/50","UK Cheese × CBD-rich parent (Dinafem / multiple breeders)","6–8%","6–9% (~1:1 listings)",["Caryophyllene","Myrcene","Limonene"],["Relaxed","Happy","Euphoric"],["Cheese","Pungent","Earthy","Sweet"],"Balanced remake of #31 retaining the savoury aroma listings.",195,"Multi-breeder name — specify breeder per batch.","","Chemotype ≠ THC-dominant Cheese (#31)."],
+[150,"CBD Critical Mass","Critical CBD / CBD Critical lineage — listed as CBD Critical Mass",2,"Indica-dominant hybrid · 80/20","Critical Mass CBD-selected line (CBD Crew)","5–8%","5–10% (~1:1 listings)",["Myrcene","Caryophyllene","Limonene"],["Relaxed","Happy","Sleepy"],["Earthy","Sweet","Citrus","Honey"],"The CBD-selected counterpart to #69.",195,"","CBD","Listed separately because name alone does not fix chemotype."]
+];
+var STRAIN_FIELDS = { id:0, name:1, aliases:2, type:3, typeLabel:4, lineage:5, thc:6, cbd:7, terps:8, effects:9, flavors:10, desc:11, vapeC:12, pheno:13, src:14, note:15 };
+var STRAIN_SRC_LINKS = {
+  H1: { label: "Leafwell — OG Kush", url: "https://leafwell.com/cannabis-strains/og-kush" },
+  OG: { label: "OG Kush lab aggregate", url: "https://ogkushstrain.net/" },
+  JH: { label: "Jack Herer lab/provenance analysis", url: "https://officialjackherer.com/" },
+  GDP: { label: "Granddaddy Purple strain data", url: "https://kindgreenbuds.com/marijuana-strains/granddaddy-purple/" },
+  PM: { label: "Permanent Marker deep dive", url: "https://gasdank.com/blog/permanent-marker-strain-review-a-deep-dive-into-this-potent-hybrid" },
+  J: { label: "Jealousy strain data", url: "https://justweedstrains.com/jealousy-strain/" },
+  H2: { label: "Herb — Gelato / Runtz", url: "https://herb.co/strains-sense/gelato-strain" },
+  L1: { label: "Leafly — best-selling strains 2025", url: "https://www.leafly.com/news/strains-products/best-selling-weed-strains?utm_source=ig&utm-medium=social-org" },
+  L2: { label: "Leafly — past Strain of the Year winners", url: "https://www.leafly.com/news/strains-products/past-leafly-strain-of-the-year-winners" },
+  A1: { label: "AllBud — 25 most popular strains", url: "https://www.allbud.com/learn/story/25-most-popular-cannabis-strains-all-time" },
+  CBD: { label: "CBD-rich strain guide", url: "https://straintrakker.com/blog/cbd-rich-strains-complete-medical-growing-guide" }
+};
+
+
+        /* ================= Strains library / effect picker / session log =================
+           Data source of truth: the 2026-11-04 strain research (report.md) — 150 strains with
+           published ranges, lineage, terpenes, commonly reported effects, flavours, and a
+           heuristic Vape* temperature (method §3.4). Effect-picker grading: §4.1. Moisture: §5.
+           No new device writes: temperature goes through setSetpoint() and the guided-session
+           engine only; the user taps Set / Start on the Session tab. */
+        var SF = STRAIN_FIELDS;
+        var strFavKey = "ff2.strainFavs.v1";
+        var strLogKey = "ff2.strainLog.v1";
+        var strPlanKey = "ff2.strainPlan.v1";
+
+        function strLoad(key, fb) {
+          try { var v = store.get(key); return v ? JSON.parse(v) : fb; } catch (e) { return fb; }
+        }
+        function strSave(key, v) { try { store.set(key, JSON.stringify(v)); } catch (e) { /* ignore */ } }
+        var strFav = strLoad(strFavKey, []);
+        var strLog = strLoad(strLogKey, []);
+        var strStaged = strLoad(strPlanKey, null);
+
+        function strEsc(s) {
+          return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+        function strEl(id) { return document.getElementById(id); }
+        function strainById(id) {
+          for (var i = 0; i < STRAINS.length; i++) if (STRAINS[i][SF.id] === id) return STRAINS[i];
+          return null;
+        }
+        function strTypeName(t) { return t === 0 ? "Indica" : t === 1 ? "Sativa" : "Hybrid"; }
+        function strIsFav(id) { return strFav.indexOf(id) !== -1; }
+        function strToggleFav(id) {
+          var i = strFav.indexOf(id);
+          if (i === -1) strFav.push(id); else strFav.splice(i, 1);
+          strSave(strFavKey, strFav);
+        }
+
+        /* ---- Effect grading, report §4.1 ----
+           A = human pharmacology/RCT · B = aggregated user reports only ·
+           C = animal/in-vitro only · F = folklore, no compound-specific evidence */
+        var EFF_INFO = {
+          "Euphoric":  { g: "A", comp: "THC", basis: "Dose-dependent subjective high in a 41-RCT meta-analysis (THC is a CB1 partial agonist). No specific terpene→euphoria evidence." },
+          "Happy":     { g: "A", comp: "THC", basis: "THC-driven in human trials, same as Euphoric." },
+          "Hungry":    { g: "A", comp: "THC", basis: "Human lab feeding studies show increased intake via CB1. Humulene “suppresses appetite”: no controlled human data. THCV “diet” claim: not established in humans (Jadoon et al. 2016, RCT n=62)." },
+          "Relaxed":   { g: "B/C", comp: "THC (dose-biphasic) · myrcene/linalool (animal only)", basis: "THC: 7.5 mg reduced stress responses, 12.5 mg increased negative affect — biphasic. Myrcene sedation: mouse data only. Linalool: lavender-oil aromatherapy only, not cannabis." },
+          "Sleepy":    { g: "A/B·C", comp: "THC dose (tiredness rises with dose) · terpenes (C)", basis: "CBN as a sleep aid: insufficient human evidence — a 2024 RCT (n=293) reduced night awakenings but not sleep onset. “Sleepy CBN” lore is likely aged-flower confounding." },
+          "Uplifted":  { g: "B", comp: "limonene / terpinolene / pinene-rich profiles", basis: "Correlated with the stimulant cluster in a large user-report dataset (de la Fuente et al. 2020) — correlation, not a trial. Limonene's one human trial measured anxiety, not energy." },
+          "Energetic": { g: "B", comp: "limonene / terpinolene / pinene-rich profiles", basis: "Same as Uplifted: user-cluster association (de la Fuente 2020), not causation." },
+          "Focused":   { g: "C(−human)", comp: "α-pinene (AChE-inhibition hypothesis)", basis: "In-vitro only — and the direct human test (2025, n=19) found α-pinene did NOT protect memory/cognition with THC. A user-reported tag only." },
+          "Creative":  { g: "F", comp: "none specific", basis: "No compound has controlled evidence for creativity. User-tag only." },
+          "Giggly":    { g: "F", comp: "none specific", basis: "No compound association in any dataset analysis. User-tag only." },
+          "Tingly":    { g: "F/B", comp: "none specific", basis: "Leafly user tag (paresthesia-like sensory reports) with no identified mechanism. User-tag only." },
+          "Aroused":   { g: "F/B", comp: "THC at low–moderate dose (surveys)", basis: "Survey/self-report only, biphasic by dose; no terpene link documented." },
+          "Talkative": { g: "F/B", comp: "none specific", basis: "Leafly user tag; no compound mapping documented." },
+          "Dreamy":    { g: "F/B", comp: "none specific", basis: "Leafly user tag; no compound mapping documented." },
+          "Clear-headed": { g: "F/B", comp: "none specific", basis: "User-reported wording (mostly CBD/balanced strains); no compound mapping." },
+          "Calm":      { g: "F/B", comp: "none specific", basis: "User-reported wording; no compound mapping." }
+        };
+        var EFF_BRIGHT = ["Uplifted", "Energetic", "Focused", "Creative"];
+        var EFF_BODY = ["Relaxed", "Sleepy", "Hungry", "Tingly"];
+        var EFF_THCDRV = ["Euphoric", "Happy"];
+        function strGradeClass(g) {
+          var c = String(g).charAt(0);
+          return c === "A" ? "gA" : c === "B" ? "gB" : c === "C" ? "gC" : "gF";
+        }
+        var PICKER_DISCLAIMER = "Reported effects are what other users commonly said they felt. They are not guaranteed outcomes. The same strain can feel stimulating at a small amount and sedating at a larger amount, and effects vary by person, dose, tolerance, set and setting. Temperature changes flavour and how completely the material is extracted — it cannot switch on a chosen effect.";
+
+        /* ---- Monogram panel: a styled placeholder per strain. Never a photo of a
+           different named strain; user bowl/grind photos appear in the history section. ---- */
+        var TERP_HUES = { "Myrcene": "#6fce62", "Limonene": "#f5a83c", "Caryophyllene": "#d98a5b", "Pinene": "#5bc8c0", "Terpinolene": "#b48ae0", "Linalool": "#9a7ee8", "Humulene": "#a8b86a", "Ocimene": "#7ec8e8" };
+        var strMonoUid = 0;
+        function strMonogram(name, terps) {
+          var w = String(name).replace(/[#]/g, "").split(/\s+/);
+          var init = ((w[0] || "?").charAt(0) + (w[1] ? w[1].charAt(0) : "")).toUpperCase();
+          var col = TERP_HUES[(terps && terps[0]) || ""] || "#6fce62";
+          var gid = "mg" + (++strMonoUid);
+          return '<svg viewBox="0 0 100 100" role="img" aria-label="Stylized panel for ' + strEsc(name) + '">' +
+            '<defs><radialGradient id="' + gid + '" cx="35%" cy="30%" r="90%">' +
+            '<stop offset="0%" stop-color="' + col + '" stop-opacity="0.55"/>' +
+            '<stop offset="100%" stop-color="#131a17" stop-opacity="1"/></radialGradient></defs>' +
+            '<rect x="0" y="0" width="100" height="100" fill="url(#' + gid + ')"/>' +
+            '<text x="50" y="62" text-anchor="middle" font-family="inherit" font-size="34" font-weight="800" fill="' + col + '">' + strEsc(init) + '</text></svg>';
+        }
+
+        /* ---- Temperature method, report §3.4/§4.2 ----
+           Base = the strain's Vape* (°C). Range = base −5/+10 °C (cap 210 °C).
+           Bright cluster → start base−5, stop ≤ base+5 (preserve monoterpenes).
+           Body cluster → start base, finish base+10…+15 (extraction/dose).
+           Euphoric/happy (THC, grade A) → unmodified base range + mid step.
+           Conflicts → both plans as alternatives, never averaged. */
+        function strCtoF10(c) { return Math.round((c * 9 / 5 + 32) / 10) * 10; }
+        function strMakePlan(kind, title, stepsC, why) {
+          var steps = [];
+          stepsC.forEach(function (c) {
+            var f = strCtoF10(c);
+            if (f > 410) f = 410;
+            if (!steps.length || steps[steps.length - 1].f !== f) steps.push({ c: c, f: f });
+          });
+          var ceiling = settings.ceilingF, capped = false, topScience = steps[steps.length - 1].f;
+          steps.forEach(function (s) { if (s.f > ceiling) { s.f = ceiling; capped = true; } });
+          var d = [];
+          steps.forEach(function (s) { if (!d.length || d[d.length - 1].f !== s.f) d.push(s); });
+          var labels = d.length >= 3 ? ["flavor stage", "deeper extraction", "finish"]
+            : d.length === 2 ? ["flavor stage", "finish"] : ["session"];
+          d.forEach(function (s, i) { s.label = labels[i]; });
+          return { kind: kind, title: title, why: why, steps: d, capped: capped, topScience: topScience, ceiling: ceiling };
+        }
+        function strBuildPlans(strain, picks) {
+          var base = strain[SF.vapeC];
+          var hb = picks.some(function (p) { return EFF_BRIGHT.indexOf(p) !== -1; });
+          var hbo = picks.some(function (p) { return EFF_BODY.indexOf(p) !== -1; });
+          var hth = picks.some(function (p) { return EFF_THCDRV.indexOf(p) !== -1; });
+          var out = [];
+          if (hb) out.push(strMakePlan("bright", "Bright plan — preserve the bright fraction",
+            [base - 5, base, Math.min(base + 5, 210)],
+            "Monoterpenes (limonene, terpinolene, pinene) evaporate first and are lost preferentially with heat and time — a lower, slower session preserves the flavour fraction these reports are based on. It does not preserve “energy”."));
+          if (hbo) out.push(strMakePlan("body", "Body plan — full extraction",
+            [base, Math.min(base + 10, 210), Math.min(base + 15, 210)],
+            "Extraction efficiency and delivered THC dose rise steeply with temperature — and THC dose is the one strong driver behind hungry/tiredness reports. This does not “release sleep terpenes” — that targeting is folklore."));
+          if (hth && !hb && !hbo) out.push(strMakePlan("thc", "Balanced plan — THC-driven picks",
+            [base - 5, base, Math.min(base + 10, 210)],
+            "Dose (how much you consume), not temperature fine-tuning, is the main lever — the dose–high curve plateaus. The base range with a mid-session step is the honest default."));
+          if (!out.length) out.push(strMakePlan("base", "Base range — no temperature lever applies",
+            [base - 5, base, Math.min(base + 10, 210)],
+            "These picks have no documented temperature association (grade F) — so the standard range applies with a mid-session step. Temperature moves the preservation-vs-extraction trade-off, nothing else."));
+          return out;
+        }
+        function strVapeRange(strain) {
+          var base = strain[SF.vapeC];
+          var loC = base - 5, hiC = Math.min(base + 10, 210);
+          var loF = Math.round(loC * 9 / 5 + 32), hiF = Math.round(hiC * 9 / 5 + 32);
+          return { loC: loC, hiC: hiC, loF: loF, hiF: hiF };
+        }
+        function strAssocNote(pick, terps) {
+          var want = null;
+          if (EFF_BRIGHT.indexOf(pick) !== -1) want = ["Limonene", "Terpinolene", "Pinene"];
+          else if (pick === "Relaxed") want = ["Myrcene", "Linalool"];
+          else if (pick === "Focused") want = ["Pinene"];
+          if (!want) return "";
+          var tl = terps.map(function (t) { return t.toLowerCase(); });
+          var hit = want.some(function (w) { return tl.some(function (t) { return t.indexOf(w.toLowerCase()) !== -1; }); });
+          return hit ? "" : "This effect is commonly reported for this strain, but it is not linked to its listed main terpenes.";
+        }
+
+        /* ---- Load temp & workflow into the existing guided-session engine ----
+           setSetpoint() is the app's existing set-temperature path (the user taps Set on
+           the Session tab to send it — nothing auto-fires). The staged ladder reuses the
+           guided engine's stir gates, read-back confirmation and auto-advance. Every step
+           is capped at the Burn Guard ceiling. */
+        var GUIDED_LADDER_DEFAULT = [
+          { f: 340, label: "flavor stage" },
+          { f: 360, label: "deeper extraction" },
+          { f: 370, label: "full extraction" }
+        ];
+        var GUIDED_FLOW_DEFAULT = "340°F → stir → 360°F → stir → 370°F → stir & finish";
+        function strStagePlan(strain, plan, statusEl) {
+          if (typeof guided !== "undefined" && guided.active) {
+            if (statusEl) setMiniMsg(statusEl, "err", "A guided session is running — end it on the Session tab first, then stage this plan.");
+            return;
+          }
+          var finish = plan.steps[plan.steps.length - 1];
+          setSetpoint(finish.f);
+          GUIDED_LADDER.length = 0;
+          plan.steps.forEach(function (s) { GUIDED_LADDER.push({ f: s.f, label: s.label }); });
+          var flow = plan.steps.map(function (s) { return s.f + "°F"; }).join(" → stir → ") + " → stir & finish";
+          strEl("guidedFlow").textContent = flow;
+          var note = strEl("guidedStrainNote");
+          note.hidden = false;
+          note.innerHTML = "";
+          var capTxt = plan.capped
+            ? " The science range reaches " + plan.topScience + "°F — above your Burn Guard ceiling of " + plan.ceiling + "°F — so every step is capped at your ceiling."
+            : "";
+          var t1 = document.createElement("span");
+          t1.textContent = "Strain plan staged for " + strain[SF.name] + " (" + plan.title + "): " + flow + "." + capTxt +
+            " Your Session-tab temperature is now " + finish.f + "°F. Nothing is running — go to the Session tab and tap “Start guided session” when you're ready.";
+          note.appendChild(t1);
+          var row = document.createElement("div");
+          row.style.marginTop = "8px";
+          var see = document.createElement("button");
+          see.type = "button"; see.className = "btn btn-goto"; see.style.marginTop = "0"; see.style.marginRight = "8px";
+          see.textContent = "See it on the Session tab";
+          see.addEventListener("click", function () { switchTab("session"); });
+          var reset = document.createElement("button");
+          reset.type = "button"; reset.className = "btn btn-ghost"; reset.style.marginTop = "0";
+          reset.textContent = "Reset to standard ladder";
+          reset.addEventListener("click", function () { strResetPlan(); });
+          row.appendChild(see); row.appendChild(reset);
+          note.appendChild(row);
+          strStaged = { strainId: strain[SF.id], at: Date.now(), title: plan.title, ladder: plan.steps.map(function (s) { return { f: s.f, label: s.label }; }), capped: plan.capped, topScience: plan.topScience, ceiling: plan.ceiling };
+          strSave(strPlanKey, strStaged);
+          log("Strain plan staged for " + strain[SF.name] + ": " + flow + "." + (plan.capped ? " Capped at the Burn Guard ceiling (" + plan.ceiling + "°F)." : "") + " Session-tab setpoint moved to " + finish.f + "°F — nothing sent yet; starting stays the user's tap.", "info");
+          haptics.tick();
+          if (statusEl) setMiniMsg(statusEl, "ok", "Staged: " + flow + ". Your Session-tab temperature is now " + finish.f + "°F — tap Set there to send it, and Start guided session when you're ready. Nothing auto-fired.");
+        }
+        function strResetPlan() {
+          GUIDED_LADDER.length = 0;
+          GUIDED_LADDER_DEFAULT.forEach(function (s) { GUIDED_LADDER.push({ f: s.f, label: s.label }); });
+          strEl("guidedFlow").textContent = GUIDED_FLOW_DEFAULT;
+          strEl("guidedStrainNote").hidden = true;
+          strStaged = null;
+          strSave(strPlanKey, null);
+          log("Guided ladder reset to the standard 340 → 360 → 370°F ladder.", "info");
+        }
+
+        /* ---- Library UI ---- */
+        var strFilter = { q: "", type: "all" };
+        function strMatches(strain) {
+          if (strFilter.type === "fav") { if (!strIsFav(strain[SF.id])) return false; }
+          else if (strFilter.type !== "all" && String(strain[SF.type]) !== strFilter.type) return false;
+          if (strFilter.q) {
+            var hay = (strain[SF.name] + " " + strain[SF.aliases]).toLowerCase();
+            if (hay.indexOf(strFilter.q) === -1) return false;
+          }
+          return true;
+        }
+        function strRenderList() {
+          var list = strEl("strainList");
+          var shown = 0;
+          var html = "";
+          STRAINS.forEach(function (s) {
+            if (!strMatches(s)) return;
+            shown++;
+            var fav = strIsFav(s[SF.id]);
+            html += '<button type="button" class="str-card" data-sid="' + s[SF.id] + '">' +
+              '<span class="str-mono">' + strMonogram(s[SF.name], s[SF.terps]) + '</span>' +
+              '<span class="str-card-main"><span class="str-card-name">' + strEsc(s[SF.name]) + '</span>' +
+              '<span class="str-card-sub">' + strEsc(strTypeName(s[SF.type])) + " · THC " + strEsc(s[SF.thc]) + '</span></span>' +
+              '<span class="str-fav" role="button" tabindex="0" data-fav="' + s[SF.id] + '" aria-pressed="' + (fav ? "true" : "false") + '" aria-label="Favorite ' + strEsc(s[SF.name]) + '">★</span>' +
+              '</button>';
+          });
+          list.innerHTML = html || '<p class="str-empty">No strains match — clear the search or the Favorites filter.</p>';
+          strEl("strainCount").textContent = "150 strains · showing " + shown + (strFav.length ? " · " + strFav.length + " favorited" : "");
+          var cards = list.querySelectorAll(".str-card");
+          Array.prototype.forEach.call(cards, function (c) {
+            c.addEventListener("click", function (ev) {
+              var favEl = ev.target.closest ? ev.target.closest("[data-fav]") : null;
+              if (favEl) {
+                ev.stopPropagation();
+                strToggleFav(parseInt(favEl.getAttribute("data-fav"), 10));
+                favEl.setAttribute("aria-pressed", strIsFav(parseInt(favEl.getAttribute("data-fav"), 10)) ? "true" : "false");
+                strRenderList();
+                return;
+              }
+              openGuide(parseInt(c.getAttribute("data-sid"), 10));
+            });
+          });
+          var favs = list.querySelectorAll("[data-fav]");
+          Array.prototype.forEach.call(favs, function (f) {
+            f.addEventListener("keydown", function (ev) {
+              if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); f.click(); }
+            });
+          });
+        }
+
+        /* ---- Sheet plumbing ---- */
+        var sheetState = { mode: null, strainId: null, entryId: null, picks: [] };
+        var strPicks = {}; // in-session picker picks per strain, prefilled into the questionnaire
+        function openSheet(title) {
+          strEl("strainSheetTitle").textContent = title;
+          strEl("strainSheet").hidden = false;
+          strEl("strainSheet").scrollTop = 0;
+          document.body.style.overflow = "hidden";
+        }
+        function closeSheet() {
+          strEl("strainSheet").hidden = true;
+          document.body.style.overflow = "";
+          sheetState = { mode: null, strainId: null, entryId: null, picks: [] };
+          if (quizState && quizState.draftId) { idbDeleteEntry(quizState.draftId); quizState = null; }
+          strRenderList(); strRenderLogList();
+        }
+
+        /* ---- Guide ---- */
+        function strSrcLinks(strain) {
+          var keys = String(strain[SF.src] || "").split(",").filter(function (k) { return STRAIN_SRC_LINKS[k]; });
+          if (!keys.length) return "";
+          return keys.map(function (k) {
+            var l = STRAIN_SRC_LINKS[k];
+            return '<a href="' + strEsc(l.url) + '" target="_blank" rel="noopener">' + strEsc(l.label) + '</a>';
+          }).join(" · ");
+        }
+        function openGuide(id) {
+          var s = strainById(id);
+          if (!s) return;
+          sheetState = { mode: "guide", strainId: id, entryId: null, picks: strPicks[id] ? strPicks[id].slice() : [] };
+          var r = strVapeRange(s);
+          var fav = strIsFav(id);
+          var body = strEl("strainSheetBody");
+          var h = "";
+          h += '<div class="str-hero"><span class="str-mono">' + strMonogram(s[SF.name], s[SF.terps]) + '</span><div>' +
+            '<h3>' + strEsc(s[SF.name]) + '</h3>' +
+            '<div class="alias" style="margin-top:4px;">Stylized panel — no verified photo of this exact strain is published here. Your own grind &amp; bowl photos appear under “Your history” once you log a session.</div>' +
+            (s[SF.aliases] ? '<div class="alias">' + strEsc(s[SF.aliases]) + '</div>' : "") +
+            '<div class="alias" style="margin-top:4px;">' + strEsc(s[SF.typeLabel]) + '</div></div></div>';
+          h += '<button type="button" class="btn ' + (fav ? "btn-ghost" : "btn-primary") + '" id="gdFav" style="margin:0 0 14px;">' + (fav ? "★ Favorited — tap to remove" : "☆ Favorite this strain") + '</button>';
+          h += '<div id="gdHistory"></div>';
+          h += '<div class="kv">';
+          h += kvRow("Lineage", strEsc(s[SF.lineage]));
+          h += kvRow("THC", "<span class=\"v\">" + strEsc(s[SF.thc]) + "</span>");
+          h += kvRow("CBD", "<span class=\"v\">" + strEsc(s[SF.cbd]) + "</span>");
+          h += kvRow("Dominant terpenes", "<span class=\"v\">" + s[SF.terps].map(strEsc).join(" · ") + "</span>");
+          if (s[SF.pheno]) h += kvRow("Phenotypes", strEsc(s[SF.pheno]));
+          h += kvRow("Effects <span style=\"text-transform:none;letter-spacing:0;\">(commonly reported)</span>",
+            '<div class="tagrow">' + s[SF.effects].map(function (e) { return '<span class="tag">' + strEsc(e) + '</span>'; }).join("") + '</div>');
+          h += kvRow("Flavours / aromas",
+            '<div class="tagrow">' + s[SF.flavors].map(function (f) { return '<span class="tag">' + strEsc(f) + '</span>'; }).join("") + '</div>');
+          h += kvRow("About", strEsc(s[SF.desc]));
+          if (s[SF.note]) h += kvRow("Worth knowing", '<span class="v">⚠ ' + strEsc(s[SF.note]) + '</span>');
+          h += '</div>';
+          h += '<p class="src-line">Compiled from the Leafly + AllBud strain databases, breeder/seed-bank listings and Herb/Leafwell guides (see Sources). ' + strSrcLinks(s) + '</p>';
+          h += '<div class="vapebox"><strong>Suggested starting temperature</strong> — a flavour/extraction heuristic, not a scientific optimum.<br>' +
+            '<span class="vb-range">' + r.loC + '–' + r.hiC + '°C · ' + r.loF + '–' + r.hiF + '°F</span><br>' +
+            'Assumes flower stored at 58% RH. Start at the low end for flavour; step up for fuller extraction.</div>';
+          /* Effect picker */
+          h += '<h4 style="margin:16px 0 6px;font-size:16px;">What do you want out of this one?</h4>' +
+            '<p class="card-sub" style="margin:0 0 8px;">Pick from <strong>this strain\'s own reported effects only</strong> — the list below is the eligible set.</p>' +
+            '<div class="chip-row" id="gdPickChips">' +
+            s[SF.effects].map(function (e) {
+              var on = sheetState.picks.indexOf(e) !== -1;
+              return '<button type="button" class="chip" data-pick="' + strEsc(e) + '" aria-pressed="' + (on ? "true" : "false") + '">' + strEsc(e) + '</button>';
+            }).join("") + '</div>' +
+            '<button type="button" class="btn btn-primary" id="gdVapeIt" style="margin-top:4px;">Vape it — suggest a range &amp; workflow</button>' +
+            '<div id="gdPickOut"></div>';
+          h += '<div class="honest-box" style="margin-top:14px;"><strong>Non-guarantee</strong><p>' + strEsc(PICKER_DISCLAIMER) + '</p></div>';
+          h += '<button type="button" class="btn btn-primary" id="gdLog" style="margin-top:14px;">Log a session</button>';
+          body.innerHTML = h;
+          openSheet(s[SF.name]);
+          strEl("gdFav").addEventListener("click", function () {
+            strToggleFav(id);
+            haptics.tick();
+            openGuide(id);
+          });
+          renderGuideHistory(id);
+          var chips = body.querySelectorAll("#gdPickChips .chip");
+          Array.prototype.forEach.call(chips, function (c) {
+            c.addEventListener("click", function () {
+              var e = c.getAttribute("data-pick");
+              var i = sheetState.picks.indexOf(e);
+              if (i === -1) sheetState.picks.push(e); else sheetState.picks.splice(i, 1);
+              strPicks[id] = sheetState.picks.slice();
+              c.setAttribute("aria-pressed", i === -1 ? "true" : "false");
+              haptics.tick();
+            });
+          });
+          strEl("gdVapeIt").addEventListener("click", function () { renderPickerResult(s); });
+          strEl("gdLog").addEventListener("click", function () { openQuiz(id); });
+        }
+        function kvRow(k, v) {
+          return '<div class="kv-row"><span class="k">' + k + '</span><div class="v">' + v + '</div></div>';
+        }
+        function renderPickerResult(s) {
+          var out = strEl("gdPickOut");
+          var picks = sheetState.picks.slice();
+          if (!picks.length) {
+            setMiniMsg(out, "err", "Pick at least one effect from the list above — the picker only works from this strain's documented effects.");
+            return;
+          }
+          var h = "";
+          /* Grade rows */
+          h += '<div style="margin-top:12px;">';
+          picks.forEach(function (p) {
+            var info = EFF_INFO[p] || { g: "F/B", comp: "none specific", basis: "User tag; no compound mapping." };
+            var note = strAssocNote(p, s[SF.terps]);
+            h += '<div class="pick-row"><span class="grade ' + strGradeClass(info.g) + '">' + strEsc(info.g) + '</span><strong>' + strEsc(p) + '</strong><br>' +
+              'Behind it: ' + strEsc(info.comp) + '.<br>' + strEsc(info.basis) +
+              (note ? '<br><em>' + strEsc(note) + '</em>' : '') + '</div>';
+          });
+          h += '</div>';
+          var gradesLegend = '<p class="card-sub" style="margin:8px 0 0;">Grades: <strong>A</strong> human trials · <strong>B</strong> user reports only · <strong>C</strong> animal/in-vitro · <strong>F</strong> folklore.</p>';
+          h += gradesLegend;
+          /* Plans */
+          var plans = strBuildPlans(s, picks);
+          var conflict = plans.length > 1 && plans.some(function (p) { return p.kind === "bright"; }) && plans.some(function (p) { return p.kind === "body"; });
+          if (conflict) h += '<div class="warn-line"><span>These picks contradict each other in user reports (bright vs body). Shown below as <strong>alternatives</strong> — never averaged into a compromise.</span></div>';
+          plans.forEach(function (pl, pi) {
+            var flow = pl.steps.map(function (st) { return st.f + "°F"; }).join(" → stir → ") + " → stir & finish";
+            h += '<div class="plan-card"><h4>' + strEsc(pl.title) + '</h4>' +
+              '<div class="plan-steps">' + strEsc(flow) + '</div>' +
+              '<p>' + strEsc(pl.why) + '</p>' +
+              (pl.capped ? '<p><strong>Ceiling note:</strong> the science range reaches ' + pl.topScience + '°F — above your Burn Guard ceiling of ' + pl.ceiling + '°F — so every step is capped at your ceiling.</p>' : '') +
+              '<button type="button" class="btn btn-primary" data-loadplan="' + pi + '" style="margin:0;">Load temp &amp; workflow</button></div>';
+          });
+          h += '<div class="mini-msg" id="gdLoadMsg" hidden></div>';
+          out.innerHTML = h;
+          var btns = out.querySelectorAll("[data-loadplan]");
+          Array.prototype.forEach.call(btns, function (b) {
+            b.addEventListener("click", function () {
+              strStagePlan(s, plans[parseInt(b.getAttribute("data-loadplan"), 10)], strEl("gdLoadMsg"));
+            });
+          });
+          out.scrollIntoView({ block: "start" });
+        }
+
+
+        /* ---- Questionnaire + photos + log entries (Strains, part 2) ---- */
+        var quizState = null;
+
+        function qSegHTML(id, opts) {
+          return '<div class="seg-control" id="' + id + '" role="group">' + opts.map(function (o, i) {
+            var v = typeof o === "string" ? o : o.v, t = typeof o === "string" ? o : (o.t || o.v);
+            return '<button type="button" data-v="' + strEsc(v) + '" aria-pressed="' + (i === 0 ? "true" : "false") + '">' + strEsc(t) + '</button>';
+          }).join("") + '</div>';
+        }
+        function qChipsHTML(id, opts, sel) {
+          sel = sel || [];
+          return '<div class="chip-row" id="' + id + '">' + opts.map(function (o) {
+            var on = sel.indexOf(o) !== -1;
+            return '<button type="button" class="chip" data-v="' + strEsc(o) + '" aria-pressed="' + (on ? "true" : "false") + '">' + strEsc(o) + '</button>';
+          }).join("") + '</div>';
+        }
+        function qGetSeg(id) {
+          var b = document.querySelector("#" + id + ' [aria-pressed="true"]');
+          return b ? b.getAttribute("data-v") : null;
+        }
+        function qGetChips(id) {
+          var out = [];
+          var bs = document.querySelectorAll("#" + id + ' [aria-pressed="true"]');
+          Array.prototype.forEach.call(bs, function (b) { out.push(b.getAttribute("data-v")); });
+          return out;
+        }
+        function qWireSeg(id) {
+          var box = strEl(id);
+          if (!box) return;
+          var bs = box.querySelectorAll("button");
+          Array.prototype.forEach.call(bs, function (b) {
+            b.addEventListener("click", function () {
+              Array.prototype.forEach.call(bs, function (x) { x.setAttribute("aria-pressed", "false"); });
+              b.setAttribute("aria-pressed", "true");
+              haptics.tick();
+            });
+          });
+        }
+        function qWireChips(id, onChange) {
+          var box = strEl(id);
+          if (!box) return;
+          var bs = box.querySelectorAll("button");
+          Array.prototype.forEach.call(bs, function (b) {
+            b.addEventListener("click", function () {
+              b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") === "true" ? "false" : "true");
+              haptics.tick();
+              if (onChange) onChange();
+            });
+          });
+        }
+
+        /* ---- Photos: device camera via capture="environment", library fallback.
+           Downscaled in-page, stored ONLY on this device (IndexedDB) with the entry. ---- */
+        var strIdb = null, strIdbOk = false, strIdbMem = {};
+        function strIdbOpen() {
+          return new Promise(function (res) {
+            if (strIdb) { res(strIdbOk); return; }
+            if (!("indexedDB" in window)) { strIdbOk = false; res(false); return; }
+            var r;
+            try { r = indexedDB.open("ff2-strains", 1); } catch (e) { strIdbOk = false; res(false); return; }
+            r.onupgradeneeded = function () { try { r.result.createObjectStore("photos", { keyPath: "id" }); } catch (e) { /* ignore */ } };
+            r.onsuccess = function () { strIdb = r.result; strIdbOk = true; res(true); };
+            r.onerror = function () { strIdbOk = false; res(false); };
+          });
+        }
+        function strIdbPut(ph) {
+          return strIdbOpen().then(function (ok) {
+            if (ok) return new Promise(function (res) {
+              try {
+                var t = strIdb.transaction("photos", "readwrite");
+                t.objectStore("photos").put(ph);
+                t.oncomplete = function () { res(true); };
+                t.onerror = function () { strIdbMem[ph.id] = ph; res(true); };
+              } catch (e) { strIdbMem[ph.id] = ph; res(true); }
+            });
+            strIdbMem[ph.id] = ph;
+            return true;
+          });
+        }
+        function strIdbList(entryId) {
+          return strIdbOpen().then(function (ok) {
+            var mem = Object.keys(strIdbMem).map(function (k) { return strIdbMem[k]; })
+              .filter(function (p) { return p.entryId === entryId; });
+            if (!ok) return mem;
+            return new Promise(function (res) {
+              var out = [];
+              try {
+                var t = strIdb.transaction("photos", "readonly");
+                var rq = t.objectStore("photos").openCursor();
+                rq.onsuccess = function () {
+                  var c = rq.result;
+                  if (c) { if (c.value.entryId === entryId) out.push(c.value); c.continue(); }
+                  else res(mem.concat(out));
+                };
+                rq.onerror = function () { res(mem); };
+              } catch (e) { res(mem); }
+            });
+          });
+        }
+        function strIdbDeleteEntry(entryId) {
+          return strIdbOpen().then(function (ok) {
+            Object.keys(strIdbMem).forEach(function (k) { if (strIdbMem[k].entryId === entryId) delete strIdbMem[k]; });
+            if (!ok) return true;
+            return new Promise(function (res) {
+              try {
+                var t = strIdb.transaction("photos", "readwrite");
+                var st = t.objectStore("photos");
+                var rq = st.openCursor();
+                rq.onsuccess = function () {
+                  var c = rq.result;
+                  if (c) { if (c.value.entryId === entryId) st.delete(c.key); c.continue(); }
+                  else res(true);
+                };
+                rq.onerror = function () { res(true); };
+              } catch (e) { res(true); }
+            });
+          });
+        }
+        function downscalePhoto(file, cb) {
+          var img = new Image();
+          var url = URL.createObjectURL(file);
+          img.onload = function () {
+            try {
+              var max = 800, sc = Math.min(1, max / Math.max(img.width, img.height));
+              var cw = Math.max(1, Math.round(img.width * sc)), ch = Math.max(1, Math.round(img.height * sc));
+              var c = document.createElement("canvas");
+              c.width = cw; c.height = ch;
+              c.getContext("2d").drawImage(img, 0, 0, cw, ch);
+              cb(c.toDataURL("image/jpeg", 0.72));
+            } catch (e) { cb(null); }
+            URL.revokeObjectURL(url);
+          };
+          img.onerror = function () { URL.revokeObjectURL(url); cb(null); };
+          img.src = url;
+        }
+        function strPhotoThumbHTML(ph) {
+          return '<img class="ph-thumb" src="' + ph.dataUrl + '" alt="' + (ph.kind === "grind" ? "Grind" : "Bowl") + ' photo">';
+        }
+        function renderPhotoSlot(kind) {
+          if (!quizState) return;
+          var draft = quizState.draftId;
+          strIdbList(draft).then(function (all) {
+            var mine = all.filter(function (p) { return p.kind === kind; });
+            var img = strEl("phThumb_" + kind), del = strEl("phDel_" + kind);
+            if (!img) return;
+            if (mine.length) {
+              img.src = mine[mine.length - 1].dataUrl;
+              img.hidden = false;
+              del.hidden = false;
+              del.setAttribute("data-pid", mine[mine.length - 1].id);
+            } else {
+              img.hidden = true; del.hidden = true;
+            }
+          });
+        }
+        function wirePhotoSlot(kind) {
+          var cap = strEl("phFile_" + kind + "_cap"), lib = strEl("phFile_" + kind + "_lib");
+          strEl("phCap_" + kind).addEventListener("click", function () { haptics.tick(); cap.click(); });
+          strEl("phLib_" + kind).addEventListener("click", function () { haptics.tick(); lib.click(); });
+          var onFile = function (input) {
+            var f = input.files && input.files[0];
+            input.value = "";
+            if (!f || !quizState) return;
+            downscalePhoto(f, function (dataUrl) {
+              if (!dataUrl) { setMiniMsg(strEl("qMsg"), "err", "That photo couldn't be read — try another."); return; }
+              var ph = { id: "p" + Date.now().toString(36) + Math.floor(Math.random() * 1e4), entryId: quizState.draftId, kind: kind, dataUrl: dataUrl, ts: Date.now() };
+              strIdbPut(ph).then(function () { renderPhotoSlot(kind); haptics.tick(); });
+            });
+          };
+          cap.addEventListener("change", function () { onFile(cap); });
+          lib.addEventListener("change", function () { onFile(lib); });
+          strEl("phDel_" + kind).addEventListener("click", function () {
+            var pid = this.getAttribute("data-pid");
+            if (!pid) return;
+            strIdbOpen().then(function (ok) {
+              if (ok) { try { var t = strIdb.transaction("photos", "readwrite"); t.objectStore("photos").delete(pid); } catch (e) { /* ignore */ } }
+              delete strIdbMem[pid];
+              renderPhotoSlot(kind);
+            });
+          });
+        }
+        function photoSlotHTML(kind, label) {
+          return '<div class="q-block"><p class="q-label">' + label + '<span class="q-sub">Stored only on this device, with this log entry. Never uploaded.</span></p>' +
+            '<div class="ph-slot"><img class="ph-thumb" id="phThumb_' + kind + '" hidden alt="">' +
+            '<div class="ph-btns"><button type="button" class="btn btn-ghost" id="phCap_' + kind + '" style="margin:0;">Photograph ' + label.toLowerCase() + '</button>' +
+            '<button type="button" class="btn btn-ghost" id="phLib_' + kind + '" style="margin:0;">Choose from library</button>' +
+            '<button type="button" class="btn btn-ghost" id="phDel_' + kind + '" hidden style="margin:0;">Remove</button></div></div>' +
+            '<input type="file" id="phFile_' + kind + '_cap" accept="image/*" capture="environment" hidden>' +
+            '<input type="file" id="phFile_' + kind + '_lib" accept="image/*" hidden></div>';
+        }
+
+        /* ---- Questionnaire ---- */
+        function strStagedSummary() {
+          if (!strStaged || !strStaged.ladder) return null;
+          var s = strainById(strStaged.strainId);
+          return {
+            text: (s ? s[SF.name] : "strain") + " — " + strStaged.ladder.map(function (l) { return l.f + "°F"; }).join(" → stir → ") + " → stir & finish" +
+              (strStaged.capped ? " (capped at your " + strStaged.ceiling + "°F ceiling)" : "")
+          };
+        }
+        function openQuiz(strainId) {
+          var s = strainById(strainId);
+          if (!s) return;
+          quizState = { strainId: strainId, draftId: "d" + Date.now().toString(36) };
+          sheetState = { mode: "quiz", strainId: strainId, entryId: null, picks: [] };
+          var staged = strStagedSummary();
+          var coilTxt = (typeof isConnected !== "undefined" && isConnected && devState.coilValue !== null) ? devState.coilValue + "%" : "— (not connected)";
+          var sensTxt = (typeof isConnected !== "undefined" && isConnected && devState.activation !== null) ? ACTIVATION_LONG[devState.activation] : "— (not connected)";
+          var now = new Date();
+          var h = '<div class="q-auto">Auto-filled — <strong>' + strEsc(s[SF.name]) + '</strong> · ' + strEsc(now.toLocaleString()) +
+            '<br>Temp/workflow: <strong>' + strEsc(staged ? staged.text : "not loaded from the guide") + '</strong>' +
+            '<br>Coil calibration: <strong>' + strEsc(coilTxt) + '</strong> · Sensor mode: <strong>' + strEsc(sensTxt) + '</strong></div>';
+          h += '<div class="q-block"><p class="q-label">Bowl</p>' + qSegHTML("qBowl", ["Partial", "Full"]) + '</div>';
+          h += '<div class="q-block"><p class="q-label">Storage RH<span class="q-sub">Percent — 58 is the standard this app assumes.</span></p>' +
+            '<input type="number" class="q-num" id="qRH" value="58" min="0" max="100" inputmode="decimal"> <span style="color:var(--ink-soft);font-size:14px;">%</span></div>';
+          h += '<div class="q-block"><p class="q-label">Onset</p>' + qSegHTML("qOnset", ["Fast", "Gradual", "Creeper"]) + '</div>';
+          h += '<div class="q-block"><p class="q-label">Peak intensity</p>' + qSegHTML("qIntensity", ["1", "2", "3", "4", "5"]) + '</div>';
+          var desired = strPicks[strainId] && strPicks[strainId].length ? strPicks[strainId] : [];
+          h += '<div class="q-block"><p class="q-label">Effects you were after<span class="q-sub">From this strain\'s list. Then give each a verdict.</span></p>' +
+            qChipsHTML("qDesired", s[SF.effects], desired) + '<div id="qVerdicts"></div></div>';
+          h += '<div class="q-block"><p class="q-label">Effects you felt</p>' + qChipsHTML("qFelt", s[SF.effects], []) + '</div>';
+          h += '<div class="q-block"><p class="q-label">Duration</p>' + qSegHTML("qDuration", ["<1h", "1–2h", "2–3h", "3h+"]) + '</div>';
+          var flavorOpts = s[SF.flavors].concat(["Earthy", "Sweet", "Citrus", "Pine", "Diesel", "Floral", "Spicy", "Woody", "Herbal"])
+            .filter(function (v, i, a) { return a.indexOf(v) === i; });
+          h += '<div class="q-block"><p class="q-label">Flavour</p>' + qSegHTML("qFlavorScore", ["1", "2", "3", "4", "5"]) +
+            '<div style="margin-top:8px;">' + qChipsHTML("qFlavorChips", flavorOpts, []) + '</div></div>';
+          h += '<div class="q-block"><p class="q-label">Smoothness</p>' + qSegHTML("qSmooth", ["1", "2", "3", "4", "5"]) + '</div>';
+          h += '<div class="q-block"><p class="q-label">Burnt taste</p>' + qSegHTML("qBurnt", ["None", "Slight at end", "Yes"]) +
+            '<div id="qBurntAt" hidden style="margin-top:8px;"><input type="text" class="q-text" id="qBurntAtIn" placeholder="At what temp / stage? e.g. 390°F finish"></div></div>';
+          h += '<div class="q-block"><p class="q-label">Bowl after</p>' + qSegHTML("qBowlAfter", ["Even", "Stir saved it", "One side dark"]) + '</div>';
+          h += '<div class="q-block"><p class="q-label">Stirs</p>' + qSegHTML("qStirs", ["0", "1", "2+"]) + '</div>';
+          h += '<div class="q-block"><p class="q-label">Overall</p>' + qSegHTML("qStars", ["1", "2", "3", "4", "5"]) + '</div>';
+          h += '<div class="q-block"><p class="q-label">Smoke again?</p>' + qSegHTML("qAgain", ["Yes", "No"]) + '</div>';
+          h += '<div class="q-block"><p class="q-label">Best for</p>' + qChipsHTML("qBestFor", ["Daytime", "Evening", "Sleep", "Social", "Solo", "Creative"], []) + '</div>';
+          h += photoSlotHTML("grind", "Grind");
+          h += photoSlotHTML("bowl", "Bowl");
+          h += '<div class="q-block"><p class="q-label">Notes</p><textarea class="q-area" id="qNotes" placeholder="Anything else worth remembering…"></textarea></div>';
+          h += '<div class="mini-msg" id="qMsg" hidden></div>';
+          h += '<button type="button" class="btn btn-primary" id="qSave" style="margin-top:6px;">Save session</button> ' +
+            '<button type="button" class="btn btn-ghost" id="qCancel" style="margin-top:6px;">Cancel</button>';
+          strEl("strainSheetBody").innerHTML = h;
+          openSheet("Log — " + s[SF.name]);
+          ["qBowl", "qOnset", "qIntensity", "qDuration", "qFlavorScore", "qSmooth", "qBurnt", "qBowlAfter", "qStirs", "qStars", "qAgain"].forEach(qWireSeg);
+          ["qFelt", "qFlavorChips", "qBestFor"].forEach(function (id) { qWireChips(id); });
+          qWireChips("qDesired", renderVerdicts);
+          renderVerdicts();
+          var burntBox = strEl("qBurnt");
+          burntBox.addEventListener("click", function () {
+            setTimeout(function () { strEl("qBurntAt").hidden = qGetSeg("qBurnt") !== "Yes"; }, 0);
+          });
+          wirePhotoSlot("grind");
+          wirePhotoSlot("bowl");
+          strEl("qCancel").addEventListener("click", function () { closeSheet(); });
+          strEl("qSave").addEventListener("click", saveQuiz);
+          strEl("strainSheetBody").scrollTop = 0;
+        }
+        function renderVerdicts() {
+          var box = strEl("qVerdicts");
+          if (!box) return;
+          var desired = qGetChips("qDesired");
+          if (!desired.length) { box.innerHTML = '<p class="card-sub" style="margin:8px 0 0;">No desired effects picked — verdicts appear here when you pick some.</p>'; return; }
+          box.innerHTML = desired.map(function (d, i) {
+            return '<div class="verdict-row"><span class="v-name">' + strEsc(d) + '</span><div class="seg-control" id="qV_' + i + '" role="group" style="margin:0;flex:2;">' +
+              ["Showed up", "Partial", "Didn't"].map(function (v, j) {
+                return '<button type="button" data-v="' + strEsc(v) + '" aria-pressed="' + (j === 0 ? "true" : "false") + '" style="min-height:40px;font-size:13px;">' + strEsc(v) + '</button>';
+              }).join("") + '</div></div>';
+          }).join("");
+          desired.forEach(function (d, i) { qWireSeg("qV_" + i); });
+        }
+        function saveQuiz() {
+          if (!quizState) return;
+          var s = strainById(quizState.strainId);
+          var staged = strStagedSummary();
+          var desired = qGetChips("qDesired");
+          var verdicts = {};
+          desired.forEach(function (d, i) { verdicts[d] = qGetSeg("qV_" + i) || "Showed up"; });
+          var rh = parseFloat(strEl("qRH").value);
+          if (!isFinite(rh)) rh = 58;
+          var entry = {
+            id: "e" + Date.now().toString(36),
+            strainId: quizState.strainId,
+            strainName: s[SF.name],
+            at: Date.now(),
+            tempUsed: staged ? staged.text : "not loaded from the guide",
+            coilPct: (typeof isConnected !== "undefined" && isConnected && devState.coilValue !== null) ? devState.coilValue + "%" : "not connected",
+            sensorMode: (typeof isConnected !== "undefined" && isConnected && devState.activation !== null) ? ACTIVATION_LONG[devState.activation] : "not connected",
+            bowl: qGetSeg("qBowl"), rh: rh, onset: qGetSeg("qOnset"),
+            intensity: parseInt(qGetSeg("qIntensity"), 10) || 3,
+            desired: desired, verdicts: verdicts, felt: qGetChips("qFelt"),
+            duration: qGetSeg("qDuration"),
+            flavorScore: parseInt(qGetSeg("qFlavorScore"), 10) || 3, flavorChips: qGetChips("qFlavorChips"),
+            smoothness: parseInt(qGetSeg("qSmooth"), 10) || 3,
+            burnt: qGetSeg("qBurnt"), burntAt: strEl("qBurntAtIn").value.trim(),
+            bowlAfter: qGetSeg("qBowlAfter"), stirs: qGetSeg("qStirs"),
+            stars: parseInt(qGetSeg("qStars"), 10) || 3,
+            again: qGetSeg("qAgain"), bestFor: qGetChips("qBestFor"),
+            notes: strEl("qNotes").value.trim()
+          };
+          strLog.push(entry);
+          strSave(strLogKey, strLog);
+          var draftId = quizState.draftId, entryId = entry.id;
+          quizState = null;
+          strIdbList(draftId).then(function (photos) {
+            var chain = Promise.resolve();
+            photos.forEach(function (p) {
+              chain = chain.then(function () {
+                var np = { id: p.id, entryId: entryId, kind: p.kind, dataUrl: p.dataUrl, ts: p.ts };
+                return strIdbPut(np);
+              });
+            });
+            return chain;
+          }).then(function () {
+            log("Session logged: " + entry.strainName + " — " + entry.stars + "/5 stars, " + entry.tempUsed + ".", "ok");
+            openGuide(entry.strainId);
+            if (entry.again === "Yes" && !strIsFav(entry.strainId)) {
+              var b = strEl("strainSheetBody");
+              var d = document.createElement("div");
+              d.className = "mini-msg";
+              d.setAttribute("data-kind", "ok");
+              d.style.marginTop = "10px";
+              var sp = document.createElement("span");
+              sp.textContent = "Saved — and you'd smoke it again. ";
+              var fb = document.createElement("button");
+              fb.type = "button"; fb.className = "btn btn-ghost"; fb.style.marginTop = "8px";
+              fb.textContent = "★ Favorite " + entry.strainName;
+              fb.addEventListener("click", function () { strToggleFav(entry.strainId); haptics.tick(); openGuide(entry.strainId); });
+              d.appendChild(sp); d.appendChild(document.createElement("br")); d.appendChild(fb);
+              b.insertBefore(d, b.firstChild);
+            }
+          });
+        }
+
+        /* ---- Log list / entry view / history ---- */
+        function strStars(n) {
+          var h = '<span class="stars">';
+          for (var i = 1; i <= 5; i++) h += '<span class="' + (i <= n ? "" : "off") + '">★</span>';
+          return h + '</span>';
+        }
+        function strFmtDate(ts) {
+          var d = new Date(ts);
+          return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        }
+        function strRenderLogList() {
+          var wrap = strEl("strainLogEntries");
+          if (!strLog.length) { wrap.innerHTML = '<p class="str-empty">Nothing logged yet — open a strain guide and tap “Log a session”.</p>'; return; }
+          var sorted = strLog.slice().sort(function (a, b) { return b.at - a.at; });
+          wrap.innerHTML = sorted.map(function (e) {
+            var s = strainById(e.strainId);
+            return '<button type="button" class="log-row" data-eid="' + strEsc(e.id) + '">' +
+              '<span class="str-mono" style="width:40px;height:40px;">' + strMonogram(e.strainName, s ? s[SF.terps] : []) + '</span>' +
+              '<span class="lr-main"><span class="lr-name">' + strEsc(e.strainName) + '</span>' +
+              '<span class="lr-sub">' + strEsc(strFmtDate(e.at)) + ' · ' + strEsc(e.tempUsed).slice(0, 60) + '</span></span>' +
+              strStars(e.stars) + '</button>';
+          }).join("");
+          var rows = wrap.querySelectorAll(".log-row");
+          Array.prototype.forEach.call(rows, function (r) {
+            r.addEventListener("click", function () { openEntry(r.getAttribute("data-eid")); });
+          });
+        }
+        function openEntry(eid) {
+          var e = null;
+          for (var i = 0; i < strLog.length; i++) if (strLog[i].id === eid) e = strLog[i];
+          if (!e) return;
+          sheetState = { mode: "entry", strainId: e.strainId, entryId: eid, picks: [] };
+          var s = strainById(e.strainId);
+          var h = '<div class="str-hero"><span class="str-mono">' + strMonogram(e.strainName, s ? s[SF.terps] : []) + '</span><div>' +
+            '<h3>' + strEsc(e.strainName) + '</h3><div class="alias">' + strEsc(strFmtDate(e.at)) + '</div>' +
+            '<div style="margin-top:4px;">' + strStars(e.stars) + '</div></div></div>';
+          h += '<div class="kv">';
+          h += kvRow("Temp / workflow used", strEsc(e.tempUsed));
+          h += kvRow("Coil calibration · sensor mode", strEsc(e.coilPct) + " · " + strEsc(e.sensorMode));
+          h += kvRow("Bowl", strEsc(e.bowl) + " · storage " + strEsc(e.rh) + "% RH");
+          h += kvRow("Onset", strEsc(e.onset) + " · peak intensity " + e.intensity + "/5");
+          if (e.desired && e.desired.length) h += kvRow("Wanted → verdict", e.desired.map(function (d) {
+            return '<div style="margin:2px 0;"><strong>' + strEsc(d) + '</strong> → ' + strEsc((e.verdicts || {})[d] || "—") + '</div>';
+          }).join(""));
+          if (e.felt && e.felt.length) h += kvRow("Effects felt", '<div class="tagrow">' + e.felt.map(function (f) { return '<span class="tag">' + strEsc(f) + '</span>'; }).join("") + '</div>');
+          h += kvRow("Duration", strEsc(e.duration));
+          h += kvRow("Flavour", e.flavorScore + "/5" + (e.flavorChips && e.flavorChips.length ? " · " + e.flavorChips.map(strEsc).join(", ") : ""));
+          h += kvRow("Smoothness", e.smoothness + "/5");
+          h += kvRow("Burnt taste", strEsc(e.burnt) + (e.burntAt ? " — " + strEsc(e.burntAt) : ""));
+          h += kvRow("Bowl after", strEsc(e.bowlAfter) + " · stirs: " + strEsc(e.stirs));
+          h += kvRow("Smoke again", strEsc(e.again) + (e.bestFor && e.bestFor.length ? " · best for: " + e.bestFor.map(strEsc).join(", ") : ""));
+          if (e.notes) h += kvRow("Notes", strEsc(e.notes));
+          h += '</div><div id="enPhotos" style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;"></div>';
+          h += '<button type="button" class="btn btn-ghost" id="enDelete">Delete this session</button>';
+          strEl("strainSheetBody").innerHTML = h;
+          openSheet(e.strainName + " — session");
+          strIdbList(eid).then(function (photos) {
+            var box = strEl("enPhotos");
+            if (!box) return;
+            box.innerHTML = photos.length ? photos.map(strPhotoThumbHTML).join("") : '<span class="ph-empty">No photos on this entry.</span>';
+          });
+          var del = strEl("enDelete"), armed = false;
+          del.addEventListener("click", function () {
+            if (!armed) {
+              armed = true;
+              del.textContent = "Tap again to confirm delete";
+              del.classList.add("del-arm");
+              setTimeout(function () { if (del.isConnected) { armed = false; del.textContent = "Delete this session"; del.classList.remove("del-arm"); } }, 4000);
+              return;
+            }
+            strIdbDeleteEntry(eid).then(function () {
+              strLog = strLog.filter(function (x) { return x.id !== eid; });
+              strSave(strLogKey, strLog);
+              log("Session deleted: " + e.strainName + " (" + strFmtDate(e.at) + "). Its photos were deleted too.", "info");
+              closeSheet();
+            });
+          });
+        }
+        function renderGuideHistory(strainId) {
+          var box = strEl("gdHistory");
+          if (!box) return;
+          var es = strLog.filter(function (e) { return e.strainId === strainId; });
+          if (!es.length) { box.innerHTML = ""; return; }
+          var avg = es.reduce(function (a, e) { return a + e.stars; }, 0) / es.length;
+          var burns = es.filter(function (e) { return e.burnt && e.burnt !== "None"; });
+          var h = '<div class="vapebox" style="margin-top:0;"><strong>Your history</strong> — ' + es.length + ' session' + (es.length > 1 ? "s" : "") +
+            ' · average ' + avg.toFixed(1) + '/5 ' + strStars(Math.round(avg));
+          if (burns.length) h += '<br>Burnt taste in ' + burns.length + ' of ' + es.length + ': ' + burns.map(function (b) {
+            return strEsc(b.burnt) + (b.burntAt ? " (" + strEsc(b.burntAt) + ")" : "");
+          }).join("; ");
+          h += '<div id="gdHistPhotos" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"></div></div>';
+          box.innerHTML = h;
+          var done = 0;
+          es.slice().sort(function (a, b) { return b.at - a.at; }).slice(0, 3).forEach(function (e) {
+            strIdbList(e.id).then(function (photos) {
+              var pb = strEl("gdHistPhotos");
+              if (!pb || done >= 4) return;
+              photos.slice(0, 4 - done).forEach(function (p) {
+                var im = document.createElement("img");
+                im.className = "ph-thumb"; im.src = p.dataUrl; im.alt = "Session photo";
+                pb.appendChild(im); done++;
+              });
+            });
+          });
+        }
+
+        /* ---- Sources (verbatim from the research report, §6) ---- */
+        var STRAIN_SOURCES = [
+          ["Strain data", "Leafly — best-selling strains 2025", "https://www.leafly.com/news/strains-products/best-selling-weed-strains?utm_source=ig&utm-medium=social-org"],
+          ["Strain data", "Leafly — past Strain of the Year winners", "https://www.leafly.com/news/strains-products/past-leafly-strain-of-the-year-winners"],
+          ["Strain data", "AllBud — 25 most popular strains", "https://www.allbud.com/learn/story/25-most-popular-cannabis-strains-all-time"],
+          ["Strain data", "AllBud strain database (representative page)", "https://www.allbud.com/marijuana-strains/hybrid/dutchs-blue-dream"],
+          ["Strain data", "Leafwell — OG Kush", "https://leafwell.com/cannabis-strains/og-kush"],
+          ["Strain data", "Herb — Gelato", "https://herb.co/strains-sense/gelato-strain"],
+          ["Strain data", "Herb — Runtz", "https://herb.co/strains-sense/runtz-strain"],
+          ["Strain data", "OG Kush lab aggregate", "https://ogkushstrain.net/"],
+          ["Strain data", "Jack Herer lab/provenance analysis", "https://officialjackherer.com/"],
+          ["Strain data", "Diesel Hemp — Jack Herer encyclopedia", "https://dieselhemp.com/blogs/encyclopedia/jack-herer"],
+          ["Strain data", "Granddaddy Purple strain data", "https://kindgreenbuds.com/marijuana-strains/granddaddy-purple/"],
+          ["Strain data", "Permanent Marker deep dive", "https://gasdank.com/blog/permanent-marker-strain-review-a-deep-dive-into-this-potent-hybrid"],
+          ["Strain data", "Jealousy strain data", "https://justweedstrains.com/jealousy-strain/"],
+          ["Strain data", "CBD-rich strain guide", "https://straintrakker.com/blog/cbd-rich-strains-complete-medical-growing-guide"],
+          ["Temperature science", "Terpenes and Testing — cannabinoid boiling points", "https://terpenesandtesting.com/what-are-the-burning-points-of-the-10-most-common-cannabinoids/"],
+          ["Temperature science", "Terpenes and Testing — terpene boiling points", "https://terpenesandtesting.com/what-are-the-burning-points-of-the-most-common-terpenes/"],
+          ["Temperature science", "The Amazing Flower — terpene dictionary", "https://theamazingflower.com/pages/terpenes"],
+          ["Temperature science", "Lanz et al. 2016 — vaporizer efficiency (PLoS ONE)", "http://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0147286&type=printable"],
+          ["Temperature science", "Hazekamp et al. 2006 — Volcano THC delivery", "https://www.researchgate.net/publication/7143935_Evaluation_of_a_vaporizing_device_VolcanoR_for_the_pulmonary_delivery_of_tetrahydrocannabinol"],
+          ["Temperature science", "Wang et al. 2016 — decarboxylation kinetics (summary)", "https://www.rootsciences.com/blog/cannabis-decarboxylation-101-everything-you-need-to-know/"],
+          ["Temperature science", "Strongin — dabbing degradation", "https://terpenesandtesting.com/how-terpenes-can-cause-and-prevent-degradation-of-molecules-in-cannabis-concentrates-a-conversation-with-dr-robert-strongin/"],
+          ["Effect science", "de la Fuente et al. 2020 — flavour/effect correlations", "https://research.tilburguniversity.edu/en/publications/relationship-among-subjective-responses-flavor-and-chemical-compo"],
+          ["Effect science", "Molecules 2023 — biphasic/individual response review", "https://www.mdpi.com/1420-3049/28/6/2791/xml"],
+          ["Moisture", "ASTM D8197-22 — water activity 0.55–0.65", "https://standards.iteh.ai/catalog/standards/astm/1382e0b6-23c5-4860-bbba-a289fa8adcde/astm-d8197-22"],
+          ["Moisture", "Terpenes and Testing — moisture analysis (Karl Fischer vs LOD)", "https://terpenesandtesting.com/moisture-analysis-of-cannabis-using-karl-fischer-titration/"]
+        ];
+        function renderSources() {
+          var box = strEl("strainSources");
+          if (!box) return;
+          box.innerHTML = STRAIN_SOURCES.map(function (r) {
+            return '<div style="margin:3px 0;">[' + strEsc(r[0]) + '] <a href="' + strEsc(r[2]) + '" target="_blank" rel="noopener">' + strEsc(r[1]) + '</a></div>';
+          }).join("");
+        }
+
+        /* ---- Init ---- */
+        function strInit() {
+          var search = strEl("strainSearch");
+          search.addEventListener("input", function () {
+            strFilter.q = search.value.trim().toLowerCase();
+            strRenderList();
+          });
+          var chips = strEl("strainTypeChips").querySelectorAll(".chip");
+          Array.prototype.forEach.call(chips, function (c) {
+            c.addEventListener("click", function () {
+              Array.prototype.forEach.call(chips, function (x) { x.setAttribute("aria-pressed", "false"); });
+              c.setAttribute("aria-pressed", "true");
+              strFilter.type = c.getAttribute("data-sttype");
+              haptics.tick();
+              strRenderList();
+            });
+          });
+          strEl("strainSheetBack").addEventListener("click", function () { closeSheet(); });
+          if (typeof tabBtns !== "undefined") {
+            Object.keys(tabBtns).forEach(function (k) {
+              tabBtns[k].addEventListener("click", function () {
+                if (k !== "strains" && !strEl("strainSheet").hidden) closeSheet();
+              });
+            });
+          }
+          renderSources();
+          strRenderList();
+          strRenderLogList();
+        }
+
+        strInit();
+
         /* ================= Terpene temperature chart ================= */
         var BANDS = [
           {
@@ -4300,22 +5645,22 @@
           },
           {
             name: "Low", min: 300, max: 320, setpoint: 320, tint: "rgba(111,206,98,0.32)",
-            teaser: "First real release — pinene and THC switch on",
+            teaser: "First real release — pinene lifts off, THC\u2019s gradual release begins",
             compounds: [
-              { name: "α-pinene", temp: "~311°F (155°C)", note: "The piney, fresh scent also found in pine needles and rosemary." },
-              { name: "THC", temp: "~315°F (157°C)", note: "The main compound behind the classic cannabis high." }
+              { name: "α-pinene", temp: "~313°F (156°C, NIST, normal pressure)", note: "The piney, fresh scent also found in pine needles and rosemary. A lab-measured boiling point at normal air pressure." },
+              { name: "THC", temp: "gradual release — no single switch", note: "The main compound behind the classic cannabis high. The famous 157°C/315°F “boiling point” was measured at 0.05 Torr — a vacuum. At normal pressure THC evaporates well below any boiling point (measurable vapour from ~91°C); extraction just rises with heat from here up." }
             ],
-            active: "Just these two so far — everything else is still waiting for more heat.",
+            active: "Pinene is properly releasing and THC is evaporating gradually — everything else is still waiting for more heat.",
             feel: "Commonly reported as clear-headed and light, with the strain's fresh, piney top-notes front and center.",
             bestFor: "A gentle, easygoing lift with lots of flavor."
           },
           {
             name: "Med Low", min: 330, max: 350, setpoint: 350, tint: "rgba(168,194,86,0.30)",
-            teaser: "The flavor zone — myrcene, CBD and limonene arrive",
+            teaser: "The flavor zone — myrcene and limonene arrive, CBD extracts",
             compounds: [
-              { name: "Myrcene", temp: "~332–334°F (167°C)", note: "Earthy, musky terpene also found in mangoes and hops — the one popularly linked with a relaxed, couch-friendly feel." },
-              { name: "CBD", temp: "~338–356°F (170–180°C)", note: "The non-intoxicating compound. Starts releasing here and keeps going through the next band up." },
-              { name: "Limonene", temp: "~349°F (176°C)", note: "Bright citrus terpene from lemon and orange peel." }
+              { name: "Myrcene", temp: "~333°F (167°C, NIST, normal pressure)", note: "Earthy, musky terpene also found in mangoes and hops — the one popularly linked with a relaxed, couch-friendly feel." },
+              { name: "CBD", temp: "gradual — no documented single point", note: "The non-intoxicating compound. The 160–180°C figures on popular charts trace to an unreferenced patent, not an atmospheric measurement; measured extraction rises with temperature across the whole range." },
+              { name: "Limonene", temp: "~349°F (176°C, NIST, normal pressure)", note: "Bright citrus terpene from lemon and orange peel. A lab-measured boiling point at normal air pressure." }
             ],
             active: "Plus α-pinene and THC from the Low band — the core of the experience is now switched on.",
             feel: "Commonly reported as the tastiest zone: bright citrus and earthy notes together, with a calm, easy character.",
@@ -4325,9 +5670,9 @@
             name: "Medium", min: 360, max: 380, setpoint: 380, tint: "rgba(245,168,60,0.28)",
             teaser: "Middle of the road — terpinolene joins in",
             compounds: [
-              { name: "Terpinolene", temp: "~365–369°F (185–187°C)", note: "Herbal, slightly floral terpene also found in lilac and tea tree." }
+              { name: "Terpinolene", temp: "~365–369°F (185–187°C, NIST, normal pressure)", note: "Herbal, slightly floral terpene also found in lilac and tea tree." }
             ],
-            active: "Everything from the lower bands, with CBD finishing its release across this range. Linalool (~388°F) is just about to start at the top edge.",
+            active: "Everything from the lower bands, with THC/CBD extraction still rising with heat. Linalool (~388–390°F, NIST) is just about to start at the top edge.",
             feel: "Commonly reported as the middle of the road — head and body together, fuller than Med Low without going heavy.",
             bestFor: "An all-round session when you can't decide."
           },
@@ -4335,7 +5680,7 @@
             name: "Med High", min: 390, max: 410, setpoint: 400, tint: "rgba(240,130,40,0.30)",
             teaser: "Deeper and more relaxing — linalool, the lavender scent",
             compounds: [
-              { name: "Linalool", temp: "~388°F (198°C)", note: "The floral terpene that gives lavender its scent — it starts releasing just before this band begins." }
+              { name: "Linalool", temp: "~388–390°F (198–199°C, NIST, normal pressure)", note: "The floral terpene that gives lavender its scent — it starts releasing just before this band begins." }
             ],
             active: "Everything from below, now including linalool. Most of the plant's listed compounds are active by here.",
             feel: "Commonly reported as deeper and more relaxing, with soft floral notes and a stronger body character.",
@@ -4343,11 +5688,11 @@
           },
           {
             name: "High", min: 420, max: 440, setpoint: 420, tint: "rgba(229,106,13,0.32)",
-            teaser: "The Firefly's own default — THCV point reached",
+            teaser: "The Firefly's own default — near-complete extraction",
             compounds: [
-              { name: "THCV", temp: "~428°F (220°C)", note: "A lesser-known cousin of THC, present in meaningful amounts in only some strains." }
+              { name: "THCV", temp: "not reached at flower temps", note: "220°C is an unreferenced chart value — the best atmospheric estimate is ~378°C. A lesser-known cousin of THC, present in meaningful amounts in only some strains (e.g. Durban Poison-type)." }
             ],
-            active: "Everything on the list is now releasing. This band holds the Firefly's factory default 'High' setting of 420°F.",
+            active: "Near-complete extraction of what's in the bowl. This band holds the Firefly's factory default 'High' setting of 420°F. β-caryophyllene and humulene (~256–275°C / 493–527°F at normal pressure) largely remain in the bowl even here.",
             feel: "Commonly reported as strong and full — near-complete extraction of what's in the bowl.",
             bestFor: "Getting the most out of flower in fewer draws."
           },
@@ -4356,7 +5701,7 @@
             teaser: "Top of the dial — made for concentrates",
             compounds: [],
             noneNote: "No new compounds on our list start here — everything has already released. What changes is completeness: this heat wrings out the last of the material.",
-            active: "All listed compounds are active. β-caryophyllene and humulene's true boiling points (~505–509°F at normal air pressure) sit just above even this band — see 'How solid is this?' below.",
+            active: "All listed compounds are active. β-caryophyllene and humulene's true boiling points (~493–527°F at normal air pressure, ~256–275°C) sit just above even this band — see 'How solid is this?' below.",
             feel: "Commonly reported as the heaviest, most sedating end of the range — and this band is really made for concentrates, not flower.",
             bestFor: "Concentrates. That's what this end of the dial is for."
           }
@@ -4435,13 +5780,13 @@
             comp: "α-pinene · THC · myrcene just starting" },
           { name: "Relax", temp: 360, tint: "rgba(168,194,86,0.30)",
             desc: "Commonly reported as calm and unwound.",
-            comp: "myrcene · limonene · CBD range reached" },
+            comp: "myrcene · limonene · CBD extracting" },
           { name: "Balance", temp: 380, tint: "rgba(245,168,60,0.28)",
             desc: "Middle of the road — head and body together.",
             comp: "terpinolene in · linalool approaching" },
           { name: "Deep / Evening", temp: 420, tint: "rgba(229,106,13,0.32)",
             desc: "The Firefly's default High. Stronger, heavier character.",
-            comp: "THCV reached · near-full extraction" },
+            comp: "near-full extraction · THCV not reached at flower temps" },
           { name: "Sleep", temp: 450, tint: "rgba(214,80,30,0.32)",
             desc: "Commonly reported as the most sedating setting for flower.",
             comp: "full extraction · heaviest end for flower" },
