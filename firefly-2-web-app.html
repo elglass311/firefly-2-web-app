@@ -677,6 +677,7 @@
         .switch::after { transition: none; }
       }
       .coil-row { display: flex; align-items: center; gap: 12px; }
+      .range-labels.coil-labels { margin: 2px 0 0; padding-right: 88px; }
 
       /* ---------- Battery / device ---------- */
       .stat-row {
@@ -1304,7 +1305,7 @@
       <!-- Burn Guard -->
       <section class="card" aria-labelledby="bg-h">
         <h2 id="bg-h">Burn Guard calibration</h2>
-        <p class="card-sub">Three layers of protection against scorched flower: a hard ceiling for flower, setpoints adjusted to how <em>your</em> unit actually runs, and the device's own fine trim. The temperature you set is the <strong>maximum</strong> a draw can reach.</p>
+        <p class="card-sub">Three layers of protection against scorched flower: a hard ceiling for flower, setpoints adjusted to how <em>your</em> unit actually runs, and the device's own coil calibration. The temperature you set is the <strong>maximum</strong> a draw can reach.</p>
 
         <h3 class="bg-h3">1 · Flower ceiling</h3>
         <p class="muted" style="margin:0;">
@@ -1473,27 +1474,33 @@
           treat it as a nudge in the right direction, not lab precision.
         </p>
 
-        <h3 class="bg-h3">3 · uCoil fine trim</h3>
+        <h3 class="bg-h3">3 · Coil calibration (device)</h3>
         <p class="muted" style="margin:0;">
-          The Firefly's own calibration value (89–111, factory default 100) — the one
-          setting on the device itself that trims its heating. What it changes
-          physically inside the unit isn't documented, so dial it in empirically:
-          move it a few points, re-run the calibration check above, and log what you
-          measure. This one applies without authentication and is confirmed by
-          read-back like everything else.
+          Firefly's own calibration setting, stored on the device itself — shown here as a
+          percentage (89%–111%, factory default 100%). It is <strong style="color:var(--ink);">not</strong> the
+          app-side temperature offset log in step 2 above: that log never leaves this app,
+          while this value lives on your Firefly. This one applies without authentication
+          and is confirmed by read-back like everything else.
         </p>
+        <p style="margin:10px 0 0;">Move the slider to the right for richer vapor or to the left for smoother vapor.</p>
         <div class="coil-row" style="margin-top:8px;">
-          <input type="range" id="coilSlider" min="89" max="111" step="1" value="100" aria-label="uCoil calibration value" />
-          <span class="ceil-value" id="coilValue">100</span>
+          <input type="range" id="coilSlider" min="89" max="111" step="1" value="100" aria-label="Coil calibration value, in percent" />
+          <span class="ceil-value" id="coilValue">100%</span>
         </div>
+        <div class="range-labels coil-labels"><span>Smoother</span><span>Richer vapor</span></div>
+        <p class="muted" style="margin:10px 0 0;">
+          One honest note: this trim shifts delivery at every temperature at once, and how
+          much each point changes things varies from unit to unit — nudge it a few points,
+          then re-run the temperature check in step 2 and log what you measure.
+        </p>
         <p class="device-now act-now" id="coilNow">Device reports: —</p>
-        <button class="btn btn-ghost" id="coilApplyBtn" type="button" disabled style="margin-top:10px;">Apply uCoil trim</button>
+        <button class="btn btn-ghost" id="coilApplyBtn" type="button" disabled style="margin-top:10px;">Apply coil calibration</button>
         <div class="mini-msg" id="coilStatus" hidden></div>
 
         <div class="honest-box">
           <strong>The honest limit</strong>
           <p>Burn Guard can't watch your bowl in real time. The Firefly's settings reports carry <strong>no live temperature reading</strong> — there is no temperature field in them at all — so no app can see the coil overshoot and cut power mid-draw. There is no closed loop here.</p>
-          <p>What protects your flower is the combination above: a hard ceiling, setpoints compensated by your own measurements, and the fine trim. The heat-up ramp itself — how fast the temperature climbs during a draw — is baked into the device's firmware and cannot be changed from any app.</p>
+          <p>What protects your flower is the combination above: a hard ceiling, setpoints compensated by your own measurements, and the coil calibration. The heat-up ramp itself — how fast the temperature climbs during a draw — is baked into the device's firmware and cannot be changed from any app.</p>
         </div>
       </section>
 
@@ -1603,7 +1610,7 @@
             <span class="stat-value" id="ddBattery">—</span>
           </div>
           <div class="stat-row">
-            <span class="stat-label">uCoil calibration</span>
+            <span class="stat-label">Coil calibration</span>
             <span class="stat-value" id="ddCoil">—</span>
           </div>
           <div class="stat-row">
@@ -1981,8 +1988,8 @@
             log("Set activation did NOT confirm by read-back.", "err");
             renderActivation();
           } else if (p.kind === "coil") {
-            setCoilStatus("err", "The Firefly didn't confirm the uCoil change within 6 seconds — it still reports " + (devState.coilValue !== null ? devState.coilValue : "—") + ".");
-            log("uCoil trim did NOT confirm by read-back.", "err");
+            setCoilStatus("err", "The Firefly didn't confirm the coil calibration change within 6 seconds — it still reports " + (devState.coilValue !== null ? devState.coilValue + "%" : "—") + ".");
+            log("Coil calibration did NOT confirm by read-back.", "err");
           }
         }
         function currentTempText() {
@@ -2566,11 +2573,11 @@
 
           if (!f1Seen) {
             f1Seen = true;
-            log("First settings report received — temperature " + (next.tempF !== null ? next.tempF + "°F" : "profile byte 0x" + f[1].toString(16)) + ", sensors " + (next.activation !== null ? ACTIVATION_NAMES[next.activation] : "?") + ", battery " + (next.battery !== null ? BATTERY_NAMES[next.battery] : "?") + ", uCoil " + next.coilValue + ".", "ok");
+            log("First settings report received — temperature " + (next.tempF !== null ? next.tempF + "°F" : "profile byte 0x" + f[1].toString(16)) + ", sensors " + (next.activation !== null ? ACTIVATION_NAMES[next.activation] : "?") + ", battery " + (next.battery !== null ? BATTERY_NAMES[next.battery] : "?") + ", coil calibration " + next.coilValue + "%.", "ok");
           } else {
             if (prev.profileByte !== null && prev.profileByte !== next.profileByte) log("Device reports a new temperature profile: " + (next.tempF !== null ? next.tempF + "°F" : "byte 0x" + f[1].toString(16)) + ".");
             if (prev.battery !== null && prev.battery !== next.battery) log("Battery now reads " + BATTERY_NAMES[next.battery] + ".");
-            if (prev.coilValue !== null && prev.coilValue !== next.coilValue) log("Device reports uCoil is now " + next.coilValue + ".");
+            if (prev.coilValue !== null && prev.coilValue !== next.coilValue) log("Device reports coil calibration is now " + next.coilValue + "%.");
           }
 
           /* Auth transitions are confirmed ONLY here, by the F1 auth flag. */
@@ -2643,8 +2650,8 @@
             setActStatus("ok", "Confirmed — your Firefly read back: " + ACTIVATION_LONG[p.value] + ".");
             log("Activation CONFIRMED by read-back: " + ACTIVATION_LONG[p.value] + ".", "ok");
           } else if (p.kind === "coil") {
-            setCoilStatus("ok", "Confirmed — your Firefly read back uCoil " + p.value + ". Re-run the calibration check in Burn Guard to see what it changed.");
-            log("uCoil trim CONFIRMED by read-back: " + p.value + ".", "ok");
+            setCoilStatus("ok", "Confirmed — your Firefly read back coil calibration " + p.value + "%. Re-run the temperature check in step 2 above to see what it changed.");
+            log("Coil calibration CONFIRMED by read-back: " + p.value + "%.", "ok");
           }
         }
 
@@ -3533,7 +3540,7 @@
           renderTemp();
         });
 
-        /* ---- uCoil fine trim ---- */
+        /* ---- Coil calibration (device) ---- */
         var coilSlider = document.getElementById("coilSlider");
         var coilValueEl = document.getElementById("coilValue");
         var coilNowEl = document.getElementById("coilNow");
@@ -3541,21 +3548,21 @@
         var coilTouched = false;
         coilSlider.addEventListener("input", function () {
           coilTouched = true;
-          coilValueEl.textContent = coilSlider.value;
+          coilValueEl.textContent = coilSlider.value + "%";
         });
         coilApplyBtn.addEventListener("click", function () {
           if (!isConnected || !rxChar) {
-            setCoilStatus("err", "Not connected — connect your Firefly first. (The uCoil trim is the one setting that applies without authentication.)");
+            setCoilStatus("err", "Not connected — connect your Firefly first. (Coil calibration is the one device setting that applies without authentication.)");
             return;
           }
           var val = parseInt(coilSlider.value, 10);
           if (val < 89 || val > 111) {
-            setCoilStatus("err", "uCoil must stay between 89 and 111 — the range the device itself accepts.");
+            setCoilStatus("err", "Coil calibration must stay between 89% and 111% — the range the device itself accepts.");
             return;
           }
           startPending({ kind: "coil", byte: val - 80, value: val });
-          writeFrame([0x00, 0x0F, 0x03, val - 80], "uCoil trim " + val);
-          setCoilStatus("busy", "Setting… waiting for the Firefly to read back uCoil " + val + ".");
+          writeFrame([0x00, 0x0F, 0x03, val - 80], "Coil calibration " + val + "%");
+          setCoilStatus("busy", "Setting… waiting for the Firefly to read back coil calibration " + val + "%.");
         });
 
         /* ================= Device-state rendering ================= */
@@ -3605,7 +3612,7 @@
           document.getElementById("ddLock").textContent = s.lock === null ? "—" : (s.lock === 0 ? "Unlocked" : "Locked (code " + s.lock + ")");
           document.getElementById("ddLed").textContent = s.led === null ? "—" : String(s.led) + " (of 100, as reported)";
           document.getElementById("ddBattery").textContent = s.battery !== null ? BATTERY_NAMES[s.battery] + " (step " + (s.battery + 1) + " of 5)" : "—";
-          document.getElementById("ddCoil").textContent = s.coilValue !== null ? String(s.coilValue) : "—";
+          document.getElementById("ddCoil").textContent = s.coilValue !== null ? String(s.coilValue) + "%" : "—";
           document.getElementById("ddTable").textContent =
             s.tableCount >= 31 ? "Received — 200–500°F in 10°F steps (31 profiles)" :
             s.tableCount > 0 ? "Receiving… (" + s.tableCount + " profiles so far)" : "—";
@@ -3614,11 +3621,11 @@
           coilNowEl.innerHTML = "";
           coilNowEl.appendChild(document.createTextNode("Device reports: "));
           var cst = document.createElement("strong");
-          cst.textContent = s.coilValue !== null ? "uCoil " + s.coilValue : "—";
+          cst.textContent = s.coilValue !== null ? "coil calibration " + s.coilValue + "%" : "—";
           coilNowEl.appendChild(cst);
           if (s.coilValue !== null && !coilTouched && !(pending && pending.kind === "coil")) {
             coilSlider.value = String(s.coilValue);
-            coilValueEl.textContent = String(s.coilValue);
+            coilValueEl.textContent = String(s.coilValue) + "%";
           }
           coilApplyBtn.disabled = !isConnected;
           renderTemp();
