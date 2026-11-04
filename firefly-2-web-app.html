@@ -1313,8 +1313,8 @@
           isn't capped by this.
         </p>
         <div class="ceil-row" style="margin-top:8px;">
-          <input type="range" id="ceilSlider" min="300" max="500" step="10" value="420" aria-label="Flower ceiling in degrees Fahrenheit" />
-          <span class="ceil-value" id="ceilValue">420°F</span>
+          <input type="range" id="ceilSlider" min="300" max="500" step="10" value="380" aria-label="Flower ceiling in degrees Fahrenheit" />
+          <span class="ceil-value" id="ceilValue">380°F</span>
         </div>
         <p class="muted" style="margin:10px 0 0;">
           <strong style="color:var(--ink);">Step up, don't jump.</strong> The gentlest
@@ -1793,16 +1793,16 @@
           set: function (k, v) { try { window.localStorage.setItem(k, v); return true; } catch (e) { return false; } },
           del: function (k) { try { window.localStorage.removeItem(k); } catch (e) { /* ignore */ } }
         };
-        var settings = { ceilingF: 420, cal: {}, comp: false, nickname: "", ceilingManual: false };
+        var settings = { ceilingF: 380, cal: {}, comp: false, nickname: "", ceilingManual: false };
         var ceilingMigrated = false;
         (function loadSettings() {
           settings.ceilingManual = store.get("ff2.ceilingManual") === "1";
           var c = parseInt(store.get("ff2.ceilingF") || "", 10);
           if (c >= 300 && c <= 500) settings.ceilingF = Math.round(c / 10) * 10;
-          if (settings.ceilingF === 430 && !settings.ceilingManual) {
-            settings.ceilingF = 420;
+          if (settings.ceilingF === 420 && !settings.ceilingManual) {
+            settings.ceilingF = 380;
             ceilingMigrated = true;
-            try { window.localStorage.setItem("ff2.ceilingF", "420"); } catch (e) { /* ignore */ }
+            try { window.localStorage.setItem("ff2.ceilingF", "380"); } catch (e) { /* ignore */ }
           }
           try {
             var cal = JSON.parse(store.get("ff2.cal") || "{}");
@@ -4339,7 +4339,7 @@
           }).catch(function () { /* getDevices is best-effort */ });
         }
 
-        if (ceilingMigrated) log("Burn Guard ceiling updated: the old 430°F default is now 420°F for this unit (you had never set the ceiling yourself, so the new default was applied). If you set the ceiling manually it is never overridden.", "info");
+        if (ceilingMigrated) log("Burn Guard ceiling updated: the old 420°F default is now 380°F for this unit (you had never set the ceiling yourself, so the new default was applied). If you set the ceiling manually it is never overridden.", "info");
         log("Ready. Put the Firefly in pairing mode (both sensors, green blink), then tap Connect. Once connected, authenticate — then temperature and sensor changes apply, each confirmed by the Firefly's own read-back.", "ok");
       })();
     </script>
