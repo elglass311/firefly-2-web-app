@@ -1112,6 +1112,9 @@
       .str-card:active { border-color: var(--ember-deep); }
       .str-mono { flex: none; width: 46px; height: 46px; border-radius: 11px; overflow: hidden; }
       .str-mono svg { display: block; width: 100%; height: 100%; }
+      .str-mono img.str-ph { display: block; width: 100%; height: 100%; object-fit: cover; }
+      .str-credit { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
+      .str-credit a { color: var(--ink-soft); }
       .str-card-main { flex: 1; min-width: 0; }
       .str-card-name { font-weight: 800; font-size: 15.5px; }
       .str-card-sub { color: var(--ink-soft); font-size: 12.5px; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1218,6 +1221,34 @@
       .stars { color: #ffd166; letter-spacing: 2px; font-size: 14px; white-space: nowrap; }
       .stars .off { color: var(--ink-faint); opacity: 0.4; }
       .del-arm { border-color: #8a4438 !important; color: #e08a7a !important; }
+
+      /* ---------- Photo review queue ---------- */
+      .rq-row {
+        display: flex; gap: 12px; align-items: flex-start;
+        border: 1px solid var(--line); border-radius: 12px;
+        background: var(--surface-2); padding: 10px 12px; margin: 0 0 8px;
+      }
+      .rq-row .rq-main { flex: 1; min-width: 0; }
+      .rq-row .rq-name { font-weight: 800; font-size: 15px; }
+      .rq-row .rq-sub { color: var(--ink-soft); font-size: 12.5px; margin-top: 1px; }
+      .rq-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .rq-btns .btn { margin: 0; }
+      .rq-shareview { margin-top: 10px; }
+      .rq-shareview img { width: 100%; max-width: 420px; border-radius: 12px; border: 1px solid var(--line); display: block; }
+      .rq-count { font-size: 13px; color: var(--ink-faint); margin: 2px 0 10px; }
+
+      /* ---------- Tutorial ---------- */
+      .tut-card {
+        background: var(--surface-2); border: 1px solid var(--line);
+        border-radius: 14px; padding: 16px; margin: 4px 0 14px;
+      }
+      .tut-step { font-size: 12px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ember); margin: 0 0 6px; }
+      .tut-card h3 { margin: 0 0 8px; font-size: 19px; }
+      .tut-card p { margin: 0 0 8px; font-size: 14.5px; color: var(--ink-soft); line-height: 1.5; }
+      .tut-card p:last-child { margin-bottom: 0; }
+      .tut-card strong { color: var(--ink); }
+      .tut-nav { display: flex; gap: 10px; }
+      .tut-nav .btn { margin: 0; flex: 1; }
 
       /* ---------- Reference panels ---------- */
       .ref-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0 18px; }
@@ -1554,6 +1585,14 @@
         <h2 id="strlog-h">Session log</h2>
         <p class="card-sub">Sessions you've logged, stored only on this device. Open one from its strain's guide ("Log a session") after you vape.</p>
         <div id="strainLogEntries"></div>
+      </section>
+
+      <section class="card" aria-labelledby="rq-h">
+        <h2 id="rq-h">Photo review queue</h2>
+        <p class="card-sub">Grind and bowl photos from your logged sessions wait here for review. <strong>Photos stay on this device until you share one</strong> — the app can't send photos anywhere by itself. Tap “Share for review” to send a photo into your Muse chat, where Muse can look at it with you; once you've gone through it together, tap “Mark reviewed” to clear it from the queue. Reviewed photos stay attached to their session entries above.</p>
+        <p class="rq-count" id="reviewQueueCount"></p>
+        <div id="reviewQueueList"></div>
+        <div class="rq-shareview" id="reviewShareView" hidden></div>
       </section>
 
       <section class="card" aria-labelledby="strref-h">
@@ -2014,6 +2053,13 @@
           this app doesn't invent one.
         </p>
 
+      <!-- Tutorial -->
+      <section class="card" aria-labelledby="tut-h">
+        <h2 id="tut-h">Tutorial</h2>
+        <p class="card-sub">A short walkthrough of everything this app does — connecting, temperature, guided sessions, strains, Burn Guard, and the Device tab itself. It only ever opens when you tap the button; it never pops up on its own.</p>
+        <button class="btn btn-primary" id="tutOpen" type="button">Open the tutorial</button>
+      </section>
+
       <!-- App preferences -->
       <section class="card" aria-labelledby="prefs-h">
         <h2 id="prefs-h">App preferences</h2>
@@ -2058,13 +2104,35 @@
 
       </div><!-- /panel-device -->
 
+      <!-- Tutorial sheet — opens ONLY from the Tutorial button on the Device tab.
+           Never auto-opens, never a first-run modal. -->
+      <div id="tutorialSheet" class="sheet" hidden>
+        <div class="sheet-inner">
+          <div class="sheet-head">
+            <button id="tutClose" class="btn btn-ghost" type="button">✕ Close</button>
+            <span class="sheet-title">App tutorial</span>
+          </div>
+          <div class="tut-card">
+            <p class="tut-step" id="tutStepNum"></p>
+            <h3 id="tutTitle"></h3>
+            <div id="tutBody"></div>
+          </div>
+          <div class="tut-nav">
+            <button class="btn btn-ghost" id="tutBack" type="button">Back</button>
+            <button class="btn btn-primary" id="tutNext" type="button">Next</button>
+            <button class="btn btn-primary" id="tutDone" type="button" hidden>Done</button>
+          </div>
+        </div>
+      </div>
+
       <footer>
         Personal web app for one Firefly 2+. Runs in Bluefy on iPhone, or Chrome / Edge
         on desktop and Android. Talks to the device over Bluetooth — nothing is sent anywhere.
         <div class="photo-credit">
           Photos: cannabis fan leaves via <a href="https://thefreshtoast.com" target="_blank" rel="noopener">The Fresh Toast</a> ·
           leaf close-up via <a href="https://drcbdandnutritioncenters.org" target="_blank" rel="noopener">Dr. CBD and Nutrition Centers</a> ·
-          bud macro via <a href="https://dutch-passion.blog" target="_blank" rel="noopener">Dutch Passion</a>.
+          bud macro via <a href="https://dutch-passion.blog" target="_blank" rel="noopener">Dutch Passion</a> ·
+          strain flower photos via <a href="https://www.leafly.com/strains" target="_blank" rel="noopener">Leafly</a> strain pages and the dispensaries credited in each guide.
         </div>
       </footer>
     </div>
@@ -4800,8 +4868,61 @@ var STRAIN_SRC_LINKS = {
         }
         var PICKER_DISCLAIMER = "Reported effects are what other users commonly said they felt. They are not guaranteed outcomes. The same strain can feel stimulating at a small amount and sedating at a larger amount, and effects vary by person, dose, tolerance, set and setting. Temperature changes flavour and how completely the material is extracted — it cannot switch on a chosen effect.";
 
-        /* ---- Monogram panel: a styled placeholder per strain. Never a photo of a
-           different named strain; user bowl/grind photos appear in the history section. ---- */
+        /* ---- Strain flower photos (added per Eric's direction, 2026-11-04).
+           Sourcing hierarchy: (1) the strain's own photo from its Leafly strain page;
+           (2) where Leafly has no flower photo of that strain, a dispensary/menu
+           product-page photo of that exact strain. Every photo was visually checked
+           to show THE FLOWER ITSELF only — bud/flower close-up; no packaging, labeled
+           jars, people, hands, or lifestyle shots — and is embedded compactly under
+           assets/strains/. Strains with no legit photo from either source keep the
+           styled monogram panel + honest caption below. Never a photo of a
+           different strain. f = file slug, c = credit name, u = source page. ---- */
+        var STRAIN_PHOTOS = {
+          1:   { f: "og-kush",           c: "Leafly", u: "https://www.leafly.com/strains/og-kush" },
+          2:   { f: "sour-diesel",       c: "Leafly", u: "https://www.leafly.com/strains/sour-diesel" },
+          3:   { f: "northern-lights",   c: "Leafly", u: "https://www.leafly.com/strains/northern-lights" },
+          4:   { f: "white-widow",       c: "Leafly", u: "https://www.leafly.com/strains/white-widow" },
+          5:   { f: "jack-herer",        c: "Leafly", u: "https://www.leafly.com/strains/jack-herer" },
+          6:   { f: "blue-dream",        c: "Leafly", u: "https://www.leafly.com/strains/blue-dream" },
+          7:   { f: "granddaddy-purple", c: "Leafly", u: "https://www.leafly.com/strains/granddaddy-purple" },
+          8:   { f: "ak-47",             c: "AVL Dispensary", u: "https://avldispensary.com/shop/thca/thca-flower/ak47-thca-flower/" },
+          10:  { f: "bubba-kush",        c: "Leafly", u: "https://www.leafly.com/strains/bubba-kush" },
+          11:  { f: "durban-poison",     c: "Leafly", u: "https://www.leafly.com/strains/durban-poison" },
+          12:  { f: "pineapple-express", c: "Leafly", u: "https://www.leafly.com/strains/pineapple-express" },
+          15:  { f: "girl-scout-cookies", c: "Leafly", u: "https://www.leafly.com/strains/girl-scout-cookies" },
+          16:  { f: "gorilla-glue-4",    c: "NETA via Cannawayz", u: "https://cannawayz.com/dispensaries/new-england-treatment-access" },
+          17:  { f: "wedding-cake",      c: "Leafly", u: "https://www.leafly.com/strains/wedding-cake" },
+          18:  { f: "gelato",            c: "Leafly", u: "https://www.leafly.com/strains/gelato" },
+          19:  { f: "zkittlez",          c: "Leafly", u: "https://www.leafly.com/strains/zkittlez" },
+          20:  { f: "runtz",             c: "Leafly", u: "https://www.leafly.com/strains/runtz" },
+          21:  { f: "bruce-banner",      c: "M+V Cannabis via Cannmenus", u: "https://cannmenus.com/dispensaries/florida/fort-myers/21292-m-v-cannabis-dispensary" },
+          24:  { f: "chemdawg",          c: "Higher Grounds via Cannmenus", u: "https://cannmenus.com/dispensaries/maine/portland/5721-higher-grounds-of-maine" },
+          25:  { f: "green-crack",       c: "Leafly", u: "https://www.leafly.com/strains/green-crack" },
+          30:  { f: "blueberry",         c: "Leafly", u: "https://www.leafly.com/strains/blueberry" },
+          36:  { f: "cherry-pie",        c: "Leafly", u: "https://www.leafly.com/strains/cherry-pie" },
+          45:  { f: "sunset-sherbet",    c: "CommCan via Weedmaps", u: "https://weedmaps.com/brands/commcan/products/commcan-sunset-sherbet-flower" },
+          63:  { f: "grape-ape",         c: "Leafly", u: "https://www.leafly.com/strains/grape-ape" },
+          64:  { f: "purple-punch",      c: "Leafly", u: "https://www.leafly.com/strains/purple-punch" },
+          86:  { f: "apple-fritter",     c: "Leafly", u: "https://www.leafly.com/strains/apple-fritter" },
+          101: { f: "super-lemon-haze",  c: "Leafly", u: "https://www.leafly.com/strains/super-lemon-haze" },
+          126: { f: "harlequin",         c: "Leafly", u: "https://www.leafly.com/strains/harlequin" },
+          127: { f: "acdc",              c: "Herbal Outlander via Weedmaps", u: "https://weedmaps.com/brands/herbal-outlander/products/herbal-outlander-3-5-gram-acdc-cbd-flower" }
+        };
+        function strPhotoFor(strain) { return STRAIN_PHOTOS[strain[SF.id]] || null; }
+        function strThumbHTML(strain) {
+          var ph = strPhotoFor(strain);
+          if (ph) return '<img class="str-ph" src="assets/strains/' + ph.f + '.webp" alt="Photo of ' + strEsc(strain[SF.name]) + ' flower" loading="lazy">';
+          return strMonogram(strain[SF.name], strain[SF.terps]);
+        }
+        function strPhotoCreditHTML(strain) {
+          var ph = strPhotoFor(strain);
+          if (!ph) return "";
+          return '<div class="str-credit">Flower photo: <a href="' + strEsc(ph.u) + '" target="_blank" rel="noopener">' + strEsc(ph.c) + '</a> — the flower itself, from that strain\'s listing.</div>';
+        }
+
+        /* ---- Monogram panel: the styled fallback for strains with no verified
+           flower photo from Leafly or a dispensary. Never a photo of a different
+           named strain; user bowl/grind photos appear in the history section. ---- */
         var TERP_HUES = { "Myrcene": "#6fce62", "Limonene": "#f5a83c", "Caryophyllene": "#d98a5b", "Pinene": "#5bc8c0", "Terpinolene": "#b48ae0", "Linalool": "#9a7ee8", "Humulene": "#a8b86a", "Ocimene": "#7ec8e8" };
         var strMonoUid = 0;
         function strMonogram(name, terps) {
@@ -4957,7 +5078,7 @@ var STRAIN_SRC_LINKS = {
             shown++;
             var fav = strIsFav(s[SF.id]);
             html += '<button type="button" class="str-card" data-sid="' + s[SF.id] + '">' +
-              '<span class="str-mono">' + strMonogram(s[SF.name], s[SF.terps]) + '</span>' +
+              '<span class="str-mono">' + strThumbHTML(s) + '</span>' +
               '<span class="str-card-main"><span class="str-card-name">' + strEsc(s[SF.name]) + '</span>' +
               '<span class="str-card-sub">' + strEsc(strTypeName(s[SF.type])) + " · THC " + strEsc(s[SF.thc]) + '</span></span>' +
               '<span class="str-fav" role="button" tabindex="0" data-fav="' + s[SF.id] + '" aria-pressed="' + (fav ? "true" : "false") + '" aria-label="Favorite ' + strEsc(s[SF.name]) + '">★</span>' +
@@ -5001,7 +5122,7 @@ var STRAIN_SRC_LINKS = {
           document.body.style.overflow = "";
           sheetState = { mode: null, strainId: null, entryId: null, picks: [] };
           if (quizState && quizState.draftId) { idbDeleteEntry(quizState.draftId); quizState = null; }
-          strRenderList(); strRenderLogList();
+          strRenderList(); strRenderLogList(); renderReviewQueue();
         }
 
         /* ---- Guide ---- */
@@ -5021,9 +5142,12 @@ var STRAIN_SRC_LINKS = {
           var fav = strIsFav(id);
           var body = strEl("strainSheetBody");
           var h = "";
-          h += '<div class="str-hero"><span class="str-mono">' + strMonogram(s[SF.name], s[SF.terps]) + '</span><div>' +
+          var sph = strPhotoFor(s);
+          h += '<div class="str-hero"><span class="str-mono">' + strThumbHTML(s) + '</span><div>' +
             '<h3>' + strEsc(s[SF.name]) + '</h3>' +
-            '<div class="alias" style="margin-top:4px;">Stylized panel — no verified photo of this exact strain is published here. Your own grind &amp; bowl photos appear under “Your history” once you log a session.</div>' +
+            (sph
+              ? strPhotoCreditHTML(s)
+              : '<div class="alias" style="margin-top:4px;">Stylized panel — no verified photo of this exact strain is published here. Your own grind &amp; bowl photos appear under “Your history” once you log a session.</div>') +
             (s[SF.aliases] ? '<div class="alias">' + strEsc(s[SF.aliases]) + '</div>' : "") +
             '<div class="alias" style="margin-top:4px;">' + strEsc(s[SF.typeLabel]) + '</div></div></div>';
           h += '<button type="button" class="btn ' + (fav ? "btn-ghost" : "btn-primary") + '" id="gdFav" style="margin:0 0 14px;">' + (fav ? "★ Favorited — tap to remove" : "☆ Favorite this strain") + '</button>';
@@ -5244,6 +5368,125 @@ var STRAIN_SRC_LINKS = {
             });
           });
         }
+        /* ---- Photo review queue ----
+           Every grind/bowl photo attached to a saved session starts unreviewed and
+           waits here. Sharing uses navigator.share with the photo file where the
+           platform supports it; otherwise the photo is shown large with attach
+           instructions. The app cannot send photos by itself — they stay on this
+           device until the user shares one. "Mark reviewed" sets reviewed=true on
+           the stored photo record; the photo itself stays attached to its entry. */
+        function strIdbAll() {
+          return strIdbOpen().then(function (ok) {
+            var mem = Object.keys(strIdbMem).map(function (k) { return strIdbMem[k]; });
+            if (!ok) return mem;
+            return new Promise(function (res) {
+              var out = [];
+              try {
+                var t = strIdb.transaction("photos", "readonly");
+                var rq = t.objectStore("photos").openCursor();
+                rq.onsuccess = function () {
+                  var c = rq.result;
+                  if (c) { out.push(c.value); c.continue(); }
+                  else {
+                    var seen = {};
+                    out.forEach(function (p) { seen[p.id] = true; });
+                    mem.forEach(function (p) { if (!seen[p.id]) out.push(p); });
+                    res(out);
+                  }
+                };
+                rq.onerror = function () { res(mem); };
+              } catch (e) { res(mem); }
+            });
+          });
+        }
+        function renderReviewQueue() {
+          var box = strEl("reviewQueueList"), count = strEl("reviewQueueCount");
+          if (!box) return;
+          strIdbAll().then(function (photos) {
+            var byEntry = {};
+            strLog.forEach(function (e) { byEntry[e.id] = e; });
+            var q = photos.filter(function (p) { return byEntry[p.entryId] && !p.reviewed; })
+              .sort(function (a, b) { return b.ts - a.ts; });
+            if (count) count.textContent = q.length ? q.length + " photo" + (q.length > 1 ? "s" : "") + " waiting for review" : "";
+            if (!q.length) {
+              box.innerHTML = '<p class="str-empty">Nothing waiting — photos you add while logging a session land here until you share them and mark them reviewed.</p>';
+              return;
+            }
+            box.innerHTML = q.map(function (p) {
+              var e = byEntry[p.entryId];
+              return '<div class="rq-row">' +
+                '<img class="ph-thumb" src="' + p.dataUrl + '" alt="' + (p.kind === "grind" ? "Grind" : "Bowl") + ' photo for ' + strEsc(e.strainName) + '">' +
+                '<div class="rq-main"><div class="rq-name">' + strEsc(e.strainName) + '</div>' +
+                '<div class="rq-sub">' + (p.kind === "grind" ? "Grind" : "Bowl") + ' photo · session ' + strEsc(strFmtDate(e.at)) + '</div>' +
+                '<div class="rq-btns">' +
+                '<button type="button" class="btn btn-primary" data-rqshare="' + strEsc(p.id) + '" style="min-height:44px;">Share for review</button>' +
+                '<button type="button" class="btn btn-ghost" data-rqdone="' + strEsc(p.id) + '" style="min-height:44px;">Mark reviewed</button>' +
+                '</div></div></div>';
+            }).join("");
+            Array.prototype.forEach.call(box.querySelectorAll("[data-rqshare]"), function (b) {
+              b.addEventListener("click", function () { haptics.tick(); shareReviewPhoto(b.getAttribute("data-rqshare")); });
+            });
+            Array.prototype.forEach.call(box.querySelectorAll("[data-rqdone]"), function (b) {
+              b.addEventListener("click", function () { haptics.tick(); markPhotoReviewed(b.getAttribute("data-rqdone")); });
+            });
+          });
+        }
+        function markPhotoReviewed(pid) {
+          strIdbAll().then(function (photos) {
+            var ph = null;
+            photos.forEach(function (p) { if (p.id === pid) ph = p; });
+            if (!ph) { renderReviewQueue(); return; }
+            ph.reviewed = true;
+            strIdbPut(ph).then(function () {
+              log("Photo marked reviewed: " + (ph.kind === "grind" ? "grind" : "bowl") + " photo — it stays attached to its session entry.", "ok");
+              renderReviewQueue();
+            });
+          });
+        }
+        function showReviewShareFallback(ph, entry) {
+          var v = strEl("reviewShareView");
+          if (!v) return;
+          v.innerHTML = "";
+          var p1 = document.createElement("p");
+          p1.className = "card-sub";
+          p1.textContent = "This browser can't share photo files directly. Save this photo (long-press it, or right-click → Save), then attach it in your Muse chat — Muse will review it there with you. When you're done, tap “Mark reviewed” on the photo above.";
+          var im = document.createElement("img");
+          im.src = ph.dataUrl;
+          im.alt = (ph.kind === "grind" ? "Grind" : "Bowl") + " photo for " + (entry ? entry.strainName : "session");
+          var hide = document.createElement("button");
+          hide.type = "button"; hide.className = "btn btn-ghost"; hide.style.marginTop = "10px";
+          hide.textContent = "Hide photo";
+          hide.addEventListener("click", function () { v.hidden = true; v.innerHTML = ""; });
+          v.appendChild(p1); v.appendChild(im); v.appendChild(hide);
+          v.hidden = false;
+          v.scrollIntoView({ block: "nearest" });
+        }
+        function shareReviewPhoto(pid) {
+          strIdbAll().then(function (photos) {
+            var ph = null;
+            photos.forEach(function (p) { if (p.id === pid) ph = p; });
+            if (!ph) return;
+            var entry = null;
+            strLog.forEach(function (e) { if (e.id === ph.entryId) entry = e; });
+            var label = (ph.kind === "grind" ? "Grind" : "Bowl") + " photo" + (entry ? " — " + entry.strainName + " (" + strFmtDate(entry.at) + ")" : "");
+            function fallback() { showReviewShareFallback(ph, entry); }
+            try {
+              if (!navigator.share || !navigator.canShare) { fallback(); return; }
+              fetch(ph.dataUrl).then(function (r) { return r.blob(); }).then(function (blob) {
+                var file;
+                try { file = new File([blob], (ph.kind || "photo") + "-photo.jpg", { type: "image/jpeg" }); }
+                catch (e) { fallback(); return; }
+                if (!navigator.canShare({ files: [file] })) { fallback(); return; }
+                navigator.share({ files: [file], title: label, text: label + " — for review in my Muse chat." })
+                  .catch(function (err) {
+                    if (err && err.name === "AbortError") return; // user closed the share sheet — nothing to fix
+                    fallback();
+                  });
+              }).catch(fallback);
+            } catch (e) { fallback(); }
+          });
+        }
+
         function downscalePhoto(file, cb) {
           var img = new Image();
           var url = URL.createObjectURL(file);
@@ -5439,6 +5682,7 @@ var STRAIN_SRC_LINKS = {
             return chain;
           }).then(function () {
             log("Session logged: " + entry.strainName + " — " + entry.stars + "/5 stars, " + entry.tempUsed + ".", "ok");
+            renderReviewQueue();
             openGuide(entry.strainId);
             if (entry.again === "Yes" && !strIsFav(entry.strainId)) {
               var b = strEl("strainSheetBody");
@@ -5628,9 +5872,78 @@ var STRAIN_SRC_LINKS = {
           renderSources();
           strRenderList();
           strRenderLogList();
+          renderReviewQueue();
         }
 
         strInit();
+
+        /* ================= App tutorial =================
+           Accessible, never forced: opens ONLY from the "Open the tutorial"
+           button on the Device tab. No auto-open, no first-run modal, no
+           re-appearing after dismissal — there is deliberately no stored
+           "seen" flag; the button is simply always there. One tap opens it,
+           one tap (Close / Done) closes it. Step place is not saved. */
+        var TUT_STEPS = [
+          {
+            t: "Connect & authenticate",
+            b: "<p>On the <strong>Session tab</strong>, wake your Firefly first — hold <strong>both touch sensors</strong> until the LED <strong>blinks green</strong> — then tap <strong>Connect</strong> and pick your Firefly (name starts <strong>FF2_</strong>). A <strong>blue blink</strong> means you're connected.</p><p>Temperature and sensor changes only count from an <strong>authenticated</strong> connection — the Firefly's own handshake, fresh every connect. The app asks automatically once your Firefly has streamed a while, or tap <strong>Authenticate</strong> to ask right away. Every change is confirmed by the device reading it back before the app calls it done.</p>"
+          },
+          {
+            t: "Set the temperature",
+            b: "<p>The big number on the Session tab is the temperature you're choosing — the <strong>maximum</strong> your draw can reach. Use the presets or the slider (200–500°F in 10° steps; High is 420°F).</p><p>In <strong>Flower</strong> mode your Burn Guard ceiling caps what can be sent; <strong>Concentrates</strong> mode unlocks the full range and is fenced off with its own warning. Tap <strong>Set</strong> — nothing is sent until you do.</p>"
+          },
+          {
+            t: "Guided session",
+            b: "<p>The guided session walks a step-up ladder — <strong>340°F → stir → 360°F → stir → 370°F → stir &amp; finish</strong> — starting low for flavour and climbing for fuller extraction.</p><p>Before every step up you stir the bowl, and <strong>no heat change is sent until you confirm the stir</strong> — the heat never climbs onto an unstirred bowl. Strain plans from the Strains tab stage their own ladders here.</p>"
+          },
+          {
+            t: "Pulse",
+            b: "<p>If a bowl is running too hot, <strong>Pulse</strong> (Session tab) dips the setpoint to the 200°F floor to cool it, then restores your temperature when you stop it.</p><p>It's a plain setpoint change through the same authenticated path as everything else — no special device mode.</p>"
+          },
+          {
+            t: "Strains — guides & the effect picker",
+            b: "<p>The <strong>Strains tab</strong> holds 150 strain guides: lineage, THC/CBD ranges, dominant terpenes, commonly reported effects — and a <strong>photo of the flower itself</strong> where one could be sourced (Leafly first, then a dispensary listing; the source is credited right under the photo). Strains without a verified photo keep a styled panel that says so.</p><p>In a guide, pick what you want from <strong>that strain's own reported effects</strong> and the app suggests a temperature range plus a step-up workflow, staged onto the Session tab — starting it is still your tap.</p>"
+          },
+          {
+            t: "Log a session & photos",
+            b: "<p>After you vape, open the strain's guide and tap <strong>Log a session</strong>: a short questionnaire (bowl, onset, effects wanted vs felt, flavour, burnt taste, stars) with room for a <strong>grind photo</strong> and a <strong>bowl photo</strong>.</p><p>Photos are stored <strong>only on this device</strong>, attached to the entry. New photos also land in the <strong>Photo review queue</strong> on the Strains tab — share one into your Muse chat from there for a review, then mark it reviewed.</p>"
+          },
+          {
+            t: "Burn Guard — ceiling & coil",
+            b: "<p>The <strong>Burn Guard tab</strong> layers three protections: a hard <strong>flower ceiling</strong> (default 380°F) that refuses hotter flower setpoints, calibration sessions that compare your unit against a thermocouple, and the device's own <strong>coil calibration</strong> percentage.</p><p>The honest limit, stated in the tab: the Firefly reports <strong>no live bowl temperature</strong>, so nothing can watch the bowl mid-draw — the ceiling is a maximum, set before the draw, not a mid-draw cutoff.</p>"
+          },
+          {
+            t: "Device tab — battery, haptics & this tutorial",
+            b: "<p>The <strong>Device tab</strong> shows your Firefly as it reports itself: battery gauge, touch-sensor mode, firmware, serial, coil value. The <strong>battery health tracker</strong> learns from the five-step gauge across your real runs and compares them with your own early baseline — an inference, labelled as one.</p><p>There's also a <strong>haptics toggle</strong>, the full Bluetooth service list, the connection log — and this <strong>tutorial</strong>, which lives here permanently and only opens when you tap it.</p>"
+          }
+        ];
+        var tutStep = 0;
+        function tutRender() {
+          var s = TUT_STEPS[tutStep];
+          strEl("tutStepNum").textContent = "Step " + (tutStep + 1) + " of " + TUT_STEPS.length;
+          strEl("tutTitle").textContent = s.t;
+          strEl("tutBody").innerHTML = s.b;
+          strEl("tutBack").disabled = tutStep === 0;
+          strEl("tutNext").hidden = tutStep === TUT_STEPS.length - 1;
+          strEl("tutDone").hidden = tutStep !== TUT_STEPS.length - 1;
+          strEl("tutorialSheet").scrollTop = 0;
+        }
+        function openTutorial() {
+          tutStep = 0;
+          tutRender();
+          strEl("tutorialSheet").hidden = false;
+          document.body.style.overflow = "hidden";
+          haptics.tick();
+        }
+        function closeTutorial() {
+          strEl("tutorialSheet").hidden = true;
+          document.body.style.overflow = "";
+        }
+        strEl("tutOpen").addEventListener("click", openTutorial);
+        strEl("tutClose").addEventListener("click", function () { haptics.tick(); closeTutorial(); });
+        strEl("tutDone").addEventListener("click", function () { haptics.tick(); closeTutorial(); });
+        strEl("tutBack").addEventListener("click", function () { if (tutStep > 0) { tutStep--; tutRender(); haptics.tick(); } });
+        strEl("tutNext").addEventListener("click", function () { if (tutStep < TUT_STEPS.length - 1) { tutStep++; tutRender(); haptics.tick(); } });
 
         /* ================= Terpene temperature chart ================= */
         var BANDS = [
