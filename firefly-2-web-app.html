@@ -14,10 +14,10 @@
     />
     <style>
       :root {
-        --bg: #12241a;
-        --bg-deep: #0a140d;
-        --surface: #182b1e;
-        --surface-2: #213826;
+        --bg: #0d1119;
+        --bg-deep: #060b09;
+        --surface: #131a17;
+        --surface-2: #1a231f;
         --line: #33513a;
         --ink: #f0f6e7;
         --ink-soft: #c2d6b2;
@@ -42,12 +42,14 @@
         margin: 0;
         background-image:
           url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='%23eaffea'%3E%3Ccircle cx='16' cy='24' r='1.3' fill-opacity='.55'/%3E%3Ccircle cx='58' cy='66' r='1' fill-opacity='.4'/%3E%3Ccircle cx='96' cy='30' r='1.2' fill-opacity='.5'/%3E%3Ccircle cx='34' cy='98' r='1' fill-opacity='.35'/%3E%3Ccircle cx='84' cy='104' r='1.4' fill-opacity='.45'/%3E%3Cpath d='M44 8l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1Z' fill-opacity='.5'/%3E%3Cpath d='M108 78l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8Z' fill-opacity='.45'/%3E%3C/g%3E%3C/svg%3E"),
-          radial-gradient(120% 55% at 50% -10%, rgba(245, 168, 60, 0.13), transparent 60%),
-          radial-gradient(90% 50% at 85% 110%, rgba(47, 143, 70, 0.22), transparent 62%),
-          radial-gradient(70% 45% at 8% 45%, rgba(47, 143, 70, 0.12), transparent 60%),
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='210' height='210'%3E%3Cg fill='%23dfe8ff'%3E%3Ccircle cx='30' cy='52' r='1.6' fill-opacity='.5'/%3E%3Ccircle cx='150' cy='26' r='1.1' fill-opacity='.35'/%3E%3Ccircle cx='190' cy='150' r='1.4' fill-opacity='.45'/%3E%3Ccircle cx='90' cy='180' r='1.2' fill-opacity='.4'/%3E%3Ccircle cx='120' cy='100' r='.9' fill-opacity='.35'/%3E%3Cpath d='M60 128l1 2.8 2.8 1-2.8 1-1 2.8-1-2.8-2.8-1 2.8-1Z' fill-opacity='.4'/%3E%3C/g%3E%3C/svg%3E"),
+          radial-gradient(120% 55% at 50% -10%, rgba(245, 168, 60, 0.1), transparent 60%),
+          radial-gradient(85% 48% at 12% 18%, rgba(122, 76, 196, 0.17), transparent 62%),
+          radial-gradient(90% 50% at 88% 94%, rgba(47, 143, 70, 0.26), transparent 62%),
+          radial-gradient(72% 46% at 6% 46%, rgba(122, 76, 196, 0.08), transparent 60%),
           linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
-        background-size: 130px 130px, auto, auto, auto, auto;
-        background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+        background-size: 130px 130px, 210px 210px, auto, auto, auto, auto, auto;
+        background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
         background-attachment: fixed;
         color: var(--ink);
         font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -74,6 +76,16 @@
         align-items: flex-start;
         gap: 14px;
         min-width: 0;
+      }
+      .brand h1 { display: inline-flex; align-items: center; gap: 9px; }
+      .brand h1::before {
+        content: "";
+        flex: none;
+        width: 26px; height: 26px;
+        background: linear-gradient(135deg, #8ce07f, #2f8f46);
+        -webkit-mask: var(--leaf-mask) center / contain no-repeat;
+        mask: var(--leaf-mask) center / contain no-repeat;
+        filter: drop-shadow(0 0 7px rgba(111, 206, 98, 0.45));
       }
       .leaf-badge {
         flex: none;
@@ -120,6 +132,10 @@
         font-size: 14px;
         max-width: 34ch;
       }
+      /* ---------- Letterpress headings ---------- */
+      h1, h2, h3, .bh-estimate {
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.06), 0 -1px 2px rgba(0, 0, 0, 0.55);
+      }
       .status-pill {
         flex: none;
         display: inline-flex;
@@ -158,11 +174,17 @@
       /* ---------- Cards ---------- */
       .card {
         position: relative;
-        background: linear-gradient(165deg, #1a2f20 0%, var(--surface) 55%);
-        border: 1px solid var(--line);
+        background: linear-gradient(165deg, rgba(30, 44, 33, 0.66) 0%, rgba(17, 26, 20, 0.74) 55%, rgba(12, 19, 15, 0.82) 100%);
+        -webkit-backdrop-filter: blur(14px) saturate(1.25);
+        backdrop-filter: blur(14px) saturate(1.25);
+        border: 1px solid rgba(96, 138, 104, 0.32);
         border-radius: var(--radius);
         padding: 20px;
         margin-bottom: 16px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.09),
+          0 18px 44px rgba(0, 0, 0, 0.5),
+          0 4px 14px rgba(0, 0, 0, 0.4);
       }
       .card::after {
         content: "";
@@ -205,16 +227,29 @@
         font-size: 16px;
       }
       .btn-primary {
-        background: linear-gradient(180deg, #ffa04d, var(--ember-deep));
+        background: linear-gradient(180deg, #ffb15e 0%, #f5a83c 42%, var(--ember-deep) 100%);
         color: #1d1206;
-        box-shadow: 0 6px 22px rgba(229, 106, 13, 0.35);
+        border: 1px solid rgba(255, 196, 128, 0.4);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -2px 5px rgba(120, 50, 0, 0.28),
+          0 6px 24px rgba(229, 106, 13, 0.42),
+          0 0 18px rgba(245, 168, 60, 0.2);
       }
-      .btn-primary:active { transform: translateY(1px); }
+      .btn-primary:active {
+        transform: translateY(2px);
+        box-shadow: inset 0 3px 9px rgba(60, 25, 0, 0.45), 0 2px 8px rgba(229, 106, 13, 0.25);
+      }
       .btn-primary:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
       .btn-ghost {
-        background: var(--surface-2);
+        background: linear-gradient(180deg, rgba(46, 60, 50, 0.85), rgba(28, 36, 30, 0.9));
         color: var(--ink);
         border: 1px solid var(--line);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 4px 14px rgba(0, 0, 0, 0.35);
+      }
+      .btn-ghost:active {
+        transform: translateY(1px);
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
       }
       .btn-ghost:disabled { opacity: 0.5; cursor: default; }
       .pair-steps {
@@ -412,29 +447,55 @@
       }
       .step-btn:active { background: var(--ember-soft); }
       .step-btn:disabled { opacity: 0.4; cursor: default; }
+      /* Pressed-in feel for the smaller controls */
+      .step-btn:active, .chip:active, .seg-control button:active,
+      .unit-toggle button:active, .btn-small:active, .seg-grid button:active,
+      .band:active, .btn-goto:active {
+        transform: translateY(1px);
+        box-shadow: inset 0 2px 7px rgba(0, 0, 0, 0.5);
+      }
+      .unit-toggle button[aria-pressed="true"] {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 3px 10px rgba(245, 168, 60, 0.35);
+      }
+      .seg-control button[aria-pressed="true"] {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 3px 10px rgba(245, 168, 60, 0.35);
+      }
+      .chip[aria-pressed="true"] {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 12px rgba(111, 206, 98, 0.25);
+      }
+      .btn-goto {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 4px 14px rgba(0, 0, 0, 0.35);
+      }
       input[type="range"] {
         flex: 1; min-width: 0;
         -webkit-appearance: none; appearance: none;
         height: 44px; background: transparent; cursor: pointer;
       }
       input[type="range"]::-webkit-slider-runnable-track {
-        height: 8px; border-radius: 999px;
+        height: 10px; border-radius: 999px;
         background: linear-gradient(90deg, #3f9e4d, #a8c256 30%, var(--ember) 66%, #e56a0d 84%, #c22e12);
+        border: 1px solid rgba(0, 0, 0, 0.5);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.62), inset 0 -1px 0 rgba(255, 255, 255, 0.07), 0 1px 0 rgba(255, 255, 255, 0.05);
       }
       input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none; appearance: none;
         width: 32px; height: 32px; border-radius: 50%;
-        background: var(--ink); border: 3px solid var(--ember-deep);
-        margin-top: -12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        background: radial-gradient(circle at 35% 30%, #ffffff, var(--ink) 55%, #cfdcc8 100%);
+        border: 3px solid var(--ember-deep);
+        margin-top: -11px;
+        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -2px 4px rgba(0, 0, 0, 0.25);
       }
       input[type="range"]::-moz-range-track {
-        height: 8px; border-radius: 999px;
+        height: 10px; border-radius: 999px;
         background: linear-gradient(90deg, #3f9e4d, #a8c256 30%, var(--ember) 66%, #e56a0d 84%, #c22e12);
+        border: 1px solid rgba(0, 0, 0, 0.5);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.62), inset 0 -1px 0 rgba(255, 255, 255, 0.07);
       }
       input[type="range"]::-moz-range-thumb {
         width: 26px; height: 26px; border-radius: 50%;
-        background: var(--ink); border: 3px solid var(--ember-deep);
+        background: radial-gradient(circle at 35% 30%, #ffffff, var(--ink) 55%, #cfdcc8 100%);
+        border: 3px solid var(--ember-deep);
+        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.6);
       }
       .range-labels {
         display: flex; justify-content: space-between;
@@ -523,11 +584,19 @@
       .comp-note strong { color: var(--ink); }
       .btn-set-live {
         margin-top: 14px;
-        background: linear-gradient(180deg, #ffa04d, var(--ember-deep));
+        background: linear-gradient(180deg, #ffb15e 0%, #f5a83c 40%, var(--ember-deep) 100%);
         color: #1d1206;
-        box-shadow: 0 6px 22px rgba(229, 106, 13, 0.35);
+        border: 1px solid rgba(255, 196, 128, 0.4);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -2px 5px rgba(120, 50, 0, 0.28),
+          0 6px 24px rgba(229, 106, 13, 0.42),
+          0 0 18px rgba(245, 168, 60, 0.2);
       }
-      .btn-set-live:active { transform: translateY(1px); }
+      .btn-set-live:active {
+        transform: translateY(2px);
+        box-shadow: inset 0 3px 9px rgba(60, 25, 0, 0.45), 0 2px 8px rgba(229, 106, 13, 0.25);
+      }
       .btn-set-live:disabled {
         background: var(--surface-2);
         color: var(--ink-faint);
@@ -551,11 +620,19 @@
       /* ---------- Pulse ---------- */
       .btn-stop {
         margin-top: 10px;
-        background: linear-gradient(180deg, #f0927a, #cf4f30);
+        background: linear-gradient(180deg, #f49a80 0%, #f0927a 45%, #cf4f30 100%);
         color: #2a0d06;
-        box-shadow: 0 6px 22px rgba(207, 79, 48, 0.35);
+        border: 1px solid rgba(255, 180, 160, 0.4);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.45),
+          inset 0 -2px 5px rgba(110, 25, 5, 0.3),
+          0 6px 22px rgba(207, 79, 48, 0.4),
+          0 0 16px rgba(207, 79, 48, 0.2);
       }
-      .btn-stop:active { transform: translateY(1px); }
+      .btn-stop:active {
+        transform: translateY(2px);
+        box-shadow: inset 0 3px 9px rgba(60, 12, 2, 0.45), 0 2px 8px rgba(207, 79, 48, 0.25);
+      }
       .pulse-state {
         text-align: left;
         margin: 0 0 12px;
@@ -874,10 +951,11 @@
         display: flex;
         gap: 8px;
         margin: 0 0 16px;
-        background: var(--surface);
-        border: 1px solid var(--line);
+        background: rgba(6, 10, 9, 0.6);
+        border: 1px solid rgba(96, 138, 104, 0.28);
         border-radius: 16px;
         padding: 6px;
+        box-shadow: inset 0 2px 9px rgba(0, 0, 0, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
       }
       .tabbar button {
         appearance: none; border: 0; cursor: pointer; font: inherit;
@@ -890,12 +968,19 @@
         font-weight: 800;
         font-size: 15px;
         line-height: 1.2;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
       }
       .tabbar button[aria-selected="true"] {
-        background: linear-gradient(180deg, #ffa04d, var(--ember-deep));
+        background: linear-gradient(180deg, #ffb15e 0%, #f5a83c 45%, var(--ember-deep) 100%);
         color: #1d1206;
-        box-shadow: 0 4px 14px rgba(229, 106, 13, 0.3);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.5),
+          inset 0 -2px 5px rgba(120, 50, 0, 0.25),
+          0 8px 20px rgba(229, 106, 13, 0.5),
+          0 0 16px rgba(245, 168, 60, 0.28);
+        transform: translateY(-2px);
       }
+      .tabbar button:active { transform: translateY(0); }
       .tabbar button small {
         display: block;
         font-size: 11.5px;
@@ -1084,13 +1169,14 @@
       </figure>
 
       <nav class="tabbar" role="tablist" aria-label="App sections">
-        <button type="button" role="tab" id="tab-control" aria-selected="true" aria-controls="panel-control">Control<small>Connect &amp; temperature</small></button>
-        <button type="button" role="tab" id="tab-terpene" aria-selected="false" aria-controls="panel-terpene">Terpene Temps<small>What heat releases</small></button>
+        <button type="button" role="tab" id="tab-session" aria-selected="true" aria-controls="panel-session">Session<small>Connect &amp; session</small></button>
+        <button type="button" role="tab" id="tab-burnguard" aria-selected="false" aria-controls="panel-burnguard">Burn Guard<small>Ceiling &amp; calibration</small></button>
+        <button type="button" role="tab" id="tab-terpene" aria-selected="false" aria-controls="panel-terpene">Terpenes<small>What heat releases</small></button>
         <button type="button" role="tab" id="tab-device" aria-selected="false" aria-controls="panel-device">Device<small>Details &amp; log</small></button>
       </nav>
 
-      <!-- ================= Tab: Control ================= -->
-      <div id="panel-control" role="tabpanel" aria-labelledby="tab-control">
+      <!-- ================= Tab: Session ================= -->
+      <div id="panel-session" role="tabpanel" aria-labelledby="tab-session">
       <!-- Connect -->
       <section class="card" aria-labelledby="connect-h">
         <h2 id="connect-h">Connect your Firefly</h2>
@@ -1142,7 +1228,6 @@
           <button class="btn btn-ghost" id="authBtn" type="button" disabled>Authenticate</button>
           <p class="muted" id="authNote" style="margin:10px 0 0;">Connect first — authentication happens inside a live connection.</p>
         </div>
-      </section>
 
       <!-- Temperature -->
       <section class="card temp-card" aria-labelledby="temp-h">
@@ -1194,7 +1279,6 @@
           <button class="btn btn-set-live" id="setTempBtn" type="button" disabled>Set temperature on the Firefly</button>
           <div class="mini-msg" id="setStatus" role="status" aria-live="polite">Connect and authenticate, then pick a temperature and tap Set. A change only counts when your Firefly reads it back — this page never shows a temperature as set until the device confirms it.</div>
         </div>
-      </section>
 
       <!-- Guided session -->
       <section class="card" aria-labelledby="guided-h">
@@ -1230,7 +1314,6 @@
           <button class="btn btn-ghost" id="guidedEndBtn" type="button" style="margin-top:10px;" hidden>End session</button>
           <div class="mini-msg" id="guidedStatus" role="status" aria-live="polite">A guided session never sends above 370°F. Every temperature step counts only when your Firefly reads it back. Ending a session leaves the temperature where it is.</div>
         </div>
-      </section>
 
       <!-- Pulse -->
       <section class="card" aria-labelledby="pulse-h">
@@ -1286,22 +1369,10 @@
           <p>Your Firefly is left at 200°F — its lowest setting, the harmless minimum, where the heater barely idles. Nothing is damaged and nothing overheats. Reconnect, authenticate, and set your temperature again to pick up where you left off.</p>
           <p>A pulse only ever sends two things: the 200°F floor, and your own temperature back. No other command is involved.</p>
         </div>
-      </section>
+      </div><!-- /panel-session -->
 
-      <!-- Activation -->
-      <section class="card" aria-labelledby="act-h">
-        <h2 id="act-h">Touch sensors</h2>
-        <p class="card-sub">Which sensors start a draw. Tap one to send it — like the temperature, it only counts when your Firefly reads the new setting back.</p>
-        <div class="seg-grid" id="actGrid">
-          <button type="button" data-act="0">Left<small>Left sensor only</small></button>
-          <button type="button" data-act="1">Right<small>Right sensor only</small></button>
-          <button type="button" data-act="2">Both<small>Both sensors together</small></button>
-          <button type="button" data-act="3">Either<small>Either sensor works</small></button>
-        </div>
-        <p class="device-now act-now" id="actNow">Device reports: —</p>
-        <div class="mini-msg" id="actStatus" hidden></div>
-      </section>
-
+      <!-- ================= Tab: Burn Guard ================= -->
+      <div id="panel-burnguard" role="tabpanel" aria-labelledby="tab-burnguard" hidden>
       <!-- Burn Guard -->
       <section class="card" aria-labelledby="bg-h">
         <h2 id="bg-h">Burn Guard calibration</h2>
@@ -1502,30 +1573,9 @@
           <p>Burn Guard can't watch your bowl in real time. The Firefly's settings reports carry <strong>no live temperature reading</strong> — there is no temperature field in them at all — so no app can see the coil overshoot and cut power mid-draw. There is no closed loop here.</p>
           <p>What protects your flower is the combination above: a hard ceiling, setpoints compensated by your own measurements, and the coil calibration. The heat-up ramp itself — how fast the temperature climbs during a draw — is baked into the device's firmware and cannot be changed from any app.</p>
         </div>
-      </section>
+      </div><!-- /panel-burnguard -->
 
-      <!-- Device / battery -->
-      <section class="card" aria-labelledby="device-h">
-        <h2 id="device-h">Your Firefly right now</h2>
-        <p class="card-sub">What's connected, and how much battery is left.</p>
-        <div class="stat-row">
-          <span class="stat-label">Connected device</span>
-          <span class="stat-value" id="deviceName">—</span>
-        </div>
-        <div class="stat-row" style="margin-top:10px;">
-          <span class="stat-label">Battery</span>
-          <span class="stat-value" id="batteryValue">—</span>
-        </div>
-        <div class="batt-steps" id="battSteps" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
-        <p class="muted" id="batteryNote" style="margin:12px 0 0;">
-          Your Firefly reports its battery as a five-step gauge — Redline, Quarter, Half,
-          Three-fourths, Full. There is no percentage in what it sends, so none is shown.
-        </p>
-      </section>
-
-      </div><!-- /panel-control -->
-
-      <!-- ================= Tab: Terpene Temps ================= -->
+      <!-- ================= Tab: Terpenes ================= -->
       <div id="panel-terpene" role="tabpanel" aria-labelledby="tab-terpene" hidden>
         <section class="card" aria-labelledby="modes-h">
           <h2 id="modes-h">Pick a mood</h2>
@@ -1539,7 +1589,7 @@
 
         <section class="card" aria-labelledby="chart-h">
           <h2 id="chart-h">What each temperature releases</h2>
-          <p class="card-sub">Cannabis compounds let go of the plant at different heats. Tap any temperature to see what's releasing there — it also moves the temperature setting on the Control tab.</p>
+          <p class="card-sub">Cannabis compounds let go of the plant at different heats. Tap any temperature to see what's releasing there — it also moves the temperature setting on the Session tab.</p>
           <div class="band-list" id="bandList"></div>
 
           <div class="band-detail" id="bandDetail" aria-live="polite">
@@ -1559,6 +1609,80 @@
 
       <!-- ================= Tab: Device ================= -->
       <div id="panel-device" role="tabpanel" aria-labelledby="tab-device" hidden>
+
+      <!-- Device / battery -->
+      <section class="card" aria-labelledby="device-h">
+        <h2 id="device-h">Your Firefly right now</h2>
+        <p class="card-sub">What's connected, and how much battery is left.</p>
+        <div class="stat-row">
+          <span class="stat-label">Connected device</span>
+          <span class="stat-value" id="deviceName">—</span>
+        </div>
+        <div class="stat-row" style="margin-top:10px;">
+          <span class="stat-label">Battery</span>
+          <span class="stat-value" id="batteryValue">—</span>
+        </div>
+        <div class="batt-steps" id="battSteps" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        <p class="muted" id="batteryNote" style="margin:12px 0 0;">
+          Your Firefly reports its battery as a five-step gauge — Redline, Quarter, Half,
+          Three-fourths, Full. There is no percentage in what it sends, so none is shown.
+        </p>
+
+      <!-- Battery health tracker (read-only inference from the F1 gauge byte) -->
+      <section class="card" aria-labelledby="bh-h">
+        <h2 id="bh-h">Battery health tracker</h2>
+        <p class="card-sub">Your Firefly reports <strong>only</strong> its five-step gauge — no battery health, no voltage, no cycle count exists in what it sends, so there is nothing of that kind to read. This tracker is an honest <strong>inference</strong> instead: it watches how long each gauge step lasts during your real use and compares that against your own early baseline. It is read-only — it never sends anything to the Firefly; it only watches the gauge the device already reports.</p>
+
+        <div class="switch-row" style="margin-top:0;">
+          <div>
+            <div class="sw-label">Tracker</div>
+            <div class="sw-sub">On by default. While on, it quietly logs gauge timing whenever this app is connected. While off, nothing is logged — and your saved history below is kept unless you clear it.</div>
+          </div>
+          <button class="switch" id="bhSwitch" type="button" role="switch" aria-checked="true" aria-label="Battery health tracker"></button>
+        </div>
+
+        <p class="bh-estimate" id="bhEstimate">Still learning — no estimate yet</p>
+        <p class="muted" id="bhLearn" style="margin:6px 0 0;"></p>
+        <p class="muted" id="bhCounts" style="margin:10px 0 0;"></p>
+        <p class="muted" id="bhRunState" style="margin:6px 0 0;"></p>
+
+        <h3 class="bg-h3">Typical minutes per gauge step</h3>
+        <p class="muted" style="margin:0;">
+          How long each step of the gauge typically lasted. <strong style="color:var(--ink);">Baseline</strong> is the
+          median across your first 3 completed runs; <strong style="color:var(--ink);">Recent</strong> is the median across
+          your most recent runs after those (up to 3). A completed run goes all the way from
+          Full down to Redline, and only time observed while this app is connected counts.
+        </p>
+        <div class="bh-steps" id="bhSteps"></div>
+
+        <h3 class="bg-h3">Recent completed runs</h3>
+        <ul class="bh-runs" id="bhRunsList"></ul>
+        <p class="muted" id="bhSessionLine" style="margin:10px 0 0;"></p>
+
+        <div class="bh-actions">
+          <button class="btn btn-ghost" id="bhResetBtn" type="button">New battery — reset baseline</button>
+          <button class="btn btn-ghost" id="bhClearBtn" type="button">Clear battery history</button>
+        </div>
+        <div class="mini-msg" id="bhStatus" role="status" aria-live="polite" hidden></div>
+
+        <div class="honest-box">
+          <strong>What this can and can't know</strong>
+          <p>The Firefly reports only its 5-step gauge — <strong>no health, voltage, or cycle data exists to read</strong>. This tracker estimates health from how long each gauge step lasts during real use, and it can only observe while this app is connected — time on the Firefly with the app closed is invisible to it, so totals are <em>observed</em> minutes, not the battery's whole life between charges.</p>
+          <p>Cold weather and heavier draws shorten gauge steps on any healthy battery, so a low reading after a cold, hard session may say more about the session than the pack. Treat the estimate as a <strong>trend, not a lab measurement</strong>.</p>
+          <p>And the baseline is <strong>your own early performance</strong> with this pack — the median of your first 3 completed Full → Redline runs — not a factory specification. Swap in a fresh removable pack and use “New battery — reset baseline” so the new pack is judged against itself.</p>
+        </div>
+
+      <section class="card" aria-labelledby="act-h">
+        <h2 id="act-h">Touch sensors</h2>
+        <p class="card-sub">Which sensors start a draw. Tap one to send it — like the temperature, it only counts when your Firefly reads the new setting back.</p>
+        <div class="seg-grid" id="actGrid">
+          <button type="button" data-act="0">Left<small>Left sensor only</small></button>
+          <button type="button" data-act="1">Right<small>Right sensor only</small></button>
+          <button type="button" data-act="2">Both<small>Both sensors together</small></button>
+          <button type="button" data-act="3">Either<small>Either sensor works</small></button>
+        </div>
+        <p class="device-now act-now" id="actNow">Device reports: —</p>
+        <div class="mini-msg" id="actStatus" hidden></div>
 
       <section class="card" aria-labelledby="dd-h">
         <h2 id="dd-h">Device details — reported by your Firefly</h2>
@@ -1627,54 +1751,19 @@
           exists to change them over Bluetooth — the official apps never sent one — so
           this app doesn't invent one.
         </p>
-      </section>
 
-      <!-- Battery health tracker (read-only inference from the F1 gauge byte) -->
-      <section class="card" aria-labelledby="bh-h">
-        <h2 id="bh-h">Battery health tracker</h2>
-        <p class="card-sub">Your Firefly reports <strong>only</strong> its five-step gauge — no battery health, no voltage, no cycle count exists in what it sends, so there is nothing of that kind to read. This tracker is an honest <strong>inference</strong> instead: it watches how long each gauge step lasts during your real use and compares that against your own early baseline. It is read-only — it never sends anything to the Firefly; it only watches the gauge the device already reports.</p>
-
+      <!-- App preferences -->
+      <section class="card" aria-labelledby="prefs-h">
+        <h2 id="prefs-h">App preferences</h2>
         <div class="switch-row" style="margin-top:0;">
           <div>
-            <div class="sw-label">Tracker</div>
-            <div class="sw-sub">On by default. While on, it quietly logs gauge timing whenever this app is connected. While off, nothing is logged — and your saved history below is kept unless you clear it.</div>
+            <div class="sw-label">Haptics</div>
+            <div class="sw-sub">Haptic feedback — a small tick on button presses, where the browser allows it (on iPhone this uses a WebKit switch trick and may not work in every browser).</div>
           </div>
-          <button class="switch" id="bhSwitch" type="button" role="switch" aria-checked="true" aria-label="Battery health tracker"></button>
-        </div>
-
-        <p class="bh-estimate" id="bhEstimate">Still learning — no estimate yet</p>
-        <p class="muted" id="bhLearn" style="margin:6px 0 0;"></p>
-        <p class="muted" id="bhCounts" style="margin:10px 0 0;"></p>
-        <p class="muted" id="bhRunState" style="margin:6px 0 0;"></p>
-
-        <h3 class="bg-h3">Typical minutes per gauge step</h3>
-        <p class="muted" style="margin:0;">
-          How long each step of the gauge typically lasted. <strong style="color:var(--ink);">Baseline</strong> is the
-          median across your first 3 completed runs; <strong style="color:var(--ink);">Recent</strong> is the median across
-          your most recent runs after those (up to 3). A completed run goes all the way from
-          Full down to Redline, and only time observed while this app is connected counts.
-        </p>
-        <div class="bh-steps" id="bhSteps"></div>
-
-        <h3 class="bg-h3">Recent completed runs</h3>
-        <ul class="bh-runs" id="bhRunsList"></ul>
-        <p class="muted" id="bhSessionLine" style="margin:10px 0 0;"></p>
-
-        <div class="bh-actions">
-          <button class="btn btn-ghost" id="bhResetBtn" type="button">New battery — reset baseline</button>
-          <button class="btn btn-ghost" id="bhClearBtn" type="button">Clear battery history</button>
-        </div>
-        <div class="mini-msg" id="bhStatus" role="status" aria-live="polite" hidden></div>
-
-        <div class="honest-box">
-          <strong>What this can and can't know</strong>
-          <p>The Firefly reports only its 5-step gauge — <strong>no health, voltage, or cycle data exists to read</strong>. This tracker estimates health from how long each gauge step lasts during real use, and it can only observe while this app is connected — time on the Firefly with the app closed is invisible to it, so totals are <em>observed</em> minutes, not the battery's whole life between charges.</p>
-          <p>Cold weather and heavier draws shorten gauge steps on any healthy battery, so a low reading after a cold, hard session may say more about the session than the pack. Treat the estimate as a <strong>trend, not a lab measurement</strong>.</p>
-          <p>And the baseline is <strong>your own early performance</strong> with this pack — the median of your first 3 completed Full → Redline runs — not a factory specification. Swap in a fresh removable pack and use “New battery — reset baseline” so the new pack is judged against itself.</p>
+          <button class="switch" id="hapticsSwitch" type="button" role="switch" aria-checked="true" aria-label="Haptic feedback"></button>
         </div>
       </section>
 
-      <!-- Diagnostics -->
       <details class="card" id="diagPanel">
         <summary>All Bluetooth services — the technical list
           <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -1687,13 +1776,12 @@
             above and the connection log below, so it isn't repeated here.
           </p>
           <p class="muted" id="diagEmpty" style="margin-top:0;">
-            Nothing here yet — connect your Firefly on the Control tab and this fills in by itself.
+            Nothing here yet — connect your Firefly on the Session tab and this fills in by itself.
           </p>
           <div id="serviceList"></div>
         </div>
-      </details>
 
-      <details class="card" id="logPanel" open>
+      <details class="card" id="logPanel">
         <summary>Connection log — what happened, step by step
           <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </summary>
@@ -1705,7 +1793,6 @@
             <button class="btn-small" id="copyLogBtn" type="button">Copy log</button>
           </div>
         </div>
-      </details>
 
       </div><!-- /panel-device -->
 
@@ -1793,15 +1880,16 @@
 
         /* ================= Local settings (this device / browser only) =================
            Burn Guard ceiling, the personal calibration log, the compensation
-           switch and the display nickname are Eric's own app-side data. Per his
-           explicit request they are kept in this browser's local storage —
-           they never leave the device and are never written to the Firefly. */
+           switch, the display nickname and the haptics toggle are Eric's own
+           app-side data. Per his explicit request they are kept in this browser's
+           local storage — they never leave the device and are never written to
+           the Firefly. */
         var store = {
           get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
           set: function (k, v) { try { window.localStorage.setItem(k, v); return true; } catch (e) { return false; } },
           del: function (k) { try { window.localStorage.removeItem(k); } catch (e) { /* ignore */ } }
         };
-        var settings = { ceilingF: 380, cal: {}, comp: false, nickname: "", ceilingManual: false };
+        var settings = { ceilingF: 380, cal: {}, comp: false, nickname: "", ceilingManual: false, haptics: true };
         var ceilingMigrated = false;
         (function loadSettings() {
           settings.ceilingManual = store.get("ff2.ceilingManual") === "1";
@@ -1818,6 +1906,7 @@
           } catch (e) { settings.cal = {}; }
           settings.comp = store.get("ff2.comp") === "1";
           settings.nickname = store.get("ff2.nickname") || "";
+          settings.haptics = store.get("ff2.haptics") !== "0";
         })();
         function saveSettings() {
           var ok = true;
@@ -1826,8 +1915,39 @@
           if (!store.set("ff2.cal", JSON.stringify(settings.cal))) ok = false;
           if (!store.set("ff2.comp", settings.comp ? "1" : "0")) ok = false;
           if (!store.set("ff2.nickname", settings.nickname)) ok = false;
+          if (!store.set("ff2.haptics", settings.haptics ? "1" : "0")) ok = false;
           return ok;
         }
+
+        /* ================= Haptics =================
+           A small tick on the primary action buttons. It never blocks or
+           delays the button's real action — everything here is synchronous
+           and guarded. Where available it calls navigator.vibrate(10); it also
+           toggles a visually hidden native switch input
+           (<input type="checkbox" switch>) to borrow the iOS Taptic tick that
+           WebKit fires on switch toggles. Safe and silent where neither works. */
+        var haptics = {
+          el: null,
+          on: function () { return settings.haptics !== false; },
+          init: function () {
+            try {
+              var el = document.createElement("input");
+              el.type = "checkbox";
+              el.setAttribute("switch", "");
+              el.setAttribute("aria-hidden", "true");
+              el.tabIndex = -1;
+              el.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;";
+              document.body.appendChild(el);
+              this.el = el;
+            } catch (e) { /* unsupported — tick() just no-ops */ }
+          },
+          tick: function () {
+            if (!this.on()) return;
+            try { if (navigator.vibrate) navigator.vibrate(10); } catch (e) { /* ignore */ }
+            try { if (this.el && this.el.click) this.el.click(); } catch (e) { /* ignore */ }
+          }
+        };
+        haptics.init();
 
         /* ================= MD2 (RFC 1319) — pure JavaScript =================
            WebCrypto has no MD2, and the Firefly's auth handshake needs it.
@@ -2333,6 +2453,16 @@
            table, and the runs list stay empty until the first F1 frame. */
         renderBattHealth();
         bhSwitchEl.addEventListener("click", function () { bhSetEnabled(!bhState.enabled); });
+
+        /* ================= App preferences: haptics toggle ================= */
+        var hapticsSwitchEl = document.getElementById("hapticsSwitch");
+        hapticsSwitchEl.setAttribute("aria-checked", settings.haptics ? "true" : "false");
+        hapticsSwitchEl.addEventListener("click", function () {
+          settings.haptics = !settings.haptics;
+          hapticsSwitchEl.setAttribute("aria-checked", settings.haptics ? "true" : "false");
+          saveSettings();
+          haptics.tick();
+        });
         /* Two-tap in-page confirmation for the destructive controls —
            the first tap arms the button, the second (within 5 seconds)
            carries it out. */
@@ -2662,7 +2792,7 @@
             : "Authenticate tapped — asking the Firefly for a challenge (00 0A 00)…", "info");
           writeFrame([0x00, 0x0A, 0x00], "authentication request");
         }
-        authBtn.addEventListener("click", function () { sendAuthRequest("manual"); });
+        authBtn.addEventListener("click", function () { haptics.tick(); sendAuthRequest("manual"); });
 
         function checkPending(f) {
           if (!pending) return;
@@ -2875,6 +3005,7 @@
         matConcBtn.addEventListener("click", function () { material = "concentrates"; renderTemp(); });
 
         setTempBtn.addEventListener("click", function () {
+          haptics.tick();
           if (!isConnected || !rxChar) return;
           if (typeof guided !== "undefined" && guided && guided.active && typeof endGuidedSession === "function") {
             endGuidedSession("manual");
@@ -3152,18 +3283,21 @@
         }
         pulseDurBtns.forEach(function (b) {
           b.addEventListener("click", function () {
+            haptics.tick();
             pulseDurSecs = parseInt(b.getAttribute("data-pulse-dur"), 10);
             pulseDurBtns.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
           });
         });
         pulseOnBtns.forEach(function (b) {
           b.addEventListener("click", function () {
+            haptics.tick();
             pulseOnSecs = parseInt(b.getAttribute("data-pulse-on"), 10);
             pulseOnBtns.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
           });
         });
         pulseOffBtns.forEach(function (b) {
           b.addEventListener("click", function () {
+            haptics.tick();
             pulseOffSecs = parseInt(b.getAttribute("data-pulse-off"), 10);
             pulseOffBtns.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
           });
@@ -3174,8 +3308,8 @@
           pulseAutoSwitch.setAttribute("aria-checked", pulseAutoArmed ? "true" : "false");
           pulseAutoOptsEl.hidden = !pulseAutoArmed;
         });
-        pulseBtn.addEventListener("click", startPulse);
-        pulseStopBtn.addEventListener("click", stopPulse);
+        pulseBtn.addEventListener("click", function () { haptics.tick(); startPulse(); });
+        pulseStopBtn.addEventListener("click", function () { haptics.tick(); stopPulse(); });
         pulseRetryBtn.addEventListener("click", function () {
           if (!pulse.active || pulse.savedByte === null) return;
           pulseRetryBtn.hidden = true;
@@ -3367,6 +3501,7 @@
           renderGuided();
         }
         guidedStartBtn.addEventListener("click", function () {
+          haptics.tick();
           if (!isConnected || !rxChar) return;
           if (authState !== "authenticated") { setGuidedStatus("err", "Not authenticated — tap Authenticate on the connect card first."); return; }
           if (pulseBusy()) { setGuidedStatus("err", "A pulse is running — stop it first, then start the guided session."); return; }
@@ -3380,10 +3515,12 @@
           sendGuidedStep(0);
         });
         guidedStepUpBtn.addEventListener("click", function () {
+          haptics.tick();
           if (!guided.active || guided.phase !== "waiting") return;
           enterGuidedStir();
         });
         guidedStirBtn.addEventListener("click", function () {
+          haptics.tick();
           if (!guided.active || guided.phase !== "stir") return;
           if (guided.stirFinish) {
             guided.phase = "complete";
@@ -3399,6 +3536,7 @@
           }
         });
         guidedEndBtn.addEventListener("click", function () {
+          haptics.tick();
           endGuidedSession(guided.phase === "complete" ? "complete-end" : "user");
         });
         guidedAutoSwitch.addEventListener("click", function () {
@@ -3410,6 +3548,7 @@
         });
         guidedIntBtns.forEach(function (b) {
           b.addEventListener("click", function () {
+            haptics.tick();
             guided.intervalSecs = parseInt(b.getAttribute("data-guided-int"), 10);
             guidedIntBtns.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
           });
@@ -3561,7 +3700,7 @@
           } else if (!calPoints().length) {
             compExplainEl.textContent = "Compensation is on, but there's nothing to compensate with yet — log at least one measurement above with the cover on, and sets will start adjusting automatically.";
           } else {
-            compExplainEl.textContent = "Compensation is on: every temperature set is adjusted by the offset interpolated from your measurements (cover-off readings are excluded — they don't reflect real use). The Control tab shows both numbers plainly before anything is sent.";
+            compExplainEl.textContent = "Compensation is on: every temperature set is adjusted by the offset interpolated from your measurements (cover-off readings are excluded — they don't reflect real use). The Session tab shows both numbers plainly before anything is sent.";
           }
         }
         compSwitch.addEventListener("click", function () {
@@ -3605,7 +3744,7 @@
         }
         function renderDeviceState() {
           var s = devState;
-          /* Control tab — device-reported temperature (read-back only) */
+          /* Session tab — device-reported temperature (read-back only) */
           if (!isConnected) {
             deviceNowEl.textContent = "Not connected — what your Firefly is set to will show here, confirmed by the device itself.";
           } else if (s.tempF !== null) {
@@ -4077,6 +4216,7 @@
 
         var connecting = false;
         connectBtn.addEventListener("click", function () {
+          haptics.tick();
           if (connecting) return;
           connecting = true;
           var myGeneration = ++connectGeneration;
@@ -4100,6 +4240,7 @@
         });
 
         reconnectBtn.addEventListener("click", function () {
+          haptics.tick();
           if (connecting || !grantedDevice) return;
           connecting = true;
           var myGeneration = ++connectGeneration;
@@ -4113,6 +4254,7 @@
         });
 
         disconnectBtn.addEventListener("click", function () {
+          haptics.tick();
           if (device && device.gatt && device.gatt.connected) {
             device.gatt.disconnect();
           } else {
@@ -4122,12 +4264,14 @@
 
         /* ================= Tabs ================= */
         var tabBtns = {
-          control: document.getElementById("tab-control"),
+          session: document.getElementById("tab-session"),
+          burnguard: document.getElementById("tab-burnguard"),
           terpene: document.getElementById("tab-terpene"),
           device: document.getElementById("tab-device")
         };
         var tabPanels = {
-          control: document.getElementById("panel-control"),
+          session: document.getElementById("panel-session"),
+          burnguard: document.getElementById("panel-burnguard"),
           terpene: document.getElementById("panel-terpene"),
           device: document.getElementById("panel-device")
         };
@@ -4244,7 +4388,7 @@
           selectedBand = i;
           if (moveSetpoint) setSetpoint(band.setpoint);
           bdTitle.textContent = band.name + " · " + band.min + "–" + band.max + "°F";
-          bdSub.textContent = "Your Control tab temperature is now " + setpointF + "°F. Head there and tap Set to send it — a change only counts once your Firefly reads the new setting back.";
+          bdSub.textContent = "Your Session tab temperature is now " + setpointF + "°F. Head there and tap Set to send it — a change only counts once your Firefly reads the new setting back.";
           var html = "";
           html += '<p class="bd-label">Starts releasing here</p>';
           if (band.compounds.length) {
@@ -4262,9 +4406,9 @@
           html += '<p class="bd-text">' + band.feel + "</p>";
           html += '<p class="bd-label">Best for</p>';
           html += '<p class="bd-text"><strong>' + band.bestFor + "</strong></p>";
-          html += '<button class="btn btn-goto" id="bdGoto" type="button">See ' + setpointF + '°F on the Control tab</button>';
+          html += '<button class="btn btn-goto" id="bdGoto" type="button">See ' + setpointF + '°F on the Session tab</button>';
           bdBody.innerHTML = html;
-          document.getElementById("bdGoto").addEventListener("click", function () { switchTab("control"); });
+          document.getElementById("bdGoto").addEventListener("click", function () { switchTab("session"); });
           syncBandHighlight();
         }
 
