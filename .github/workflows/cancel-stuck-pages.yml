@@ -22,7 +22,7 @@ jobs:
           import urllib.request
 
           REPO = "elglass311/firefly-2-web-app"
-          TARGET_SHA = "bac8b788873adc1651edd71ada28de8984fe7b77d"
+          TARGET_SHA = "bac8b788873adc1651edd71aa28de8984fe7b77d"
           KNOWN_ID = 7582972737
           TARGET_CREATED = "2026-11-05T19:16:48Z"
           TOKEN = os.environ["GH_TOKEN"]
@@ -71,17 +71,16 @@ jobs:
                   print("Only one in_progress Pages deployment; using it: " + str(target_id))
           if target_id is None:
               print("No Pages deployment matched " + TARGET_SHA + "; checking known general deployment id " + str(KNOWN_ID))
-              status2, body2 = call("GET", BASE + "/deployments?environment=github-pages&per_page=100")
-              print("LIST deployments HTTP " + str(status2))
+              status2, body2 = call("GET", BASE + "/deployments/" + str(KNOWN_ID))
+              print("GET deployment HTTP " + str(status2))
               print(body2)
               try:
-                  deps = json.loads(body2)
+                  dep = json.loads(body2)
               except Exception:
-                  deps = []
-              for d in deps:
-                  if d.get("id") == KNOWN_ID and str(d.get("sha") or "").lower() == TARGET_SHA:
-                      target_id = KNOWN_ID
-                      print("Verified known id matches target SHA")
+                  dep = {}
+              if isinstance(dep, dict) and dep.get("id") == KNOWN_ID and str(dep.get("sha") or "").lower() == TARGET_SHA:
+                  target_id = KNOWN_ID
+                  print("Verified known id matches target SHA")
           if target_id is None:
               print("No target Pages deployment identified; aborting without cancelling anything.")
               sys.exit(1)
