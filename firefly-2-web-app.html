@@ -2249,6 +2249,7 @@
         <span class="surf-dock-spot" id="surfDockSpot">Banzai Pipeline</span>
         <span class="surf-dock-meta" id="surfDockMeta"></span>
         <span class="surf-dock-btns">
+          <button class="btn-small" id="surfSoundBtn" type="button" aria-pressed="false" aria-label="Turn stream sound on">Sound off</button>
           <button class="btn-small surf-zoom-btn" id="surfZoomBtn" type="button" aria-pressed="false" aria-label="Toggle digital zoom"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Zoom</button>
           <button class="btn-small" id="surfCollapseBtn" type="button">Collapse</button>
           <button class="btn-small" id="surfExpandBtn" type="button" hidden>Expand</button>
@@ -3207,7 +3208,7 @@
       <div class="seg-view" data-segtab="device" data-segview="surf" hidden>
 <section class="card surf-card" aria-labelledby="surf-h">
         <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap the speaker inside the player if you want the sound of the ocean. The player itself lives in a dock pinned to the bottom of the screen, so it rides along on <strong style="color:var(--ink);">every tab</strong> — this card is its control center: pick a break, show or hide the player, and set auto-play here.</p>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button in the player dock</strong>, or the speaker inside the player. Turn sound on once and the app <strong style="color:var(--ink);">remembers</strong>: phones sometimes drop a stream's sound on their own a little way in, and when that happens the app notices and puts the sound back by itself within a couple of seconds — no need to touch the volume buttons. Your sound also comes back by itself when Follow the Sun moves to the next break and when you return to the app. To turn sound off, use the dock's Sound button (the player's own speaker is treated as a dropped signal and gets restored). The player itself lives in a dock pinned to the bottom of the screen, so it rides along on <strong style="color:var(--ink);">every tab</strong> — this card is its control center: pick a break, show or hide the player, and set auto-play here.</p>
 
         <div class="surf-nowrow">
           <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
@@ -3233,7 +3234,7 @@
         </div>
 
         <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
-        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. The player dock rides along on every tab and switching tabs never stops the stream; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen.</p>
+        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. The player dock rides along on every tab and switching tabs never stops the stream; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen — and when it picks back up, your sound choice comes back with it.</p>
         <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
       </section>      </div>
       <div class="seg-view" data-segtab="device" data-segview="help" hidden>
@@ -9831,7 +9832,17 @@ var STRAIN_SRC_LINKS = {
          dock (#surfDock) in the app shell — outside every tab panel — so it is
          visible on all tabs and tab switches never move, destroy or reload it.
          With Auto-play on (default), the best daylight break starts by itself,
-         muted, as soon as the app opens. The stream unloads only on Stop or
+         muted, as soon as the app opens. Sound is a remembered choice: once
+         the viewer turns it on (the dock's Sound button, or the speaker in
+         YouTube's own controls), a 2-second watchdog adopts that choice and
+         restores it whenever the player is found muted while playing —
+         phones (iOS webviews especially) are known to drop a stream's audio
+         on their own shortly after unmute, which reads as silence until a
+         hardware volume press re-asserts it. The watchdog makes that press
+         unnecessary. The same restore covers every player reload (Follow
+         the Sun advance, background resume, recovery chain). Turning sound
+         OFF is the dock Sound button's job; a mute seen only inside the
+         player's own UI is treated as a dropped signal, not an opt-out. The stream unloads only on Stop or
          on the app going into the background (visibilitychange) — never on
          a tab switch. On a stream error/end, an automatic start advances
          through the untried spots in Follow the Sun daylight-rank order
@@ -9856,6 +9867,8 @@ var STRAIN_SRC_LINKS = {
         var DWELL_MS = 20 * 60 * 1000;
         var LS_KEY = "ff2.surfAutoplay";
         var ZONE_LS_KEY = "ff2.lineupZones";
+        var SOUND_LS_KEY = "ff2.surfSound";
+        var VOL_LS_KEY = "ff2.surfVol";
 
         var stage = document.getElementById("surfStage");
         var dock = document.getElementById("surfDock");
@@ -9868,6 +9881,7 @@ var STRAIN_SRC_LINKS = {
         var collapseBtn = document.getElementById("surfCollapseBtn");
         var expandBtn = document.getElementById("surfExpandBtn");
         var dockStopBtn = document.getElementById("surfDockStopBtn");
+        var soundBtn = document.getElementById("surfSoundBtn");
         var showHideBtn = document.getElementById("surfShowHideBtn");
         var facade = document.getElementById("surfFacade");
         var poster = document.getElementById("surfPoster");
@@ -9938,6 +9952,13 @@ var STRAIN_SRC_LINKS = {
         /* --- state --- */
         var autoOn = lsGet(LS_KEY) !== "0";
         var zonesOn = lsGet(ZONE_LS_KEY) !== "0"; /* lineup zones: default ON, remembered on this device */
+        /* Sound choice: default OFF (streams must start muted), remembered
+           on this device once the viewer turns it on. soundVol is the last
+           audible level the player reported; restores re-apply it. */
+        var soundOn = lsGet(SOUND_LS_KEY) === "1";
+        var soundVol = parseInt(lsGet(VOL_LS_KEY) || "100", 10);
+        if (!(soundVol >= 1 && soundVol <= 100)) soundVol = 100;
+        var plainMuted = true; /* plain-iframe fallback always starts muted; the Sound button may rebuild it audible after an explicit tap */
         var currentKey = bestKey(new Date()) || "pipeline";
         var mode = "idle"; /* idle | loading | playing | waiting | fallback */
         var ytPlayer = null, plainFrame = false;
@@ -9990,9 +10011,27 @@ var STRAIN_SRC_LINKS = {
             dockStatus.textContent = "";
           }
         }
+        function persistSound() { lsSet(SOUND_LS_KEY, soundOn ? "1" : "0"); lsSet(VOL_LS_KEY, String(soundVol)); }
+        function syncSoundBtn() {
+          if (!soundBtn) return;
+          soundBtn.textContent = soundOn ? "Sound on" : "Sound off";
+          soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
+          soundBtn.setAttribute("aria-label", soundOn ? "Turn stream sound off" : "Turn stream sound on");
+        }
+        /* Re-apply the remembered sound choice to a (re)started player.
+           A platform may refuse an unmute before the player has seen any
+           interaction; the watchdog below keeps re-applying while playing,
+           so the sound lands on its own as soon as the platform allows. */
+        function applySoundPref(target) {
+          if (!soundOn) return;
+          var p = target || ytPlayer;
+          if (!p || plainFrame) return;
+          try { p.unMute(); p.setVolume(soundVol); } catch (e) { /* ignore */ }
+        }
         function syncDockChrome() {
           syncDockHead();
           syncDockStatus();
+          syncSoundBtn();
           if (showHideBtn) showHideBtn.textContent = dockVisible() ? "Hide player" : "Show player";
           syncDockPad();
         }
@@ -10240,6 +10279,7 @@ var STRAIN_SRC_LINKS = {
         function onPlaying() {
           mode = "playing";
           resetChain(); /* a spot that plays ends any recovery chain */
+          applySoundPref(null); /* a (re)started player comes up muted — put the remembered sound back */
           bgPaused = false;
           loading.hidden = true;
           dwellStart = Date.now();
@@ -10311,7 +10351,7 @@ var STRAIN_SRC_LINKS = {
         function buildPlainFrame(spot) {
           plainFrame = true;
           var f = document.createElement("iframe");
-          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1";
+          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (plainMuted ? "1" : "0") + "&playsinline=1&rel=0&modestbranding=1";
           f.title = spot.name + " live surf cam";
           f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
           f.setAttribute("allowfullscreen", "");
@@ -10343,7 +10383,7 @@ var STRAIN_SRC_LINKS = {
                 host: "https://www.youtube-nocookie.com",
                 playerVars: { autoplay: 1, mute: 1, playsinline: 1, rel: 0, modestbranding: 1 },
                 events: {
-                  onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } },
+                  onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } applySoundPref(e.target); },
                   onStateChange: function (e) {
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
                     else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
@@ -10394,6 +10434,32 @@ var STRAIN_SRC_LINKS = {
           startStream(spotByKey(currentKey));
         });
         dockStopBtn.addEventListener("click", stopStream);
+        /* The dock's Sound button is THE sound control: its tap is a real
+           gesture in this document, so the unmute it asks for is the most
+           reliable kind. Off is also only here — a mute pressed inside
+           YouTube's own controls is indistinguishable from the phone
+           dropping the audio, and the watchdog treats it as a drop. */
+        if (soundBtn) soundBtn.addEventListener("click", function () {
+          soundOn = !soundOn;
+          persistSound();
+          syncSoundBtn();
+          if (plainFrame) {
+            /* No API on the plain fallback: rebuild the one frame with the
+               new mute flag, synchronously inside this tap. */
+            plainMuted = !soundOn;
+            if (mode === "playing" || mode === "loading") {
+              frameWrap.innerHTML = "";
+              buildPlainFrame(spotByKey(currentKey));
+            }
+            return;
+          }
+          if (ytPlayer) {
+            try {
+              if (soundOn) { ytPlayer.unMute(); ytPlayer.setVolume(soundVol); }
+              else ytPlayer.mute();
+            } catch (e) { /* ignore */ }
+          }
+        });
         collapseBtn.addEventListener("click", function () { setDockState("mini"); syncDockChrome(); });
         expandBtn.addEventListener("click", function () { setDockState("expanded"); syncDockChrome(); });
         /* Tapping the mini view itself (its poster/stage area, not a button
@@ -10449,6 +10515,7 @@ var STRAIN_SRC_LINKS = {
         /* --- first-gesture primer: any first touch/scroll/key arms playback --- */
         function arm() {
           gestureArmed = true;
+          applySoundPref(null); /* a first real gesture is also the moment a remembered unmute is most likely to be allowed */
           if (mode === "waiting" && ytPlayer && ytPlayer.playVideo) {
             try { ytPlayer.playVideo(); } catch (e) { /* ignore */ }
             loadTimer = setTimeout(function () { if (mode === "waiting") handleStreamFailure("error"); }, 6000);
@@ -10457,6 +10524,37 @@ var STRAIN_SRC_LINKS = {
         ["pointerdown", "touchstart", "keydown", "wheel"].forEach(function (ev) {
           window.addEventListener(ev, arm, { capture: true, passive: true });
         });
+
+        /* --- Sound watchdog (2s): the repair for sound that dies on its
+           own ~30s after unmute. Nothing in this app touches the player at
+           that mark (the only surf timer is the 20s clock below, and it
+           writes text only) — the silence arrives from the player/webview
+           side: the stream keeps playing but returns to muted, and a
+           hardware volume press revives it by re-asserting the phone's
+           media volume. The watchdog closes the loop from here instead:
+           while a stream is playing it reads the player's real mute/volume
+           state. Sound heard (unmuted, volume > 0) is ADOPTED as the
+           remembered choice, so unmuting inside YouTube's own controls
+           counts too. Silence found while sound is wanted is RESTORED —
+           unMute + the remembered volume — so a mid-stream drop heals
+           itself within a couple of seconds, no volume button needed. --- */
+        setInterval(function () {
+          if (!ytPlayer || plainFrame || mode !== "playing") return;
+          var muted, vol;
+          try { muted = ytPlayer.isMuted(); vol = ytPlayer.getVolume(); } catch (e) { return; }
+          if (typeof muted !== "boolean") return;
+          if (!muted) {
+            if (typeof vol === "number" && vol > 0) {
+              if (!soundOn) { soundOn = true; persistSound(); syncSoundBtn(); }
+              else if (vol !== soundVol) { soundVol = vol; persistSound(); }
+            } else if (soundOn) {
+              /* Unmuted but at zero volume: same silent symptom, same heal. */
+              try { ytPlayer.setVolume(soundVol); } catch (e) { /* ignore */ }
+            }
+          } else if (soundOn) {
+            try { ytPlayer.unMute(); ytPlayer.setVolume(soundVol); } catch (e) { /* ignore */ }
+          }
+        }, 2000);
 
         /* --- Follow the Sun cycle + clock refresh (runs on EVERY tab now —
            the player lives in the dock, not on the Device tab) --- */
@@ -10540,6 +10638,9 @@ var STRAIN_SRC_LINKS = {
               manualHold: manualHold,
               stopped: stoppedByUser,
               bgPaused: bgPaused,
+              soundOn: soundOn,
+              soundVol: soundVol,
+              playerMuted: (function () { try { return ytPlayer && !plainFrame ? ytPlayer.isMuted() : null; } catch (e) { return null; } })(),
               iframes: frameWrap.querySelectorAll("iframe").length,
               inPanel: !!dock.closest("[role='tabpanel']"),
               head: dockSpot.textContent + " | " + dockMeta.textContent
