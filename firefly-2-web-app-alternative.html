@@ -2547,6 +2547,44 @@
       /* Bottom-bar labels never truncate (Temperature shows as "Temp",
          full name kept as its aria-label). */
       .alt-tabbar button span { white-space: nowrap; }
+
+      /* ================= GESTURE LOCKS: no double-tap zoom in the menus; top layer pinned (2026-11-05) =================
+         Double-tap-to-zoom is a browser/webview magnification gesture, not
+         an app feature: touch-action: manipulation on the app shell and its
+         interactive elements tells the engine taps here are app input, so a
+         fast double tap is two taps — never a zoom. Stronger deliberate
+         rules are NOT overridden: the favorites wheel and the surf
+         digital-zoom gesture layer keep touch-action: none (their class
+         rules outrank the element selectors below), the tab panels keep
+         pan-y (vertical scroll + the menu swipe), and the app's in-page
+         zooms — the surf stage's transform zoom and the strain photo
+         tap-to-enlarge viewer — are page transforms, not browser zoom,
+         and keep working exactly as before. */
+      body, #app, .wrap, .alt-tabbar, .alt-more, .tray, .sheet, .surf-dock,
+      button, a, input, select, textarea, summary, label,
+      [role="tab"], [role="button"], [role="switch"], .chip, .card {
+        touch-action: manipulation;
+      }
+      /* The top layer (status island + its hint card) is ANCHORED: a tap,
+         a tap-and-hold, or a hold-and-drag starting on it must never pan,
+         drag or scroll the interface from under it, and a long press must
+         not raise the callout / text selection on it. touch-action: none
+         hands every gesture on it to the page, which has no drag handling
+         for it — its taps and buttons still work exactly as before, and
+         scrolling the content below it is untouched. */
+      .island, .isl-hint {
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+      .island *, .isl-hint * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
 </style>
     <script>
       /* Theme + motion boot — runs before first paint so a saved theme/motion
@@ -3797,7 +3835,7 @@
         <div class="switch-row" style="margin-top:16px;">
           <div>
             <div class="sw-label">Auto-play streams</div>
-            <div class="sw-sub">On: when you open Surf Break, the best daylight break starts by itself, muted, and Follow the Sun keeps cycling. Surf Break is summon-only — nothing loads until you open it. Off: the player dock stays hidden and nothing loads until you tap Show player here or Play in the dock — kinder to your data plan. Your pick is remembered on this device.</div>
+            <div class="sw-sub">On: when you open Surf Break, the best daylight break starts by itself, muted, and Follow the Sun keeps cycling. Surf Break is summon-only — nothing loads until you open it. Off: Follow the Sun doesn't cycle and a picked spot waits for Play — kinder to your data plan — but opening the Surf tab always loads the player, because tapping Surf is asking to watch. Your pick is remembered on this device.</div>
           </div>
           <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
         </div>
@@ -6606,6 +6644,15 @@
           });
           window.scrollTo(0, 0);
           if (typeof onTabShown === "function") onTabShown(name);
+          /* Arriving on Surf by ANY route — tab tap, menu swipe, or a
+             programmatic switch — loads the Surf Break player. The surf
+             module owns the start logic (window.__surfDock.openFromTab)
+             and guards against restarting a stream that is already
+             loading, playing or waiting, so this hook is safe to run on
+             every Surf arrival, alongside the tab button's own wiring. */
+          if (name === "surf" && window.__surfDock && typeof window.__surfDock.openFromTab === "function") {
+            window.__surfDock.openFromTab();
+          }
         }
         Object.keys(tabBtns).forEach(function (k) {
           tabBtns[k].addEventListener("click", function () { switchTab(k); });
@@ -11023,6 +11070,39 @@ var STRAIN_SRC_LINKS = {
           stoppedByUser = false;
           startStream(spotByKey(currentKey));
         });
+        /* --- Surf tab opens the player: arriving on the Surf menu IS
+           opening Surf Break, so the stream loads by itself — the same
+           start path as Show player / Open Surf Break, no extra tap on
+           Play needed. This runs on EVERY Surf arrival, whatever the
+           Auto-play setting says: tapping Surf is itself the request to
+           watch, so the stored data-saver choice never vetoes it.
+           Auto-play still governs the hands-free behaviour — Follow the
+           Sun cycling, background resume, and starting a picked spot
+           without pressing Play. A stream that is already loading,
+           playing or waiting for a first gesture is never restarted or
+           reloaded by a tab tap. --- */
+        function openSurfFromTab() {
+          if (mode === "loading" || mode === "playing" || mode === "waiting") return;
+          stoppedByUser = false;
+          bgPaused = false;
+          if (!manualHold) {
+            var b = bestKey(new Date());
+            if (b) currentKey = b;
+            renderChips();
+          }
+          showDock("expanded");
+          startStream(spotByKey(currentKey));
+        }
+        var surfTabBtn = document.getElementById("tab-surf");
+        if (surfTabBtn) surfTabBtn.addEventListener("click", openSurfFromTab);
+        /* Programmatic tab switches take the same path as a tap. */
+        if (typeof window.__ffSwitchTab === "function") {
+          var ffSwitchTabOrig = window.__ffSwitchTab;
+          window.__ffSwitchTab = function (name) {
+            ffSwitchTabOrig(name);
+            if (name === "surf") openSurfFromTab();
+          };
+        }
         /* Sound button: the tap happens in THIS frame, inside a real user
            gesture — the strongest claim a web page can make on iOS's
            audio session, unlike a tap on the speaker icon inside the
@@ -11087,7 +11167,7 @@ var STRAIN_SRC_LINKS = {
             bgPaused = false;
             unload();
             hideDock();
-            setNow("Auto-play is off — the player dock is hidden and streams now load only when you tap Show player here or Play in the dock.");
+            setNow("Auto-play is off — the player dock is hidden and Follow the Sun won't cycle. The player still loads whenever you ask for it: open the Surf tab, tap Show player here, or tap Play in the dock.");
           } else {
             manualHold = false;
             stoppedByUser = false;
@@ -11180,11 +11260,12 @@ var STRAIN_SRC_LINKS = {
         } else {
           hideDock();
           stoppedByUser = true; hideDock();
-          if (info0.day) setNow("Surf Break is closed — nothing is streaming. Daylight pick right now: <strong>" + spot0.name + "</strong> · " + info0.label + " local · ☀ — tap Show player here, or Open Surf Break on the Session tab, to watch.");
-          else setNow("Surf Break is closed — nothing is streaming. No break is in daylight right now — every spot still plays if you pick it; the ☀/☾ badges show each break's local time. Tap Show player here, or Open Surf Break on the Session tab, to watch.");
+          if (info0.day) setNow("Surf Break is closed — nothing is streaming. Daylight pick right now: <strong>" + spot0.name + "</strong> · " + info0.label + " local · ☀ — open the Surf tab and it starts by itself, or tap Show player here, or Open Surf Break on the Session tab, to watch.");
+          else setNow("Surf Break is closed — nothing is streaming. No break is in daylight right now — every spot still plays if you pick it; the ☀/☾ badges show each break's local time. Open the Surf tab and it starts by itself, or tap Show player here, or Open Surf Break on the Session tab, to watch.");
         }
         syncDockChrome();
         window.__surfDock = {
+          openFromTab: openSurfFromTab,
           state: function () {
             return {
               mode: mode,
@@ -11300,19 +11381,25 @@ var STRAIN_SRC_LINKS = {
            Burn Guard, Device, Info. A menu change is a plain click on that
            menu's real tab button, so every existing tab behavior (panel
            refresh, More closing, sheet closing) rides along unchanged.
-           Swipes are CONSTRAINED, never a blanket full-screen gesture:
-           a swipe is only recognized from non-interactive panel
-           background / header areas — touches starting on any button,
-           link, input, slider/stepper, switch, the favorites wheel,
-           carousels, the surf stage/dock, the island, the strain sheet,
-           the photo zoom, the tab bar / More panel or the session orb
-           are permanently exempt. The gesture must be deliberate and
-           mostly horizontal (2:1 dominance), committing on release at
-           72px+ (or a 32px+ flick at 0.45px/ms+); if vertical movement
-           wins early the touch is cancelled for good (it is a scroll),
-           swiping is disabled while the page is scrolling, and there
-           is no wraparound at either end. Tapping the tabs below stays
-           the canonical path. */
+           Swipes are TRUE swipes (owner correction, 2026-11-05): a finger
+           that travels horizontally across the menu content — starting on
+           ordinary content and cards, not just blank background — moves
+           to the neighbouring menu on release. Recognition is judged on
+           the whole gesture at release: 48px+ of horizontal travel that
+           beats the vertical drift (1.2:1), or a shorter fast flick.
+           Nothing kills a swipe mid-gesture: no early vertical-drift
+           cancel, no page-scroll cancel, no just-scrolled lockout, so
+           minor vertical drift or the page's own slight scroll movement
+           never eats a clear horizontal swipe. The ONLY touches that
+           never become tab swipes are ones beginning directly on the
+           app's own horizontal controls — the range sliders / steppers,
+           the favorites wheel, the surf stage/dock (drag-pan/pinch) —
+           plus the fixed chrome and open overlays (tab bar, More panel,
+           island, tray, strain sheet, photo viewer), which are not menu
+           content. A recognized swipe also swallows the synthetic click
+           the same touch would otherwise deliver to whatever it started
+           on, so swiping off a card never activates it. There is no
+           wraparound at either end. */
         var SWIPE_ORDER = ["connect", "temperature", "session", "strains", "terpene", "surf", "burnguard", "device", "info"];
         var SWIPE_TITLES = { connect: "Connect", temperature: "Temperature", session: "Session", strains: "Strains", terpene: "Terpenes", surf: "Surf", burnguard: "Burn Guard", device: "Device", info: "Info" };
         var swipeLabel = document.getElementById("swipeLabel");
@@ -11362,44 +11449,45 @@ var STRAIN_SRC_LINKS = {
             if (b) swipeObs.observe(b, { attributes: true, attributeFilter: ["aria-selected"] });
           });
         }
-        var SWIPE_EXCLUDE = 'button, a, input, textarea, select, summary, canvas, [role="button"], [role="switch"], [role="tab"], .wheel, .surf-dock, .surf-stage, .sheet, .photo-zoom, .island, .alt-tabbar, .alt-more, .orb-card, .seg-control, .str-card, .band, .conn-strip';
-        var swX = 0, swY = 0, swT = 0, swOk = false, swDead = false, swScrollY = 0, lastScrollAt = 0;
-        window.addEventListener("scroll", function () { lastScrollAt = Date.now(); }, { passive: true });
+        var SWIPE_EXCLUDE = 'input[type="range"], .stepper-row, .wheel, .surf-dock, .surf-stage, .alt-tabbar, .alt-more, .tray, .island, .isl-hint, .swipe-arrow, .sheet, .photo-zoom';
+        var swX = 0, swY = 0, swT = 0, swOk = false;
+        var swSuppressClickUntil = 0;
+        document.addEventListener("click", function (e) {
+          if (Date.now() < swSuppressClickUntil) {
+            e.preventDefault();
+            e.stopPropagation();
+            swSuppressClickUntil = 0;
+          }
+        }, true);
         document.addEventListener("touchstart", function (e) {
-          swOk = false; swDead = false;
+          swOk = false;
           if (!e.touches || e.touches.length !== 1) return;
-          if (Date.now() - lastScrollAt < 150) return; /* the page is still scrolling */
           var t = e.target;
           if (!t || !t.closest) return;
-          if (t.closest(SWIPE_EXCLUDE)) return; /* interactive / exempt surface */
-          if (!t.closest('#app [role="tabpanel"]')) return; /* panel background / header areas only */
+          if (t.closest(SWIPE_EXCLUDE)) return; /* the app's own horizontal controls + fixed chrome */
+          if (!t.closest("#app")) return; /* menu screens only */
           if (document.querySelector(".sheet:not([hidden])") || document.querySelector(".photo-zoom:not([hidden])")) return;
           swX = e.touches[0].clientX; swY = e.touches[0].clientY; swT = Date.now();
-          swScrollY = window.scrollY || 0; swOk = true;
+          swOk = true;
         }, { passive: true });
-        document.addEventListener("touchmove", function (e) {
-          if (!swOk || swDead) return;
-          if (!e.touches || !e.touches.length) return;
-          var dx = e.touches[0].clientX - swX;
-          var dy = e.touches[0].clientY - swY;
-          /* Vertical movement winning early cancels this touch for good:
-             it is a scroll, never a swipe. */
-          if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) { swDead = true; return; }
-          if (Math.abs((window.scrollY || 0) - swScrollY) > 8) swDead = true;
-        }, { passive: true });
+        document.addEventListener("touchcancel", function () { swOk = false; }, { passive: true });
         document.addEventListener("touchend", function (e) {
           if (!swOk) return;
           swOk = false;
-          if (swDead || moreOpen) return;
+          if (moreOpen) return;
           if (!e.changedTouches || !e.changedTouches.length) return;
           var dx = e.changedTouches[0].clientX - swX;
           var dy = e.changedTouches[0].clientY - swY;
           var dt = Math.max(1, Date.now() - swT);
-          if (Math.abs(dx) < Math.abs(dy) * 2) return; /* mostly-horizontal only */
-          var distOK = Math.abs(dx) >= 72 && dt <= 1000;
-          var flickOK = Math.abs(dx) >= 32 && (Math.abs(dx) / dt) >= 0.45;
-          if (!distOK && !flickOK) return;
+          var adx = Math.abs(dx), ady = Math.abs(dy);
+          /* Judged on the whole gesture: horizontal travel that clearly
+             beats whatever vertical drift came with it. */
+          var clearSwipe = adx >= 48 && adx >= ady * 1.2 && dt <= 2500;
+          var flick = adx >= 36 && adx >= ady * 1.5 && dt <= 600 && (adx / dt) >= 0.35;
+          if (!clearSwipe && !flick) return;
           swipeStep(dx < 0 ? 1 : -1); /* no wraparound: swipeStep stops at the ends */
+          /* The same touch must not also click whatever it started on. */
+          swSuppressClickUntil = Date.now() + 250;
         }, { passive: true });
         document.addEventListener("keydown", function (e) {
           if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
@@ -11808,6 +11896,62 @@ var STRAIN_SRC_LINKS = {
           });
         }
         lastExportLabel();
+      })();
+    </script>
+    <script>
+      /* ================= GESTURE LOCKS (JS half) =================
+         The CSS touch-action rules handle modern engines; webviews
+         (Bluefy / WKWebView) can still magnify on their proprietary
+         gesture events or a fast double tap, so those defaults are
+         swallowed here — ONLY on the app's menu surfaces. Touches inside
+         the surf stage / zoom layer and the strain photo viewer are left
+         completely alone: their zooms are deliberate in-page transforms
+         and keep working exactly as before. The double-tap guard eats
+         only the second tap's default, only on non-interactive surfaces,
+         and only when it lands within 350ms and ~44px of the first —
+         real controls (buttons, chips, steppers, switches, links,
+         fields) are never delayed or eaten, so rapid repeated taps on a
+         stepper keep working. The top layer (status island + its hint)
+         additionally refuses long-press callouts, context menus, drags
+         and text selection outright: it stays exactly where anchored. */
+      (function () {
+        "use strict";
+        function inDeliberateZoom(t) {
+          return !!(t && t.closest && (t.closest(".surf-stage") || t.closest(".surf-gesture") || t.closest(".photo-zoom")));
+        }
+        function isInteractive(t) {
+          return !!(t && t.closest && t.closest('button, a, input, select, textarea, summary, label, [role="button"], [role="switch"], [role="tab"], .chip, .wheel, .surf-dock'));
+        }
+        ["gesturestart", "gesturechange", "gestureend"].forEach(function (ev) {
+          document.addEventListener(ev, function (e) {
+            if (inDeliberateZoom(e.target)) return;
+            e.preventDefault();
+          }, { passive: false });
+        });
+        var lastTapAt = 0, lastTapX = 0, lastTapY = 0;
+        document.addEventListener("touchend", function (e) {
+          if (inDeliberateZoom(e.target) || isInteractive(e.target)) { lastTapAt = 0; return; }
+          var t = e.changedTouches && e.changedTouches[0];
+          if (!t) return;
+          var now = Date.now();
+          if (now - lastTapAt < 350 && Math.abs(t.clientX - lastTapX) < 44 && Math.abs(t.clientY - lastTapY) < 44) {
+            e.preventDefault();
+            lastTapAt = 0;
+          } else {
+            lastTapAt = now; lastTapX = t.clientX; lastTapY = t.clientY;
+          }
+        }, { passive: false });
+        document.addEventListener("dblclick", function (e) {
+          if (inDeliberateZoom(e.target) || isInteractive(e.target)) return;
+          e.preventDefault();
+        }, { passive: false });
+        [document.getElementById("island"), document.getElementById("islHint")].forEach(function (el) {
+          if (!el) return;
+          el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+          el.addEventListener("dragstart", function (e) { e.preventDefault(); });
+          el.addEventListener("selectstart", function (e) { e.preventDefault(); });
+        });
+        window.__gestureLocks = { installed: true };
       })();
     </script>
 </body>
