@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Mighty Plus Companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f3f1ec;
+        --surface: #ffffff;
+        --surface-2: #eceae3;
+        --ink: #1b1813;
+        --muted: #6f695e;
+        --line: #ddd8cc;
+        --accent: #d95304;
+        --accent-strong: #b44403;
+        --accent-soft: #fdeadd;
+        --ok: #1e7d46;
+        --notice-bg: #fff6ec;
+        --notice-line: #e89a52;
+        --shadow: 0 1px 2px rgba(27, 24, 19, .06), 0 8px 24px rgba(27, 24, 19, .06);
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c0e11;
+          --surface: #15181d;
+          --surface-2: #1d2127;
+          --ink: #f2efe8;
+          --muted: #9aa1ab;
+          --line: #272d35;
+          --accent: #ff7d21;
+          --accent-strong: #ffa25c;
+          --accent-soft: #2b1c0e;
+          --ok: #4cc984;
+          --notice-bg: #221607;
+          --notice-line: #8a5a1f;
+          --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px rgba(0, 0, 0, .35);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      .wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 20px 16px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      h1, h2, h3, .num, .btn, .seg button {
+        font-family: "Chakra Petch", system-ui, sans-serif;
+      }
+      .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+      /* ---------- header + honesty notice ---------- */
+      header { padding: 6px 2px 0; }
+      .brand {
+        font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+        color: var(--muted); margin: 0 0 6px; font-weight: 600;
+      }
+      h1 { font-size: 30px; line-height: 1.1; margin: 0 0 4px; font-weight: 700; }
+      .sub { color: var(--muted); margin: 0; font-size: 15px; }
+      .notice {
+        background: var(--notice-bg);
+        border: 1.5px solid var(--notice-line);
+        border-radius: 14px;
+        padding: 16px 18px;
+        display: flex; gap: 12px;
+      }
+      .notice svg { flex: 0 0 auto; margin-top: 2px; }
+      .notice p { margin: 0; font-size: 16px; line-height: 1.55; }
+      .notice strong { font-weight: 700; }
+
+      /* ---------- cards ---------- */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+      .card-head {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        gap: 12px; margin-bottom: 6px;
+      }
+      h2 { font-size: 20px; margin: 0; font-weight: 700; line-height: 1.2; }
+      .card-sub { color: var(--muted); font-size: 14px; margin: 4px 0 0; }
+      .tag {
+        display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .08em;
+        text-transform: uppercase; color: var(--accent-strong);
+        background: var(--accent-soft); border-radius: 999px; padding: 3px 9px;
+        white-space: nowrap; margin-top: 2px;
+      }
+      @media (prefers-color-scheme: dark) { .tag { color: var(--accent); } }
+
+      /* segmented °C/°F toggle */
+      .seg {
+        display: inline-flex; background: var(--surface-2);
+        border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 3px;
+      }
+      .seg button {
+        border: 0; background: transparent; color: var(--muted);
+        font-size: 16px; font-weight: 600; min-width: 56px; min-height: 44px;
+        border-radius: 999px; cursor: pointer; padding: 0 14px;
+      }
+      .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+      .seg button:focus-visible, .btn:focus-visible, input[type="range"]:focus-visible, a.btn:focus-visible {
+        outline: 3px solid var(--accent); outline-offset: 2px;
+      }
+
+      /* ---------- temperature facts ---------- */
+      .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+      .fact {
+        background: var(--surface-2); border-radius: 12px; padding: 12px 14px;
+      }
+      .fact .k { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 2px; }
+      .fact .v { font-size: 20px; font-weight: 600; margin: 0; }
+      .fact .n { font-size: 13px; color: var(--muted); margin: 2px 0 0; }
+      .fact.wide { grid-column: 1 / -1; }
+
+      .boost-rows { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+      .boost-row {
+        display: flex; align-items: center; gap: 14px;
+        border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+      }
+      .boost-row .clicks {
+        flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%;
+        background: var(--accent-soft); color: var(--accent-strong);
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Chakra Petch", sans-serif; font-weight: 700; font-size: 18px;
+      }
+      @media (prefers-color-scheme: dark) { .boost-row .clicks { color: var(--accent); } }
+      .boost-row .what { flex: 1 1 auto; min-width: 0; }
+      .boost-row .what .name { font-weight: 700; font-size: 16px; margin: 0; }
+      .boost-row .what .how { color: var(--muted); font-size: 13px; margin: 0; }
+      .boost-row .delta { font-size: 22px; font-weight: 700; color: var(--accent-strong); white-space: nowrap; }
+      @media (prefers-color-scheme: dark) { .boost-row .delta { color: var(--accent); } }
+
+      /* explorer */
+      .explorer { margin-top: 18px; border-top: 1px dashed var(--line); padding-top: 16px; }
+      .explorer .lab { font-size: 13px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+      .set-display { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+      .set-display .big { font-size: 44px; font-weight: 700; line-height: 1; }
+      .set-display .targets { color: var(--muted); font-size: 14px; }
+      .set-display .targets b { color: var(--ink); }
+      .stepper { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+      .stepper .btn { flex: 0 0 64px; }
+      input[type="range"] {
+        flex: 1 1 auto; min-width: 0; height: 48px; accent-color: var(--accent); cursor: pointer;
+      }
+      .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+      .chip {
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+        border-radius: 999px; min-height: 44px; padding: 0 16px; font-size: 15px;
+        font-family: "Chakra Petch", sans-serif; font-weight: 600; cursor: pointer;
+      }
+      .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .fine { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
+
+      /* ---------- buttons ---------- */
+      .btn {
+        appearance: none; border: 1px solid var(--line); background: var(--surface-2);
+        color: var(--ink); border-radius: 12px; min-height: 56px; padding: 0 20px;
+        font-size: 17px; font-weight: 600; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        text-decoration: none; text-align: center;
+      }
+      .btn:active { transform: scale(.985); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:active { background: var(--accent-strong); }
+      .btn.danger-ghost { color: var(--accent-strong); }
+      .btn:disabled { opacity: .45; cursor: default; transform: none; }
+
+      /* ---------- timers ---------- */
+      .timer-block + .timer-block { margin-top: 22px; border-top: 1px dashed var(--line); padding-top: 20px; }
+      .timer-label { font-size: 13px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+      .clock { font-size: 56px; font-weight: 600; line-height: 1.05; letter-spacing: .01em; }
+      .clock small { font-size: 22px; color: var(--muted); font-weight: 500; }
+      .btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+      .btn-row .btn { flex: 1 1 120px; }
+      .boost-choices { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+      .boost-choices .btn { flex: 1 1 150px; }
+      .progress {
+        height: 12px; border-radius: 999px; background: var(--surface-2);
+        overflow: hidden; margin-top: 14px; border: 1px solid var(--line);
+      }
+      .progress > div {
+        height: 100%; width: 0%; background: var(--accent);
+        transition: width .25s linear;
+      }
+      .timer-status { font-size: 15px; margin: 12px 0 0; min-height: 1.5em; }
+      .timer-status.done { color: var(--ok); font-weight: 700; }
+      .boost-done-flash { animation: boostpulse 1s ease-in-out 3; border-radius: 16px; }
+      @keyframes boostpulse {
+        0%, 100% { box-shadow: var(--shadow); }
+        50% { box-shadow: 0 0 0 4px var(--ok), var(--shadow); }
+      }
+
+      /* ---------- reference lists ---------- */
+      .ref-list { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+      .ref-list li { padding: 12px 0; border-top: 1px solid var(--line); }
+      .ref-list li:first-child { border-top: 0; padding-top: 2px; }
+      .ref-list .h { font-weight: 700; font-size: 16px; margin: 0 0 2px; display: flex; align-items: center; gap: 8px; }
+      .ref-list .d { color: var(--muted); font-size: 14.5px; margin: 0; }
+      .ref-list .d b { color: var(--ink); }
+
+      /* ---------- accessories ---------- */
+      .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin: 12px 0 0; padding: 0; list-style: none; }
+      .acc-grid li { font-size: 15px; padding: 8px 0 8px 22px; position: relative; border-top: 1px solid var(--line); }
+      .acc-grid li::before {
+        content: ""; position: absolute; left: 2px; top: 16px; width: 8px; height: 8px;
+        border-radius: 2px; background: var(--accent);
+      }
+      .maker { padding: 12px 0; border-top: 1px solid var(--line); }
+      .maker:first-of-type { border-top: 0; }
+      .maker .m-name { font-weight: 700; font-size: 16px; margin: 0; }
+      .maker .m-desc { color: var(--muted); font-size: 14.5px; margin: 2px 0 0; }
+      .link-btn { width: 100%; margin-top: 14px; }
+      .honest { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
+
+      footer { color: var(--muted); font-size: 13px; text-align: center; padding: 4px 8px 0; }
+      footer p { margin: 4px 0; }
+
+      @media (max-width: 430px) {
+        .facts { grid-template-columns: 1fr 1fr; }
+        .acc-grid { grid-template-columns: 1fr; }
+        .clock { font-size: 48px; }
+        h1 { font-size: 26px; }
+        .card { padding: 16px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boost-done-flash { animation: none; box-shadow: 0 0 0 3px var(--ok), var(--shadow); }
+        .btn:active { transform: none; }
+        .progress > div { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <header>
+        <p class="brand">Storz &amp; Bickel · Mighty+</p>
+        <h1>Mighty+ Companion</h1>
+        <p class="sub">Quick reference and hand-run timers for your Mighty+.</p>
+      </header>
+
+      <div class="notice" role="note">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke="var(--accent)" stroke-width="2"/>
+          <line x1="5.5" y1="5.5" x2="18.5" y2="18.5" stroke="var(--accent)" stroke-width="2"/>
+          <path d="M8.5 15.5a5 5 0 0 1 7 0" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="18.6" r="1.3" fill="var(--accent)"/>
+        </svg>
+        <p><strong>Companion — the Mighty+ has no Bluetooth, so nothing here connects to or controls the device. Everything is reference and timing you run yourself.</strong></p>
+      </div>
+
+      <!-- ============ TEMPERATURE ============ -->
+      <section class="card" aria-labelledby="temp-h">
+        <div class="card-head">
+          <div>
+            <h2 id="temp-h">Temperature reference</h2>
+            <p class="card-sub">Published Mighty+ specs — set on the device itself with its + / − buttons.</p>
+          </div>
+          <div class="seg" role="group" aria-label="Temperature unit">
+            <button type="button" id="unit-c" aria-pressed="true">°C</button>
+            <button type="button" id="unit-f" aria-pressed="false">°F</button>
+          </div>
+        </div>
+
+        <div class="facts">
+          <div class="fact">
+            <p class="k">Full range</p>
+            <p class="v num"><span data-tp="40">40</span>–<span data-t="210">210 °C</span></p>
+            <p class="n">Adjustable in 1° steps</p>
+          </div>
+          <div class="fact">
+            <p class="k">Base temperature</p>
+            <p class="v num" data-t="180">180 °C</p>
+            <p class="n">Factory default set point</p>
+          </div>
+          <div class="fact wide">
+            <p class="k">Auto shut-off</p>
+            <p class="v" style="font-size:17px;">Fixed &amp; factory-set</p>
+            <p class="n">The Mighty+ powers itself down after a period without use. The interval is set at the factory and can't be changed — wake it with the power button.</p>
+          </div>
+        </div>
+
+        <div class="boost-rows">
+          <div class="boost-row">
+            <div class="clicks" aria-hidden="true">×2</div>
+            <div class="what">
+              <p class="name">Booster</p>
+              <p class="how">Double-click the power button</p>
+            </div>
+            <div class="delta num" data-delta="15">+15 °C</div>
+          </div>
+          <div class="boost-row">
+            <div class="clicks" aria-hidden="true">×3</div>
+            <div class="what">
+              <p class="name">Superbooster</p>
+              <p class="how">Triple-click the power button</p>
+            </div>
+            <div class="delta num" data-delta="30">+30 °C</div>
+          </div>
+        </div>
+        <p class="fine">Boosts are added on top of your set temperature, capped at the <span data-t="210">210 °C</span> maximum, and <b>revert to the base temperature automatically after 90 seconds</b>.</p>
+
+        <div class="explorer">
+          <p class="lab">Try a set point</p>
+          <div class="set-display">
+            <span class="big num" id="set-big">180 °C</span>
+            <span class="targets">Booster → <b class="num" id="set-boost">195 °C</b><br />Superbooster → <b class="num" id="set-super">210 °C</b></span>
+          </div>
+          <div class="stepper">
+            <button type="button" class="btn" id="step-down" aria-label="Decrease set temperature">−</button>
+            <input type="range" id="set-slider" min="40" max="210" step="1" value="180" aria-label="Set temperature explorer" />
+            <button type="button" class="btn" id="step-up" aria-label="Increase set temperature">+</button>
+          </div>
+          <div class="presets" id="presets" role="group" aria-label="Common set points"></div>
+          <p class="fine">Explorer only — moving this slider changes nothing on your Mighty+. It just does the boost math for a set point.</p>
+        </div>
+      </section>
+
+      <!-- ============ TIMERS ============ -->
+      <section class="card" id="timer-card" aria-labelledby="timer-h">
+        <div class="card-head">
+          <div>
+            <h2 id="timer-h">Session &amp; boost timers</h2>
+            <p class="card-sub">Timers you start and stop yourself. They count time only — they don't read or change the device.</p>
+          </div>
+          <span class="tag">Timer only</span>
+        </div>
+
+        <div class="timer-block">
+          <p class="timer-label">Session timer</p>
+          <div class="clock mono" id="session-clock" aria-label="Session elapsed time">00:00</div>
+          <div class="btn-row">
+            <button type="button" class="btn primary" id="session-toggle">Start session</button>
+            <button type="button" class="btn" id="session-reset" disabled>Reset</button>
+          </div>
+          <p class="timer-status" id="session-status" aria-live="polite">Not running. Start it when you switch the Mighty+ on.</p>
+        </div>
+
+        <div class="timer-block">
+          <p class="timer-label">Boost timer · 90-second window</p>
+          <div class="clock mono" id="boost-clock" aria-label="Boost countdown">90<small> sec</small></div>
+          <div class="progress" aria-hidden="true"><div id="boost-bar"></div></div>
+          <p class="fine" style="margin-top:10px;">Tap the one you just clicked on the device — the timer mirrors the published 90-second auto-revert.</p>
+          <div class="btn-row boost-choices">
+            <button type="button" class="btn primary" id="boost-start">Booster ×2 · <span data-delta="15">+15 °C</span></button>
+            <button type="button" class="btn primary" id="super-start">Superbooster ×3 · <span data-delta="30">+30 °C</span></button>
+            <button type="button" class="btn" id="boost-cancel" disabled>Cancel</button>
+          </div>
+          <p class="timer-status" id="boost-status" aria-live="polite">Idle. Nothing is boosted — on the device or here.</p>
+        </div>
+      </section>
+
+      <!-- ============ CARE & POWER ============ -->
+      <section class="card" aria-labelledby="care-h">
+        <div class="card-head">
+          <div>
+            <h2 id="care-h">Dosing, care &amp; power</h2>
+            <p class="card-sub">Published reference facts for everyday use.</p>
+          </div>
+          <span class="tag">Reference</span>
+        </div>
+        <ul class="ref-list">
+          <li>
+            <p class="h">Dosing capsules</p>
+            <p class="d">Pre-fill capsules and drop one into the filling chamber instead of loading ground herb loose. They keep the chamber cleaner, make swapping loads quick, and travel well — the factory Capsule Magazine carries <b>8 capsules</b>. Capsules are reusable; replace them when they get dented or hard to open.</p>
+          </li>
+          <li>
+            <p class="h">Cooling unit care</p>
+            <p class="d">The cooling unit sits on top and holds the top screen — it's where most resin builds up. <b>Clean it regularly:</b> when draw starts feeling tight or flavor drops off, take the cooling unit apart and soak the parts in isopropyl alcohol, rinse with warm water, and let everything dry completely before reassembling. With daily use, a weekly soak keeps airflow open; check the screens and swap in a fresh one when brushing no longer clears it.</p>
+          </li>
+          <li>
+            <p class="h">USB-C Supercharge</p>
+            <p class="d">The Mighty+ charges over <b>USB-C</b>. With a USB-C Power Delivery charger, S&amp;B's Supercharge function brings it to roughly <b>80% in about 40 minutes</b>. It can also be used while plugged in once the battery holds some charge.</p>
+          </li>
+          <li>
+            <p class="h">Battery facts</p>
+            <p class="d">Inside are <b>two 3,300 mAh lithium-ion cells</b> (6,600 mAh total). The cells aren't user-replaceable — when capacity eventually fades, battery service goes through Storz &amp; Bickel.</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ============ FACTORY ACCESSORIES ============ -->
+      <section class="card" aria-labelledby="factory-h">
+        <div class="card-head">
+          <div>
+            <h2 id="factory-h">Factory accessories</h2>
+            <p class="card-sub">Made by Storz &amp; Bickel for the Mighty+.</p>
+          </div>
+          <span class="tag">Factory</span>
+        </div>
+        <ul class="acc-grid">
+          <li>Dosing capsules &amp; magazine</li>
+          <li>Cooling units</li>
+          <li>Mouthpieces</li>
+          <li>Screens — normal &amp; coarse</li>
+          <li>Seal rings &amp; O-rings</li>
+          <li>Chargers &amp; USB-C cables</li>
+          <li>Carrying cases</li>
+          <li>Stands</li>
+          <li>Filling aid</li>
+          <li>Herb mill &amp; brush</li>
+        </ul>
+        <a class="btn primary link-btn" href="https://www.storz-bickel.com/en-us/parts-accessories/for-mighty" target="_blank" rel="noopener">Shop factory parts at storz-bickel.com ↗</a>
+        <p class="honest">That link opens S&amp;B's combined <b>MIGHTY / MIGHTY+</b> parts category — the two models share this accessories line, so check an item's fit note if it names only one model.</p>
+      </section>
+
+      <!-- ============ THIRD-PARTY ACCESSORIES ============ -->
+      <section class="card" aria-labelledby="third-h">
+        <div class="card-head">
+          <div>
+            <h2 id="third-h">Third-party accessories</h2>
+            <p class="card-sub">Independent makers — sold through their own stores.</p>
+          </div>
+          <span class="tag">Third-party</span>
+        </div>
+        <div class="maker">
+          <p class="m-name">Delta 3D Studios</p>
+          <p class="m-desc">Water pipe adapters (WPA), stands, and a loading funnel made for the Mighty / Mighty+.</p>
+        </div>
+        <div class="maker">
+          <p class="m-name">POTV (Planet of the Vapes)</p>
+          <p class="m-desc">Glass adapters that let the Mighty+ pair with glass pieces and water tools.</p>
+        </div>
+        <div class="maker">
+          <p class="m-name">Sneaky Pete</p>
+          <p class="m-desc">Adapters and glass accessories for running the Mighty+ through water.</p>
+        </div>
+        <div class="maker">
+          <p class="m-name">Vapotools by 157Grad</p>
+          <p class="m-desc">Alternative dosing capsules and glass parts for the Mighty / Mighty+.</p>
+        </div>
+        <p class="honest">Third-party gear isn't made or endorsed by Storz &amp; Bickel, and fit can vary between makers — check each maker's own listing for Mighty+ fit before ordering.</p>
+      </section>
+
+      <footer>
+        <p>Temperature, boost and battery figures are Storz &amp; Bickel's published Mighty+ specs.</p>
+        <p>Everything on this page runs on your phone — nothing is sent anywhere.</p>
+      </footer>
+
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        /* ---------- unit handling ---------- */
+        var unit = "C";            // display unit
+        var setC = 180;            // explorer set point, canonical °C
+        var MIN_C = 40, MAX_C = 210;
+
+        function toDisp(c) { return unit === "C" ? Math.round(c) : Math.round(c * 9 / 5 + 32); }
+        function unitSym() { return unit === "C" ? " °C" : " °F"; }
+        function deltaDisp(dC) {
+          var d = unit === "C" ? dC : Math.round(dC * 9 / 5);
+          return "+" + d + unitSym();
+        }
+
+        function renderTemps() {
+          var nodes = document.querySelectorAll("[data-t]");
+          for (var i = 0; i < nodes.length; i++) {
+            nodes[i].textContent = toDisp(parseFloat(nodes[i].getAttribute("data-t"))) + unitSym();
+          }
+          var plain = document.querySelectorAll("[data-tp]");
+          for (var k = 0; k < plain.length; k++) {
+            plain[k].textContent = toDisp(parseFloat(plain[k].getAttribute("data-tp")));
+          }
+          var dn = document.querySelectorAll("[data-delta]");
+          for (var j = 0; j < dn.length; j++) {
+            dn[j].textContent = deltaDisp(parseFloat(dn[j].getAttribute("data-delta")));
+          }
+          renderExplorer();
+        }
+
+        /* ---------- explorer ---------- */
+        var slider = document.getElementById("set-slider");
+        var setBig = document.getElementById("set-big");
+        var setBoost = document.getElementById("set-boost");
+        var setSuper = document.getElementById("set-super");
+        var presetsBox = document.getElementById("presets");
+        var PRESETS = [170, 180, 190, 200, 210];
+        var presetBtns = [];
+
+        PRESETS.forEach(function (p) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "chip";
+          b.setAttribute("aria-pressed", p === setC ? "true" : "false");
+          b.addEventListener("click", function () { setC = p; renderTemps(); });
+          presetBtns.push({ btn: b, val: p });
+          presetsBox.appendChild(b);
+        });
+
+        function syncSlider() {
+          if (unit === "C") {
+            slider.min = MIN_C; slider.max = MAX_C; slider.step = 1;
+            slider.value = setC;
+          } else {
+            slider.min = 104; slider.max = 410; slider.step = 1;
+            slider.value = toDisp(setC);
+          }
+        }
+
+        function renderExplorer() {
+          syncSlider();
+          setBig.textContent = toDisp(setC) + unitSym();
+          setBoost.textContent = toDisp(Math.min(setC + 15, MAX_C)) + unitSym();
+          setSuper.textContent = toDisp(Math.min(setC + 30, MAX_C)) + unitSym();
+          presetBtns.forEach(function (pb) {
+            pb.btn.textContent = toDisp(pb.val) + unitSym();
+            pb.btn.setAttribute("aria-pressed", pb.val === setC ? "true" : "false");
+          });
+        }
+
+        slider.addEventListener("input", function () {
+          var v = parseFloat(slider.value);
+          setC = unit === "C" ? v : Math.round((v - 32) * 5 / 9);
+          if (setC < MIN_C) setC = MIN_C;
+          if (setC > MAX_C) setC = MAX_C;
+          renderTemps();
+        });
+        document.getElementById("step-down").addEventListener("click", function () {
+          if (setC > MIN_C) { setC -= 1; renderTemps(); }
+        });
+        document.getElementById("step-up").addEventListener("click", function () {
+          if (setC < MAX_C) { setC += 1; renderTemps(); }
+        });
+
+        var btnC = document.getElementById("unit-c");
+        var btnF = document.getElementById("unit-f");
+        function setUnit(u) {
+          unit = u;
+          btnC.setAttribute("aria-pressed", u === "C" ? "true" : "false");
+          btnF.setAttribute("aria-pressed", u === "F" ? "true" : "false");
+          renderTemps();
+        }
+        btnC.addEventListener("click", function () { setUnit("C"); });
+        btnF.addEventListener("click", function () { setUnit("F"); });
+
+        /* ---------- timers ---------- */
+        function pad(n) { return (n < 10 ? "0" : "") + n; }
+        function fmtElapsed(ms) {
+          var s = Math.floor(ms / 1000);
+          var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+          return h > 0 ? h + ":" + pad(m) + ":" + pad(sec) : pad(m) + ":" + pad(sec);
+        }
+
+        /* session timer */
+        var sess = { running: false, elapsed: 0, startStamp: 0 };
+        var sessClock = document.getElementById("session-clock");
+        var sessToggle = document.getElementById("session-toggle");
+        var sessReset = document.getElementById("session-reset");
+        var sessStatus = document.getElementById("session-status");
+
+        function sessNow() {
+          return sess.elapsed + (sess.running ? Date.now() - sess.startStamp : 0);
+        }
+        function renderSession() {
+          sessClock.textContent = fmtElapsed(sessNow());
+          sessToggle.textContent = sess.running ? "Pause" : (sess.elapsed > 0 ? "Resume" : "Start session");
+          sessReset.disabled = !sess.running && sess.elapsed === 0;
+        }
+        sessToggle.addEventListener("click", function () {
+          if (sess.running) {
+            sess.elapsed = sessNow();
+            sess.running = false;
+            sessStatus.textContent = "Paused at " + fmtElapsed(sess.elapsed) + ". The timer holds here until you resume.";
+          } else {
+            sess.startStamp = Date.now();
+            sess.running = true;
+            sessStatus.textContent = "Timing. This is your stopwatch — the Mighty+ keeps its own time on the device.";
+          }
+          renderSession();
+          ensureTicker();
+        });
+        sessReset.addEventListener("click", function () {
+          sess.running = false; sess.elapsed = 0;
+          sessStatus.textContent = "Not running. Start it when you switch the Mighty+ on.";
+          renderSession();
+          ensureTicker();
+        });
+
+        /* boost timer — 90 second window */
+        var BOOST_MS = 90 * 1000;
+        var boost = { running: false, endStamp: 0, kind: "" };
+        var boostClock = document.getElementById("boost-clock");
+        var boostBar = document.getElementById("boost-bar");
+        var boostStatus = document.getElementById("boost-status");
+        var boostCancel = document.getElementById("boost-cancel");
+        var timerCard = document.getElementById("timer-card");
+
+        function renderBoost() {
+          if (!boost.running) {
+            boostClock.innerHTML = "90<small> sec</small>";
+            boostBar.style.width = "0%";
+            boostCancel.disabled = true;
+            return;
+          }
+          var remain = Math.max(0, boost.endStamp - Date.now());
+          var secs = Math.ceil(remain / 1000);
+          boostClock.innerHTML = secs + "<small> sec left</small>";
+          boostBar.style.width = ((1 - remain / BOOST_MS) * 100) + "%";
+          boostCancel.disabled = false;
+        }
+        function startBoost(kind) {
+          boost.running = true;
+          boost.kind = kind;
+          boost.endStamp = Date.now() + BOOST_MS;
+          timerCard.classList.remove("boost-done-flash");
+          boostStatus.classList.remove("done");
+          boostStatus.textContent = kind + " window running — counting the 90 seconds a boost lasts on the device before it reverts to base.";
+          renderBoost();
+          ensureTicker();
+        }
+        function finishBoost() {
+          boost.running = false;
+          boostClock.innerHTML = "0<small> sec</small>";
+          boostBar.style.width = "100%";
+          boostCancel.disabled = true;
+          boostStatus.classList.add("done");
+          boostStatus.textContent = "90 seconds up — a " + boost.kind + " set on the device would now revert to the base temperature.";
+          timerCard.classList.remove("boost-done-flash");
+          void timerCard.offsetWidth; /* restart the pulse animation */
+          timerCard.classList.add("boost-done-flash");
+          if (navigator.vibrate) {
+            try { navigator.vibrate([180, 90, 180]); } catch (e) { /* vibration not allowed here */ }
+          }
+        }
+        document.getElementById("boost-start").addEventListener("click", function () { startBoost("Booster"); });
+        document.getElementById("super-start").addEventListener("click", function () { startBoost("Superbooster"); });
+        boostCancel.addEventListener("click", function () {
+          boost.running = false;
+          boostStatus.classList.remove("done");
+          boostStatus.textContent = "Boost timer cancelled. Nothing changed on the device — this timer only counts time.";
+          renderBoost();
+          ensureTicker();
+        });
+
+        /* shared ticker */
+        var ticker = null;
+        function ensureTicker() {
+          var need = sess.running || boost.running;
+          if (need && !ticker) {
+            ticker = setInterval(function () {
+              renderSession();
+              if (boost.running && Date.now() >= boost.endStamp) { finishBoost(); }
+              else { renderBoost(); }
+              ensureTicker();
+            }, 200);
+          } else if (!need && ticker) {
+            clearInterval(ticker);
+            ticker = null;
+          }
+        }
+
+        renderTemps();
+        renderSession();
+        renderBoost();
+      })();
+    </script>
+  </body>
+</html>
