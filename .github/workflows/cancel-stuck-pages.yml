@@ -39,6 +39,9 @@ jobs:
               except urllib.error.HTTPError as e:
                   return e.code, e.read().decode("utf-8", "replace")
 
+          status0, body0 = call("GET", BASE)
+          print("GET repo HTTP " + str(status0))
+          print(body0[:500])
           status, body = call("GET", BASE + "/pages/deployments?per_page=100")
           print("LIST pages/deployments HTTP " + str(status))
           print(body)
@@ -48,8 +51,8 @@ jobs:
               print("Could not parse Pages deployments list: " + str(exc))
               pages = []
           if not isinstance(pages, list):
-              print("Pages deployments list was not a list; aborting without cancelling anything.")
-              sys.exit(1)
+              print("Pages deployments list was not a list (likely 404); continuing to verified fallback by deployment id.")
+              pages = []
 
           target_id = None
           for d in pages:
