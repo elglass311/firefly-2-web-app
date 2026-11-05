@@ -2043,9 +2043,9 @@
       .leaf-badge { border-radius: 18px; }
       .wheel { border-radius: 20px; }
       .band, .band-detail, .tut-card, .log-row, .rq-row { border-radius: 16px; }
-      /* Dock clearance: content never hides under the fixed surf dock */
-      body:has(> .surf-dock[data-state="expanded"]:not([hidden])) .wrap { padding-bottom: 430px; }
-      body:has(> .surf-dock[data-state="mini"]:not([hidden])) .wrap { padding-bottom: 170px; }
+      /* (Surf dock clearance rules retired 2026-11-05: the player no longer
+         floats over tab content — it lives inside the Surf Break overlay
+         sheet, which covers the screen instead of pushing it.) */
       /* Anchored jumps (scrollIntoView) must clear the island at the top
          and the surf dock at the bottom. */
       .card, .band-detail, .tab-title { scroll-margin-top: 88px; scroll-margin-bottom: 130px; }
@@ -2165,7 +2165,6 @@
       .alt-more button small { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
       .alt-more button[aria-selected="true"] { border-color: var(--ember); color: var(--ember); }
       .wrap { padding-bottom: 110px !important; }
-      .surf-dock { bottom: calc(72px + env(safe-area-inset-bottom)) !important; }
       /* Segmented switchers: sticky, opaque, labeled */
       .seg-control.seg-tabs { position: sticky; top: calc(env(safe-area-inset-top) + 64px); z-index: 40; background: var(--surface); }
       /* Session stepper */
@@ -2585,6 +2584,113 @@
         user-select: none;
         -webkit-user-drag: none;
       }
+
+      /* ================= Surf Break: floating wave button + overlay (2026-11-05) =================
+         Surf Break is not a tab anymore. A small wave button rides on EVERY
+         screen — above the bottom bar, clear of the island up top — and
+         tapping it opens Surf Break as an overlay sheet on top of the
+         current tab, which stays exactly where it was underneath (tab,
+         scroll position and all). Tapping the button again, the sheet's
+         Close, the dimmed backdrop, or Escape folds it back down to the
+         button. The ONE player (#surfDock) lives inside the sheet and is
+         never moved or reloaded by opening/closing: closing only hides
+         the sheet, so a live stream keeps playing behind the button —
+         and the button's red live dot says so at a glance. */
+      .surf-fab {
+        position: fixed; z-index: 75;
+        right: calc(14px + env(safe-area-inset-right));
+        bottom: calc(78px + env(safe-area-inset-bottom));
+        width: 52px; height: 52px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: var(--tab-bg);
+        -webkit-backdrop-filter: blur(14px) saturate(1.4);
+        backdrop-filter: blur(14px) saturate(1.4);
+        border: 1px solid var(--card-line);
+        color: var(--ember);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+        cursor: pointer; font: inherit; padding: 0;
+        touch-action: manipulation;
+      }
+      .surf-fab:active { transform: scale(0.93); }
+      .surf-fab svg { width: 26px; height: 26px; }
+      .surf-fab .surf-fab-close-ic { display: none; }
+      .surf-fab.is-open {
+        background: linear-gradient(180deg, var(--btn-a) 0%, var(--btn-b) 45%, var(--btn-c) 100%);
+        color: var(--btn-ink);
+        border-color: rgba(255, 255, 255, 0.35);
+      }
+      .surf-fab.is-open .surf-fab-wave-ic { display: none; }
+      .surf-fab.is-open .surf-fab-close-ic { display: block; }
+      .surf-fab-dot {
+        position: absolute; top: 2px; right: 2px;
+        width: 12px; height: 12px; border-radius: 50%;
+        background: #ff5147; box-shadow: 0 0 9px #ff5147;
+        border: 2px solid rgba(0, 0, 0, 0.4);
+      }
+      .surf-fab-dot[hidden] { display: none !important; }
+      .surf-fab.is-playing .surf-fab-dot { animation: pulse 1.6s ease-in-out infinite; }
+      @media (prefers-reduced-motion: reduce) {
+        .surf-fab.is-playing .surf-fab-dot { animation: none; }
+      }
+      .surf-overlay { position: fixed; inset: 0; z-index: 70; }
+      .surf-overlay[hidden] { display: none !important; }
+      .surf-overlay-scrim {
+        position: absolute; inset: 0;
+        background: rgba(2, 5, 10, 0.55);
+        -webkit-backdrop-filter: blur(3px);
+        backdrop-filter: blur(3px);
+      }
+      .surf-overlay-sheet {
+        position: absolute; left: 50%; transform: translateX(-50%);
+        top: calc(74px + env(safe-area-inset-top));
+        bottom: 0;
+        width: min(600px, 100vw);
+        display: flex; flex-direction: column;
+        background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+        border: 1px solid var(--card-line); border-bottom: 0;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.55);
+        animation: surfSheetIn var(--dur-2) var(--ease-out);
+      }
+      @keyframes surfSheetIn {
+        from { transform: translate(-50%, 14px); opacity: 0.4; }
+        to { transform: translate(-50%, 0); opacity: 1; }
+      }
+      .surf-overlay-head {
+        flex: none; display: flex; align-items: center; gap: 10px;
+        padding: 12px 14px 10px;
+      }
+      .surf-overlay-title {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 17px; font-weight: 800; color: var(--ink);
+      }
+      .surf-overlay-title svg { width: 22px; height: 22px; color: var(--ember); }
+      .surf-overlay-close {
+        appearance: none; cursor: pointer; font: inherit;
+        margin-left: auto; flex: none;
+        width: 38px; height: 38px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: var(--surface-2); border: 1px solid var(--card-line); color: var(--ink);
+      }
+      .surf-overlay-close svg { width: 17px; height: 17px; }
+      .surf-overlay-close:active { transform: scale(0.94); }
+      .surf-overlay-scroll {
+        flex: 1; min-height: 0;
+        overflow-y: auto; -webkit-overflow-scrolling: touch;
+        padding: 2px 12px calc(18px + env(safe-area-inset-bottom));
+      }
+      /* Inside the sheet the player is a plain full-width block — the
+         fixed bottom-dock geometry it used to carry no longer applies,
+         and there is no mini view in here: the sheet IS the full view. */
+      .surf-overlay .surf-dock {
+        position: relative; left: auto; bottom: auto; transform: none;
+        width: 100%; max-width: 100%;
+        margin: 0 0 14px; z-index: auto;
+      }
+      .surf-overlay #surfCollapseBtn, .surf-overlay #surfExpandBtn { display: none !important; }
+      .surf-overlay .surf-card { margin-bottom: 0; }
+      /* While the sheet is up, the page underneath holds still. */
+      body.surf-overlay-open { overflow: hidden; }
 </style>
     <script>
       /* Theme + motion boot — runs before first paint so a saved theme/motion
@@ -2697,7 +2803,6 @@
       <button type="button" role="tab" id="tab-session" aria-selected="false" aria-controls="panel-session"><svg class="tab-ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Session</span></button>
       <button type="button" role="tab" id="tab-strains" aria-selected="false" aria-controls="panel-strains"><svg class="tab-ic" aria-hidden="true"><use href="#ff-leaf-sm"/></svg><span>Strains</span></button>
       <button type="button" role="tab" id="tab-terpene" aria-selected="false" aria-controls="panel-terpene"><svg class="tab-ic" aria-hidden="true"><use href="#i-drop"/></svg><span>Terpenes</span></button>
-      <button type="button" role="tab" id="tab-surf" aria-selected="false" aria-controls="panel-surf"><svg class="tab-ic" aria-hidden="true"><use href="#i-wave"/></svg><span>Surf</span></button>
       <button type="button" id="altMoreBtn" aria-expanded="false" aria-controls="altMorePanel"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span>More</span></button>
     </nav>
     <div class="alt-more" id="altMorePanel" hidden role="group" aria-label="More sections">
@@ -2708,10 +2813,29 @@
 
     <div class="isl-hint" id="islHint" hidden><span>Tip: tap the island above any time to open session controls.</span><button type="button" id="islHintX">Got it</button></div>
 
-    <!-- ============ Surf dock: the ONE Surf Break player, pinned to the bottom
-         of the viewport on EVERY tab. The player node lives here permanently
-         and never moves, so tab switches never reload it. ============ -->
-    <div class="surf-dock" id="surfDock" data-state="mini" hidden role="region" aria-label="Surf Break live player">
+    <!-- ============ Surf Break: floating wave button + overlay ============
+         Surf Break is not a tab anymore. The small wave button rides on
+         EVERY screen; tapping it opens Surf Break as an overlay sheet on
+         top of the current tab — the tab underneath is never switched,
+         scrolled or reloaded, and closing the sheet returns to it exactly
+         as it was. The ONE player (#surfDock) lives inside the sheet and
+         never moves, so opening/closing never reloads it; closing the
+         sheet only hides it, and a live stream keeps playing behind the
+         button (its red dot shows a stream is playing). ============ -->
+    <button class="surf-fab" id="surfFab" type="button" aria-expanded="false" aria-controls="surfOverlay" aria-label="Open Surf Break">
+      <svg class="surf-fab-wave-ic" aria-hidden="true"><use href="#i-wave"/></svg>
+      <svg class="surf-fab-close-ic" aria-hidden="true"><use href="#i-close"/></svg>
+      <span class="surf-fab-dot" id="surfFabDot" hidden></span>
+    </button>
+    <div class="surf-overlay" id="surfOverlay" hidden role="dialog" aria-label="Surf Break">
+      <div class="surf-overlay-scrim" id="surfOverlayScrim"></div>
+      <div class="surf-overlay-sheet">
+        <div class="surf-overlay-head">
+          <span class="surf-overlay-title"><svg aria-hidden="true"><use href="#i-wave"/></svg>Surf Break</span>
+          <button class="surf-overlay-close" id="surfOverlayClose" type="button" aria-label="Close Surf Break"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+        </div>
+        <div class="surf-overlay-scroll" id="surfOverlayScroll">
+    <div class="surf-dock" id="surfDock" data-state="expanded" hidden role="region" aria-label="Surf Break live player">
       <div class="surf-dock-head">
         <span class="surf-dock-title"><span class="surf-live-dot"></span>Surf Break · live</span>
         <span class="surf-dock-spot" id="surfDockSpot">Banzai Pipeline</span>
@@ -2770,6 +2894,42 @@
         </div>
       </div>
       <p class="surf-dock-status" id="surfDockStatus" role="status" aria-live="polite" hidden></p>
+    </div>
+
+    <section class="card surf-card" aria-labelledby="surf-h">
+        <h2 id="surf-h">Surf Break — control center</h2>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player above if you want the sound of the ocean. Once sound is on it stays on when the break changes, and if the player ever goes quiet on its own the app brings the sound back by itself within a couple of seconds — no need to touch your phone's volume buttons. This panel floats over the tab you were on — close it and that tab is exactly as you left it, scroll and all — and closing it never stops the stream: it keeps playing behind the wave button, which shows a red dot while a stream is live. This card is the player's control center: pick a break, show or hide the player, and set auto-play here.</p>
+
+        <div class="surf-nowrow">
+          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
+          <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
+        </div>
+
+        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Auto-play streams</div>
+            <div class="sw-sub">On: when you open Surf Break, the best daylight break starts by itself, muted, and Follow the Sun keeps cycling. Surf Break is summon-only — nothing loads until you open it. Off: Follow the Sun doesn't cycle and a picked spot waits for Play — kinder to your data plan — but opening Surf Break always loads the player, because opening it is asking to watch. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
+        </div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Lineup zones</div>
+            <div class="sw-sub">On: each spot's poster still in the player above carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
+        </div>
+
+        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">Data note:</strong> these are live video streams and they use data — on a cellular connection that can be significant. Surf Break stays closed (and uses no data) until you open it.</p>
+        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. Closing this panel never stops the stream, and switching tabs never stops it either; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen.</p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
+      </section>
+        </div>
+      </div>
     </div>
 
     <!-- ============ Unsupported-browser notice ============ -->
@@ -2854,7 +3014,7 @@
       <div class="swipe-nav" id="swipeNav" aria-label="Menu navigation">
         <button type="button" class="swipe-arrow prev" id="swipePrev" aria-label="Previous menu"><svg aria-hidden="true"><use href="#i-chev-r"/></svg></button>
         <div class="swipe-mid">
-          <span class="swipe-label" id="swipeLabel">Connect · 1 of 9</span>
+          <span class="swipe-label" id="swipeLabel">Connect · 1 of 8</span>
           <span class="swipe-dots" id="swipeDots" aria-hidden="true"></span>
           <span class="swipe-hint">Swipe left or right to change menu</span>
         </div>
@@ -2973,7 +3133,7 @@
 
       <section class="card" aria-labelledby="alt-surf-h">
         <h2 id="alt-surf-h">Surf Break</h2>
-        <p class="card-sub">Live surf cams — closed until you open them; nothing streams and no data is used while closed. <strong style="color:var(--ink);">Data note:</strong> streams use data, and on a cellular connection that can be significant.</p>
+        <p class="card-sub">Live surf cams — they live behind the wave button at the bottom right, over any tab. Closed until you open them; nothing streams and no data is used while closed. <strong style="color:var(--ink);">Data note:</strong> streams use data, and on a cellular connection that can be significant.</p>
         <button class="btn btn-ghost" id="altSurfOpen" type="button">Open Surf Break</button>
         <button class="btn btn-ghost" id="altSurfClose" type="button" hidden>Close Surf Break — stop stream</button>
       </section>
@@ -3816,44 +3976,6 @@
         <div class="mini-msg" id="altBackupStatus" role="status" aria-live="polite">The backup is one JSON file covering favorites, session logs and questionnaire history, settings (theme, motion, haptics, surf preferences), Burn Guard ceiling and calibration, battery baselines and inferred charge history, photo-review queue data, and your own photos.</div>
       </section>
       </div><!-- /panel-device -->
-
-      <!-- ================= Tab: Surf ================= -->
-      <div id="panel-surf" role="tabpanel" aria-labelledby="tab-surf" hidden>
-      <h2 class="tab-title">Surf Break</h2>
-
-<section class="card surf-card" aria-labelledby="surf-h">
-        <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player dock if you want the sound of the ocean. Once sound is on it stays on when the break changes, and if the player ever goes quiet on its own the app brings the sound back by itself within a couple of seconds — no need to touch your phone's volume buttons. The player itself lives in a dock pinned to the bottom of the screen, so it rides along on <strong style="color:var(--ink);">every tab</strong> — this card is its control center: pick a break, show or hide the player, and set auto-play here.</p>
-
-        <div class="surf-nowrow">
-          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
-          <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
-        </div>
-
-        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Auto-play streams</div>
-            <div class="sw-sub">On: when you open Surf Break, the best daylight break starts by itself, muted, and Follow the Sun keeps cycling. Surf Break is summon-only — nothing loads until you open it. Off: Follow the Sun doesn't cycle and a picked spot waits for Play — kinder to your data plan — but opening the Surf tab always loads the player, because tapping Surf is asking to watch. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
-        </div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Lineup zones</div>
-            <div class="sw-sub">On: each spot's poster still in the player dock carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
-        </div>
-
-        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">Data note:</strong> these are live video streams and they use data — on a cellular connection that can be significant. Surf Break stays closed (and uses no data) until you open it.</p>
-        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. The player dock rides along on every tab and switching tabs never stops the stream; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen.</p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
-      </section>
-      </div>
 
       <!-- ================= Tab: Info ================= -->
       <div id="panel-info" role="tabpanel" aria-labelledby="tab-info" hidden>
@@ -6618,7 +6740,6 @@
           session: document.getElementById("tab-session"),
           temperature: document.getElementById("tab-temperature"),
           strains: document.getElementById("tab-strains"),
-          surf: document.getElementById("tab-surf"),
           terpene: document.getElementById("tab-terpene"),
           burnguard: document.getElementById("tab-burnguard"),
           device: document.getElementById("tab-device"),
@@ -6629,7 +6750,6 @@
           session: document.getElementById("panel-session"),
           temperature: document.getElementById("panel-temperature"),
           strains: document.getElementById("panel-strains"),
-          surf: document.getElementById("panel-surf"),
           terpene: document.getElementById("panel-terpene"),
           burnguard: document.getElementById("panel-burnguard"),
           device: document.getElementById("panel-device"),
@@ -6644,15 +6764,6 @@
           });
           window.scrollTo(0, 0);
           if (typeof onTabShown === "function") onTabShown(name);
-          /* Arriving on Surf by ANY route — tab tap, menu swipe, or a
-             programmatic switch — loads the Surf Break player. The surf
-             module owns the start logic (window.__surfDock.openFromTab)
-             and guards against restarting a stream that is already
-             loading, playing or waiting, so this hook is safe to run on
-             every Surf arrival, alongside the tab button's own wiring. */
-          if (name === "surf" && window.__surfDock && typeof window.__surfDock.openFromTab === "function") {
-            window.__surfDock.openFromTab();
-          }
         }
         Object.keys(tabBtns).forEach(function (k) {
           tabBtns[k].addEventListener("click", function () { switchTab(k); });
@@ -10425,10 +10536,12 @@ var STRAIN_SRC_LINKS = {
          Pure presentation layer: it never touches Bluetooth, never calls writeFrame,
          and sends nothing anywhere. Streams are public YouTube live cams loaded in
          youtube-nocookie iframes. The ONE player lives permanently in the fixed
-         dock (#surfDock) in the app shell — outside every tab panel — so it is
-         visible on all tabs and tab switches never move, destroy or reload it.
-         With Auto-play on (default), the best daylight break starts by itself,
-         muted, as soon as the app opens. The stream unloads only on Stop or
+         dock (#surfDock) inside the Surf Break overlay sheet — outside every
+         tab panel — so tab switches never move, destroy or reload it, and
+         opening/closing the overlay (the floating wave button) never reloads
+         it either: closing the sheet only hides it. Surf Break itself is
+         summon-only in this build: nothing loads until it is opened, and
+         opening it starts the best daylight break by itself, muted. The stream unloads only on Stop or
          on the app going into the background (visibilitychange) — never on
          a tab switch. On a stream error/end, an automatic start advances
          through the untried spots in Follow the Sun daylight-rank order
@@ -10613,6 +10726,7 @@ var STRAIN_SRC_LINKS = {
           syncDockStatus();
           if (showHideBtn) showHideBtn.textContent = dockVisible() ? "Hide player" : "Show player";
           syncDockPad();
+          syncFab();
         }
         function setDockState(st) {
           /* The fallback is a text panel and can never be squeezed into
@@ -10936,13 +11050,13 @@ var STRAIN_SRC_LINKS = {
           var triedTxt = (triedNames && triedNames.length > 1) ? " Tried, in order: " + triedNames.join(" · ") + "." : "";
           if (kind === "ended") {
             fbTitle.textContent = "That live stream has ended";
-            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, watch it on YouTube, or pick another break on the Surf tab." + triedTxt;
+            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, watch it on YouTube, or pick another break below." + triedTxt;
           } else if (triedNames && triedNames.length > 1) {
             fbTitle.textContent = "None of the breaks loaded";
-            fbText.textContent = "Every break was tried in Follow the Sun order and none came through — they may have restarted, or the connection hiccuped." + triedTxt + " Try again, or pick a break on the Surf tab.";
+            fbText.textContent = "Every break was tried in Follow the Sun order and none came through — they may have restarted, or the connection hiccuped." + triedTxt + " Try again, or pick a break below.";
           } else {
             fbTitle.textContent = "Couldn't load " + spot.name + " just now";
-            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, watch " + spot.name + " on YouTube, or pick another break on the Surf tab.";
+            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, watch " + spot.name + " on YouTube, or pick another break below.";
           }
           ytLink.href = "https://www.youtube.com/watch?v=" + spot.id;
           setNow("Stream not playing — nothing is using data." + (triedNames && triedNames.length ? " Tried: " + triedNames.join(", ") + "." : ""));
@@ -11070,17 +11184,17 @@ var STRAIN_SRC_LINKS = {
           stoppedByUser = false;
           startStream(spotByKey(currentKey));
         });
-        /* --- Surf tab opens the player: arriving on the Surf menu IS
-           opening Surf Break, so the stream loads by itself — the same
-           start path as Show player / Open Surf Break, no extra tap on
-           Play needed. This runs on EVERY Surf arrival, whatever the
-           Auto-play setting says: tapping Surf is itself the request to
-           watch, so the stored data-saver choice never vetoes it.
-           Auto-play still governs the hands-free behaviour — Follow the
-           Sun cycling, background resume, and starting a picked spot
-           without pressing Play. A stream that is already loading,
-           playing or waiting for a first gesture is never restarted or
-           reloaded by a tab tap. --- */
+        /* --- Opening Surf Break starts the player: tapping the wave
+           button IS opening Surf Break, so the stream loads by itself —
+           the same start path as Show player / Open Surf Break, no extra
+           tap on Play needed. This runs on EVERY open, whatever the
+           Auto-play setting says: opening Surf Break is itself the
+           request to watch, so the stored data-saver choice never
+           vetoes it. Auto-play still governs the hands-free behaviour —
+           Follow the Sun cycling, background resume, and starting a
+           picked spot without pressing Play. A stream that is already
+           loading, playing or waiting for a first gesture is never
+           restarted or reloaded by opening the overlay. --- */
         function openSurfFromTab() {
           if (mode === "loading" || mode === "playing" || mode === "waiting") return;
           stoppedByUser = false;
@@ -11093,16 +11207,61 @@ var STRAIN_SRC_LINKS = {
           showDock("expanded");
           startStream(spotByKey(currentKey));
         }
-        var surfTabBtn = document.getElementById("tab-surf");
-        if (surfTabBtn) surfTabBtn.addEventListener("click", openSurfFromTab);
-        /* Programmatic tab switches take the same path as a tap. */
-        if (typeof window.__ffSwitchTab === "function") {
-          var ffSwitchTabOrig = window.__ffSwitchTab;
-          window.__ffSwitchTab = function (name) {
-            ffSwitchTabOrig(name);
-            if (name === "surf") openSurfFromTab();
-          };
+        /* --- Surf Break overlay + floating wave button ---
+           The wave button (#surfFab) rides on every screen. Tapping it
+           opens Surf Break as a sheet over the current tab; tapping it
+           again, the sheet's Close, the dimmed backdrop, or Escape folds
+           it back down. Opening runs openSurfFromTab — the player loads
+           and starts by itself on whatever tab he is on — and closing
+           only hides the sheet: the tab underneath is never switched,
+           scrolled or reloaded (its scroll position is restored if the
+           browser moved it), and a live stream keeps playing behind the
+           button, whose red dot (syncFab, driven from syncDockChrome on
+           every stream state change) shows it at a glance. --- */
+        var overlayEl = document.getElementById("surfOverlay");
+        var fabBtn = document.getElementById("surfFab");
+        var fabDot = document.getElementById("surfFabDot");
+        var overlayScrollEl = document.getElementById("surfOverlayScroll");
+        var overlayOpen = false, savedScrollY = 0;
+        function syncFab() {
+          if (!fabBtn) return;
+          var live = mode === "playing" || mode === "loading";
+          fabBtn.classList.toggle("is-playing", live);
+          if (fabDot) fabDot.hidden = !live;
         }
+        function setOverlay(open) {
+          if (!overlayEl) return;
+          overlayOpen = !!open;
+          overlayEl.hidden = !overlayOpen;
+          document.body.classList.toggle("surf-overlay-open", overlayOpen);
+          if (fabBtn) {
+            fabBtn.setAttribute("aria-expanded", overlayOpen ? "true" : "false");
+            fabBtn.setAttribute("aria-label", overlayOpen ? "Close Surf Break" : "Open Surf Break");
+            fabBtn.classList.toggle("is-open", overlayOpen);
+          }
+          if (overlayOpen) {
+            savedScrollY = window.scrollY || 0;
+            if (overlayScrollEl) overlayScrollEl.scrollTop = 0;
+            openSurfFromTab();
+          } else if ((window.scrollY || 0) !== savedScrollY) {
+            window.scrollTo(0, savedScrollY);
+          }
+          syncFab();
+        }
+        if (fabBtn) fabBtn.addEventListener("click", function () { setOverlay(!overlayOpen); });
+        var overlayCloseEl = document.getElementById("surfOverlayClose");
+        if (overlayCloseEl) overlayCloseEl.addEventListener("click", function () { setOverlay(false); });
+        var overlayScrimEl = document.getElementById("surfOverlayScrim");
+        if (overlayScrimEl) overlayScrimEl.addEventListener("click", function () { setOverlay(false); });
+        document.addEventListener("keydown", function (e) {
+          if (overlayOpen && (e.key === "Escape" || e.key === "Esc")) setOverlay(false);
+        });
+        window.__surfOverlay = {
+          open: function () { setOverlay(true); },
+          close: function () { setOverlay(false); },
+          toggle: function () { setOverlay(!overlayOpen); },
+          isOpen: function () { return overlayOpen; }
+        };
         /* Sound button: the tap happens in THIS frame, inside a real user
            gesture — the strongest claim a web page can make on iOS's
            audio session, unlike a tap on the speaker icon inside the
@@ -11167,7 +11326,7 @@ var STRAIN_SRC_LINKS = {
             bgPaused = false;
             unload();
             hideDock();
-            setNow("Auto-play is off — the player dock is hidden and Follow the Sun won't cycle. The player still loads whenever you ask for it: open the Surf tab, tap Show player here, or tap Play in the dock.");
+            setNow("Auto-play is off — the player is hidden and Follow the Sun won't cycle. The player still loads whenever you ask for it: open Surf Break from the wave button, tap Show player here, or tap Play in the player.");
           } else {
             manualHold = false;
             stoppedByUser = false;
@@ -11192,7 +11351,7 @@ var STRAIN_SRC_LINKS = {
         });
 
         /* --- Follow the Sun cycle + clock refresh (runs on EVERY tab now —
-           the player lives in the dock, not on the Surf tab) --- */
+           the player lives in the overlay's dock, not on any tab) --- */
         setInterval(function () {
           refreshChipTimes();
           syncDockHead();
@@ -11260,8 +11419,8 @@ var STRAIN_SRC_LINKS = {
         } else {
           hideDock();
           stoppedByUser = true; hideDock();
-          if (info0.day) setNow("Surf Break is closed — nothing is streaming. Daylight pick right now: <strong>" + spot0.name + "</strong> · " + info0.label + " local · ☀ — open the Surf tab and it starts by itself, or tap Show player here, or Open Surf Break on the Session tab, to watch.");
-          else setNow("Surf Break is closed — nothing is streaming. No break is in daylight right now — every spot still plays if you pick it; the ☀/☾ badges show each break's local time. Open the Surf tab and it starts by itself, or tap Show player here, or Open Surf Break on the Session tab, to watch.");
+          if (info0.day) setNow("Surf Break is closed — nothing is streaming. Daylight pick right now: <strong>" + spot0.name + "</strong> · " + info0.label + " local · ☀ — open Surf Break from the wave button and it starts by itself, or tap Show player here, or Open Surf Break on the Session tab, to watch.");
+          else setNow("Surf Break is closed — nothing is streaming. No break is in daylight right now — every spot still plays if you pick it; the ☀/☾ badges show each break's local time. Open Surf Break from the wave button and it starts by itself, or tap Show player here, or Open Surf Break on the Session tab, to watch.");
         }
         syncDockChrome();
         window.__surfDock = {
@@ -11270,6 +11429,7 @@ var STRAIN_SRC_LINKS = {
             return {
               mode: mode,
               dock: dock.hidden ? "hidden" : dockState,
+              overlay: overlayOpen,
               key: currentKey,
               autoOn: autoOn,
               manualHold: manualHold,
@@ -11332,7 +11492,7 @@ var STRAIN_SRC_LINKS = {
           moreBtn.classList.toggle("alt-more-on", on);
         }
         if (moreBtn) moreBtn.addEventListener("click", function () { setMore(!moreOpen); });
-        ["tab-connect", "tab-terpene", "tab-burnguard", "tab-device", "tab-info", "tab-session", "tab-temperature", "tab-strains", "tab-surf"].forEach(function (id) {
+        ["tab-connect", "tab-terpene", "tab-burnguard", "tab-device", "tab-info", "tab-session", "tab-temperature", "tab-strains"].forEach(function (id) {
           var b = document.getElementById(id);
           if (b) b.addEventListener("click", function () { setMore(false); window.setTimeout(syncMoreActive, 0); });
         });
@@ -11377,8 +11537,9 @@ var STRAIN_SRC_LINKS = {
         });
         /* ---- Swipe through the menus (left / right) + swipe-nav chrome ----
            Menu order is exactly the bottom-bar order, then the More menus:
-           Connect, Temperature, Session, Strains, Terpenes, Surf, then
-           Burn Guard, Device, Info. A menu change is a plain click on that
+           Connect, Temperature, Session, Strains, Terpenes, then
+           Burn Guard, Device, Info. (Surf Break is not a menu anymore —
+           it lives behind the floating wave button, over every menu.) A menu change is a plain click on that
            menu's real tab button, so every existing tab behavior (panel
            refresh, More closing, sheet closing) rides along unchanged.
            Swipes are TRUE swipes (owner correction, 2026-11-05): a finger
@@ -11400,8 +11561,8 @@ var STRAIN_SRC_LINKS = {
            the same touch would otherwise deliver to whatever it started
            on, so swiping off a card never activates it. There is no
            wraparound at either end. */
-        var SWIPE_ORDER = ["connect", "temperature", "session", "strains", "terpene", "surf", "burnguard", "device", "info"];
-        var SWIPE_TITLES = { connect: "Connect", temperature: "Temperature", session: "Session", strains: "Strains", terpene: "Terpenes", surf: "Surf", burnguard: "Burn Guard", device: "Device", info: "Info" };
+        var SWIPE_ORDER = ["connect", "temperature", "session", "strains", "terpene", "burnguard", "device", "info"];
+        var SWIPE_TITLES = { connect: "Connect", temperature: "Temperature", session: "Session", strains: "Strains", terpene: "Terpenes", burnguard: "Burn Guard", device: "Device", info: "Info" };
         var swipeLabel = document.getElementById("swipeLabel");
         var swipeDots = document.getElementById("swipeDots");
         var swipePrev = document.getElementById("swipePrev");
@@ -11449,7 +11610,7 @@ var STRAIN_SRC_LINKS = {
             if (b) swipeObs.observe(b, { attributes: true, attributeFilter: ["aria-selected"] });
           });
         }
-        var SWIPE_EXCLUDE = 'input[type="range"], .stepper-row, .wheel, .surf-dock, .surf-stage, .alt-tabbar, .alt-more, .tray, .island, .isl-hint, .swipe-arrow, .sheet, .photo-zoom';
+        var SWIPE_EXCLUDE = 'input[type="range"], .stepper-row, .wheel, .surf-dock, .surf-stage, .surf-overlay, .surf-fab, .alt-tabbar, .alt-more, .tray, .island, .isl-hint, .swipe-arrow, .sheet, .photo-zoom';
         var swX = 0, swY = 0, swT = 0, swOk = false;
         var swSuppressClickUntil = 0;
         document.addEventListener("click", function (e) {
@@ -11493,6 +11654,7 @@ var STRAIN_SRC_LINKS = {
           if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
           var t = e.target;
           if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+          if (window.__surfOverlay && window.__surfOverlay.isOpen()) return;
           if (document.querySelector(".sheet:not([hidden])") || document.querySelector(".photo-zoom:not([hidden])")) return;
           swipeStep(e.key === "ArrowRight" ? 1 : -1);
         });
@@ -11704,19 +11866,29 @@ var STRAIN_SRC_LINKS = {
           if (window.__segState && window.__segState.strains === "mylogs") renderMyLogs();
         }, 1500);
 
-        /* ---- (12) Surf Break: summon from the Session tab ---- */
+        /* ---- (12) Surf Break: summon from the Session tab ----
+           Surf Break lives behind the floating wave button now. This
+           card's Open button opens the same overlay (which starts the
+           stream by itself); Close stops the stream and folds the
+           overlay back down to the button. The buttons swap with the
+           Surf UI state: overlay open, or a stream up in the dock. */
         var surfDockEl = $("surfDock"), surfShowHide = $("surfShowHideBtn");
+        function surfUiOpen() {
+          var ov = window.__surfOverlay;
+          return !!((ov && ov.isOpen()) || (surfDockEl && !surfDockEl.hidden));
+        }
         function syncSurfBtns() {
-          var open = surfDockEl && !surfDockEl.hidden;
+          var open = surfUiOpen();
           if ($("altSurfOpen")) $("altSurfOpen").hidden = !!open;
           if ($("altSurfClose")) $("altSurfClose").hidden = !open;
         }
         if ($("altSurfOpen")) $("altSurfOpen").addEventListener("click", function () {
-          if (surfShowHide && surfDockEl && surfDockEl.hidden) surfShowHide.click();
+          if (window.__surfOverlay) window.__surfOverlay.open();
           window.setTimeout(syncSurfBtns, 300);
         });
         if ($("altSurfClose")) $("altSurfClose").addEventListener("click", function () {
           if (surfShowHide && surfDockEl && !surfDockEl.hidden) surfShowHide.click();
+          if (window.__surfOverlay) window.__surfOverlay.close();
           window.setTimeout(syncSurfBtns, 300);
         });
         window.setInterval(syncSurfBtns, 1000); syncSurfBtns();
