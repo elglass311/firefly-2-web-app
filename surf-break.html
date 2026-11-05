@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<link rel="icon" href="data:," />
+<title>Surf Break</title>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#06141f; --bg2:#081b29; --panel:#0b2233; --panel2:#0e2a3f; --line:#17405c;
+  --ink:#e8f3f7; --muted:#9db9c6; --faint:#6f93a5;
+  --teal:#2fd3b5; --teal-dim:#1a7f6e; --sky:#57b7e8; --sand:#eec27a; --coral:#ff8a6b; --red:#ff6b6b;
+  --good:#37d99a; --mid:#eec27a; --bad:#ff8a6b;
+  --tab-h:64px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{overscroll-behavior:none;}
+body{
+  margin:0; background:linear-gradient(180deg,#04101a 0%, var(--bg) 30%, #051019 100%);
+  color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px; line-height:1.45; overscroll-behavior-y:none;
+}
+main{max-width:560px; margin:0 auto; padding:14px 14px calc(var(--tab-h) + env(safe-area-inset-bottom) + 22px);}
+h1{font-size:21px; margin:2px 0 2px; letter-spacing:.2px;}
+h2{font-size:16px; margin:0 0 6px;}
+h3{font-size:14px; margin:0 0 4px;}
+.sub{color:var(--muted); font-size:13px; margin:0 0 12px;}
+.small{font-size:12px; color:var(--muted);}
+.tiny{font-size:11px; color:var(--faint);}
+a{color:var(--sky);}
+button{font:inherit; color:inherit;}
+.screen{display:none;}
+.screen.active{display:block;}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px 13px; margin:0 0 12px;}
+.card.flat{background:var(--bg2);}
+.row{display:flex; align-items:center; gap:8px;}
+.row.wrap{flex-wrap:wrap;}
+.spacer{flex:1;}
+.pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.4px; text-transform:uppercase;}
+.pill.best{background:#0d3b2e; color:var(--good); border:1px solid #1d6a4e;}
+.pill.xl{background:#4a1420; color:#ff9db0; border:1px solid #8c2438;}
+.pill.large{background:#3d3410; color:var(--sand); border:1px solid #77652a;}
+.pill.small-w{background:#123043; color:var(--muted); border:1px solid var(--line);}
+.pill.stale{background:#3d3410; color:var(--sand); border:1px solid #77652a;}
+.pill.done{background:#123043; color:var(--faint); border:1px solid var(--line);}
+.pill.wait{background:#0d3b2e; color:var(--good); border:1px solid #1d6a4e;}
+.pill.up{background:#123a52; color:var(--sky); border:1px solid #1d5a7f;}
+.pill.cancel{background:#4a1420; color:#ff9db0; border:1px solid #8c2438;}
+.btn{
+  background:var(--panel2); border:1px solid var(--line); color:var(--ink);
+  border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer;
+}
+.btn:active{transform:translateY(1px);}
+.btn.primary{background:#0d4d3d; border-color:#177a5f; color:#c9f7e9;}
+.btn.warn{background:#3a2413; border-color:#7a4d1d; color:#ffd9a8;}
+.btn[disabled]{opacity:.45;}
+select{
+  background:var(--panel2); color:var(--ink); border:1px solid var(--line);
+  border-radius:10px; padding:8px 10px; font-size:13px; font-weight:600; max-width:100%;
+}
+details{border-top:1px solid var(--line); padding-top:10px; margin-top:10px;}
+details:first-of-type{border-top:none; margin-top:0; padding-top:0;}
+summary{cursor:pointer; font-weight:700; font-size:14px; list-style:none; padding:4px 0;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:" +"; color:var(--teal); font-weight:700;}
+details[open ]>summary::after{content:" –";}
+/* ---------- tab bar ---------- */
+.tabbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:60;
+  background:rgba(5,18,28,.96); border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);
+  display:flex; max-width:560px; margin:0 auto;
+}
+@media(min-width:561px){.tabbar{left:50%; right:auto; transform:translateX(-50%); width:560px; border-left:1px solid var(--line); border-right:1px solid var(--line);}}
+.tabbar button{
+  flex:1 1 0; min-width:0; background:none; border:none; cursor:pointer;
+  padding:8px 1px 7px; color:var(--faint); font-size:10.5px; font-weight:700; letter-spacing:.2px;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+.tabbar button svg{width:21px; height:21px; display:block;}
+.tabbar button .lbl{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
+.tabbar button[aria-selected="true"]{color:var(--teal);}
+.tabbar button[aria-selected="true"] svg{stroke:var(--teal);}
+/* ---------- cams ---------- */
+.stage{
+  position:relative; background:#000; border-radius:14px; overflow:hidden;
+  aspect-ratio:16/9; border:1px solid var(--line); touch-action:pan-y;
+}
+.stage.fs-fallback{position:fixed; inset:0; z-index:200; aspect-ratio:auto; border-radius:0; height:100dvh;}
+.stage:fullscreen{aspect-ratio:auto;}
+.zoomwrap{position:absolute; inset:0; transform-origin:center center; will-change:transform;}
+.zoomwrap iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+.stage-msg{
+  position:absolute; inset:0; display:none; align-items:center; justify-content:center; text-align:center;
+  padding:18px; background:#04101a; color:var(--muted); font-size:13.5px;
+}
+.stage-msg.show{display:flex;}
+.chips{display:flex; gap:7px; flex-wrap:wrap; padding:4px 1px 8px;}
+.chip{
+  flex:0 0 auto; background:var(--panel2); border:1px solid var(--line); color:var(--ink);
+  border-radius:999px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap;
+}
+.chip[aria-pressed="true"]{background:#0d4d3d; border-color:#177a5f; color:#c9f7e9;}
+.chip.dead{opacity:.5; text-decoration:line-through;}
+.dotlive{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--red); margin-right:6px; vertical-align:1px;}
+/* ---------- forecast / big wave ---------- */
+.metric{display:flex; gap:14px; flex-wrap:wrap; margin-top:6px;}
+.metric div{min-width:86px;}
+.metric .v{font-size:17px; font-weight:800;}
+.metric .k{font-size:11px; color:var(--faint); text-transform:uppercase; letter-spacing:.5px;}
+.score{
+  width:52px; height:52px; border-radius:50%; flex:0 0 auto;
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  background:radial-gradient(circle at 35% 30%, #14532d22, transparent), var(--panel2);
+  border:2px solid var(--teal-dim); font-weight:800; font-size:17px; line-height:1;
+}
+.score small{font-size:8.5px; color:var(--faint); font-weight:700; letter-spacing:.5px;}
+.chartbox{margin-top:10px;}
+.chartbox svg{width:100%; height:auto; display:block; background:#071a28; border:1px solid var(--line); border-radius:10px;}
+.legend{display:flex; gap:12px; flex-wrap:wrap; font-size:11px; color:var(--muted); margin-top:5px;}
+.legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:-1px;}
+/* ---------- contests ---------- */
+.vidbox{position:relative; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; border:1px solid var(--line);}
+.vidbox iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+.event{display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--line);}
+.event:first-of-type{border-top:none;}
+.event .n{flex:0 0 26px; height:26px; border-radius:50%; background:var(--panel2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:var(--muted);}
+/* ---------- boards ---------- */
+.fam-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+@media(max-width:430px){.fam-grid{grid-template-columns:1fr;}}
+.fam{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:11px 12px;}
+.fam h3{color:var(--teal);}
+.mapline{padding:7px 0; border-top:1px dashed #17394f;}
+.mapline:first-of-type{border-top:none;}
+.mapline b{color:#cfeef5;}
+.folklore{border:1px solid #77652a; background:#241d0c; border-radius:14px; padding:12px 13px; margin:0 0 12px;}
+.folklore h2{color:var(--sand);}
+/* ---------- brands ---------- */
+.brand h2{font-size:17px; margin-bottom:1px;}
+.brand .meta{color:var(--sand); font-size:12.5px; font-weight:600; margin-bottom:7px;}
+.brand p{margin:0 0 8px; font-size:13.5px; color:#d7e8ee;}
+.brand .models{font-size:12.5px; color:var(--muted); margin-bottom:10px;}
+.invbtn{
+  display:inline-block; background:#0d4d3d; border:1px solid #177a5f; color:#c9f7e9; text-decoration:none;
+  border-radius:10px; padding:9px 14px; font-size:13px; font-weight:700;
+}
+.spotlight{border:1px solid #8a6d2f; background:#1d1a10; border-radius:12px; padding:10px 12px; margin-top:10px;}
+.spotlight h3{color:var(--sand); margin-bottom:3px;}
+.err{color:var(--coral); font-size:13px;}
+.ok{color:var(--good);}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ================= CAMS ================= -->
+<section class="screen active" data-screen="cams" aria-label="Live surf cams">
+  <h1>Live Cams</h1>
+  <p class="sub">Six verified YouTube live cams. Flick left or right on the picture to change breaks, pinch to zoom.</p>
+
+  <div class="stage" id="camStage">
+    <div class="zoomwrap" id="camZoom"><div id="camPlayerHolder" style="position:absolute;inset:0;"></div></div>
+    <div class="stage-msg" id="camStageMsg"><div>All six streams are unreachable right now.<br/>They'll be retried when you pick one again — nothing here is faked or looped.</div></div>
+  </div>
+
+  <div class="card flat" style="margin-top:10px;">
+    <div class="row wrap">
+      <div>
+        <h2 id="camName" style="margin-bottom:0;">Loading…</h2>
+        <div class="small" id="camPlace"></div>
+      </div>
+      <div class="spacer"></div>
+      <div style="text-align:right;">
+        <div class="small" id="camLocalTime"></div>
+        <div class="tiny" id="camStatus"></div>
+      </div>
+    </div>
+    <p class="small" id="camNote" style="margin:8px 0 0;"></p>
+    <div class="chips" id="camChips" role="group" aria-label="Choose a cam"></div>
+    <div class="row wrap">
+      <button class="btn" id="camPrev" type="button">‹ Prev</button>
+      <button class="btn" id="camNext" type="button">Next ›</button>
+      <button class="btn" id="camSound" type="button" aria-pressed="false">Sound: Off</button>
+      <button class="btn" id="camFull" type="button">Fullscreen</button>
+      <div class="spacer"></div>
+      <button class="btn warn" id="camDead" type="button">Stream stuck? Skip it</button>
+    </div>
+    <div class="row wrap" style="margin-top:10px;">
+      <label class="small" for="camMode">Auto mode</label>
+      <select id="camMode">
+        <option value="manual" selected>Manual</option>
+        <option value="sun">Follow the Sun — daylight breaks, 20 min each</option>
+        <option value="best">Best Conditions — highest score, 20 min each</option>
+      </select>
+    </div>
+    <p class="tiny" style="margin:8px 0 0;">A stream that fails to load is marked dead for this session and skipped by flicking and both auto modes. A stream that loads again clears its mark. Pinch zooms 1–3× — drag to pan while zoomed, double-tap to reset.</p>
+  </div>
+</section>
+
+<!-- ================= FORECAST ================= -->
+<section class="screen" data-screen="forecast" aria-label="Forecast">
+  <h1>Forecast</h1>
+  <p class="sub">Swell, period and wind for the six cam breaks — Open-Meteo Marine + Forecast models, no account, no key.</p>
+  <div class="row wrap" style="margin-bottom:10px;">
+    <button class="btn primary" id="fcRefresh" type="button">Refresh conditions</button>
+    <span class="small" id="fcFetched"></span>
+  </div>
+  <details class="card">
+    <summary>How the 0–100 score works (nothing hidden)</summary>
+    <p class="small" style="margin:6px 0 0;">Swell does most of the talking: <b>height</b> is worth up to 45 pts (full marks at 8 ft) and <b>period</b> up to 30 pts (full marks at 16 s) — long-period groundswell carries more energy than the same height of windswell. <b>Wind</b> is worth 25 pts: it starts at 12.5, gains up to +12.5 when the wind blows offshore (land to sea, grooming the faces) and loses 0.5 pts for every mph above 5 — so light offshore scores best and strong onshore scores worst. It's a simple, published formula, not a pro forecast.</p>
+  </details>
+  <div id="fcList"><p class="small">Loading conditions…</p></div>
+  <p class="tiny">Charts: next 72 hours · shaded band = 06:00–19:00 local daylight · “Open-Meteo model data” — models, not observations. If a fetch fails you'll see the last good data labeled with its time, or an honest unavailable note. No numbers are ever invented.</p>
+</section>
+
+<!-- ================= CONTESTS ================= -->
+<section class="screen" data-screen="contests" aria-label="Contests">
+  <h1>Contests</h1>
+  <p class="sub">World Surf League Championship Tour — watch, and the 2026 season windows.</p>
+  <div class="card">
+    <h2>WSL Live Player</h2>
+    <p class="small" style="margin-top:0;">This player carries the World Surf League's official YouTube live stream. <b>It only shows surfing while an event is actually live</b> — between events it rests on the channel's offline screen. No fake “live” here.</p>
+    <div class="vidbox"><iframe id="wslPlayer" title="World Surf League official YouTube live stream" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+    <p class="tiny" style="margin-top:8px;">Channel ID UChuLeaTGRcfzo0UjL-2qSbQ — the World Surf League's official YouTube channel (@wsl), verified against the channel's public channel page during this app's build (Nov 5, 2026).</p>
+  </div>
+  <div class="card">
+    <h2>The dawn call</h2>
+    <p class="small" style="margin:0;">A waiting period is a window, not a promise. Each morning of the window, contest directors check the swell, wind and tides at dawn and call the day on, off, or on hold. Plenty of window days never run — that's the sport working as intended.</p>
+  </div>
+  <div class="card">
+    <h2>2026 Championship Tour</h2>
+    <p class="small" style="margin-top:0;">Waiting-period windows from the WSL's published 2026 CT schedule (released July 28, 2025, worldsurfleague.com). WSL adjusted some windows in-season — Abu Dhabi was announced as not running — so treat this as the published calendar, and the status chips are computed from today's date.</p>
+    <div id="eventList"></div>
+  </div>
+</section>
+
+<!-- ================= BIG WAVE ================= -->
+<section class="screen" data-screen="bigwave" aria-label="Big wave spots">
+  <h1>Big Wave</h1>
+  <p class="sub">The heavy-water circuit: live model conditions, the same charts as Forecast, and an honest XL heuristic.</p>
+  <div class="card">
+    <h2>“The Bay Calls the Day” — the Eddie</h2>
+    <p class="small" style="margin:0;">The Eddie Aikau Invitational at Waimea Bay has no fixed date. It runs only on a day when Waimea is big enough — historically, waves in the 30 ft-plus range through the whole day — which is why whole winters can pass without it. When the bay calls, the invitees drop everything.</p>
+  </div>
+  <div class="card">
+    <h2>Nazaré Tow-In Challenge</h2>
+    <p class="small" style="margin:0;">At Praia do Norte, Nazaré, the WSL's tow-in challenge pairs surfers with jet-ski drivers who whip them into waves too fast and steep to paddle. Its window runs through the North Atlantic winter (the 2026/27 window runs to March 31, 2027), and like the Eddie it only runs when the swell truly shows up.</p>
+  </div>
+  <div class="row wrap" style="margin-bottom:10px;">
+    <button class="btn primary" id="bwRefresh" type="button">Refresh conditions</button>
+    <span class="small" id="bwFetched"></span>
+  </div>
+  <div id="bwList"><p class="small">Loading conditions…</p></div>
+  <p class="tiny">XL potential is a transparent heuristic, not a forecast: swell ≥ 4 m at ≥ 14 s period = XL potential. “Large” = swell ≥ 2.5 m at ≥ 12 s. Cam labels are honest — a spot only gets a player where a verified public live cam exists.</p>
+</section>
+
+<!-- ================= BOARDS ================= -->
+<section class="screen" data-screen="boards" aria-label="Surfboard shapes guide">
+  <h1>Boards &amp; Shapes</h1>
+  <p class="sub">How a board's design translates to behavior on the water.</p>
+  <div class="card">
+    <h2>First, the physics</h2>
+    <p class="small" style="margin:0;">A surfboard is a <b>planing surface</b>, not a wing. At rest and at paddle speed it's supported by <b>buoyancy</b> — roughly 1 liter of volume floats 1 kg — and planing lift only takes over once the wave gives it speed. So nearly every design choice trades the same two things against each other: <b>planing area, flatness and volume</b> (early lift, paddle power, speed in weak waves) versus <b>curve, reduced area and thin rails/tails</b> (the ability to sink, bite and hold control at speed). Every family and element below is a pre-packaged answer to that one trade.</p>
+  </div>
+
+  <h2 style="margin:14px 0 8px;">Board families</h2>
+  <div class="fam-grid" id="famGrid"></div>
+
+  <h2 style="margin:16px 0 4px;">Design element → effect on the water</h2>
+  <p class="small">Tap an element. Mappings follow shaper/manufacturer consensus (Greenlight Design Guide, SurfScience, Channel Islands' Britt Merrick, Degree 33).</p>
+  <div class="card" id="explorer"></div>
+
+  <div class="folklore">
+    <h2>Straight talk: folklore vs. established</h2>
+    <p class="small" style="margin:0 0 6px;">Shapers know what works — but some of the usual explanations don't hold up, and bottom-contour theory in particular is largely trial-and-error with little hard lab evidence behind it (Greenlight and Surf Simply both say so openly).</p>
+    <div class="mapline"><b>“Concaves lift you by Bernoulli/Venturi.”</b> Folklore. A board bottom is an open surface, not a closed venturi tube. The best-supported mechanism is that a concave <b>flattens the stringer rocker relative to the rail rocker</b> — flatter planing panels for speed, curvier rails for turning.</div>
+    <div class="mapline"><b>“Channels create thrust.”</b> Metaphor, not measurement. Channels direct flow and add hold; no published test isolates a thrust effect, and they can feel tracky.</div>
+    <div class="mapline"><b>“Quads are faster.”</b> Only sometimes. CFD work found quads make more lift but also more drag — slower than a thruster across most angles of attack, with their edge at high angles (speed and hold in serious surf). A thruster's best lift-to-drag sits near a 6.25° angle of attack.</div>
+    <div class="mapline"><b>“Tail shape X always does Y.”</b> Oversold. In CFD (Oggiano &amp; Pierella, 2018), swapping squash vs. round tail alone changed nothing in the cases analysed; the area and rail-line changes that come with a tail swap likely do most of the work. The same study found more rocker raises both lift <i>and</i> drag.</div>
+    <div class="mapline"><b>“More volume is always better.”</b> No. Past what you need, volume fights rail-sinking, duck-diving and hold. 1 L ≈ 1 kg is a flotation shorthand, not a prescription.</div>
+    <div class="mapline"><b>“Fins provide most of the grip.”</b> Probably backwards. The inside rail — water wrapping it via the Coanda effect — likely provides most grip in most conditions; fins add lateral resistance and turn control. Finless alaia boards hold and drive on rails alone.</div>
+  </div>
+</section>
+
+<!-- ================= BRANDS ================= -->
+<section class="screen" data-screen="brands" aria-label="Board brands and shapers">
+  <h1>Brands &amp; Shapers</h1>
+  <p class="sub">The labels, the hands that shape them, and a working door into each one's live inventory. Every inventory link on this page was fetched and verified live during this app's build on Nov 5, 2026.</p>
+  <div id="brandList"></div>
+  <p class="tiny">Histories are drawn from each brand's own About/history pages and reputable surf press; anything that couldn't be verified is marked “to confirm” rather than guessed.</p>
+</section>
+
+</main>
+
+<nav class="tabbar" role="tablist" aria-label="Surf Break sections">
+  <button type="button" role="tab" data-tab="cams" aria-selected="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2.5" y="6" width="13" height="12" rx="2.5"/><path d="M15.5 10.5 21.5 7v10l-6-3.5"/></svg>
+    <span class="lbl">Cams</span>
+  </button>
+  <button type="button" role="tab" data-tab="forecast" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 15c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 5-2"/><path d="M2 9.5c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 5-2"/><circle cx="17.5" cy="4.5" r="1.8"/></svg>
+    <span class="lbl">Forecast</span>
+  </button>
+  <button type="button" role="tab" data-tab="contests" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4M12 14v3M8.5 20h7M12 17l-1 3h2l-1-3Z"/></svg>
+    <span class="lbl">Contests</span>
+  </button>
+  <button type="button" role="tab" data-tab="bigwave" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 19c3-1 4-4 4-7 0-4 3-8 8-8 2.5 0 4 1 5 2-1.5.3-3.5 1-4 3-.6 2.4.5 4-1 6-1.6 2.1-4.5 2.4-7 2.5-2 .1-4-.6-5-1.5Z"/><path d="M3 19h18"/></svg>
+    <span class="lbl">Big Wave</span>
+  </button>
+  <button type="button" role="tab" data-tab="boards" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><ellipse cx="12" cy="12" rx="3.4" ry="9.5"/><path d="M12 2.5v19"/></svg>
+    <span class="lbl">Boards</span>
+  </button>
+  <button type="button" role="tab" data-tab="brands" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9.5L12 4l8 5.5V20"/><path d="M9.5 20v-5h5v5"/></svg>
+    <span class="lbl">Brands</span>
+  </button>
+</nav>
+
+<script>
+/* ============================================================
+   Surf Break — pure web app: YouTube embeds + Open-Meteo only.
+   ============================================================ */
+(function(){
+"use strict";
+var $ = function(s, r){ return (r||document).querySelector(s); };
+var $$ = function(s, r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+
+/* ---------- No pull-to-refresh: active guard ----------
+   overscroll-behavior:none is set in CSS; this guard blocks the
+   one gesture shape that triggers reload in in-app browsers:
+   at the very top + downward + vertical-dominant drag. */
+(function(){
+  var sx=0, sy=0, tracking=false;
+  document.addEventListener('touchstart', function(e){
+    if(e.touches.length===1){ sx=e.touches[0].clientX; sy=e.touches[0].clientY; tracking=true; }
+    else { tracking=false; }
+  }, {passive:true});
+  document.addEventListener('touchmove', function(e){
+    if(!tracking || e.touches.length!==1) return;
+    var dx=e.touches[0].clientX-sx, dy=e.touches[0].clientY-sy;
+    var scrolled = window.scrollY || document.documentElement.scrollTop || 0;
+    if(scrolled<=0 && dy>6 && Math.abs(dy)>Math.abs(dx)*1.3){ e.preventDefault(); }
+  }, {passive:false});
+})();
+
+/* ---------- Tabs: exactly one highlighted, matching the visible screen ---------- */
+var loaded = { forecast:false, bigwave:false, contests:false };
+function showTab(name){
+  $$('.screen').forEach(function(s){ s.classList.toggle('active', s.getAttribute('data-screen')===name); });
+  $$('.tabbar button').forEach(function(b){ b.setAttribute('aria-selected', b.getAttribute('data-tab')===name ? 'true':'false'); });
+  window.scrollTo(0,0);
+  if(name==='forecast' && !loaded.forecast){ loaded.forecast=true; loadAll(F_SPOTS,'fc'); }
+  if(name==='bigwave' && !loaded.bigwave){ loaded.bigwave=true; loadAll(B_SPOTS,'bw'); }
+  if(name==='contests' && !loaded.contests){ loaded.contests=true; initContests(); }
+}
+$$('.tabbar button').forEach(function(b){
+  b.addEventListener('click', function(){ showTab(b.getAttribute('data-tab')); });
+});
+
+/* ---------- Shared helpers ---------- */
+function compass(deg){
+  if(deg==null || isNaN(deg)) return '—';
+  var dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(((deg%360)+360)%360/22.5)%16];
+}
+function ft(m){ return m==null? null : m*3.28084; }
+function fmt1(n){ return n==null? '—' : (Math.round(n*10)/10).toString(); }
+function fmt0(n){ return n==null? '—' : Math.round(n).toString(); }
+function localParts(tz){
+  try{
+    var parts = new Intl.DateTimeFormat('en-GB',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+    var o={}; parts.forEach(function(p){ o[p.type]=p.value; });
+    return { key:o.year+'-'+o.month+'-'+o.day+'T'+o.hour, hour:parseInt(o.hour,10),
+             label:new Intl.DateTimeFormat('en-US',{timeZone:tz,hour:'numeric',minute:'2-digit'}).format(new Date()) };
+  }catch(e){ var d=new Date(); return {key:d.toISOString().slice(0,13), hour:d.getHours(), label:d.toLocaleTimeString()}; }
+}
+function offshoreCos(windFrom, shoreNormal){
+  if(windFrom==null || shoreNormal==null) return 0;
+  var offDir = (shoreNormal+180)%360; /* wind blowing from land = offshore */
+  var d = (windFrom-offDir)*Math.PI/180;
+  return Math.cos(d);
+}
+function windLabel(windFrom, shoreNormal){
+  var c = offshoreCos(windFrom, shoreNormal);
+  if(c>0.4) return 'offshore';
+  if(c<-0.4) return 'onshore';
+  return 'cross-shore';
+}
+function scoreOf(spot, cur){
+  if(!cur || cur.swellH==null) return null;
+  var hFt = ft(cur.swellH);
+  var hPts = Math.min(hFt/8,1)*45;
+  var pPts = cur.swellP==null? 0 : Math.min(cur.swellP/16,1)*30;
+  var wPts = 12.5;
+  if(cur.windS!=null){
+    wPts += 12.5*offshoreCos(cur.windD, spot.shore);
+    wPts -= Math.max(0, cur.windS-5)*0.5;
+    wPts = Math.max(0, Math.min(25, wPts));
+  }
+  return Math.round(hPts+pPts+wPts);
+}
+
+/* ---------- Spot data ---------- */
+var F_SPOTS = [
+  {key:'pipeline', name:'Banzai Pipeline', place:'ʻEhukai Beach, Oʻahu, Hawaiʻi', lat:21.665, lon:-158.053, tz:'Pacific/Honolulu', shore:350},
+  {key:'waimea', name:'Waimea Bay', place:'North Shore, Oʻahu, Hawaiʻi', lat:21.642, lon:-158.065, tz:'Pacific/Honolulu', shore:330},
+  {key:'huntington', name:'Huntington Beach Pier', place:'Huntington Beach, California', lat:33.655, lon:-118.005, tz:'America/Los_Angeles', shore:225},
+  {key:'santamonica', name:'Santa Monica', place:'Santa Monica, California', lat:34.008, lon:-118.492, tz:'America/Los_Angeles', shore:240},
+  {key:'oceancity', name:'Ocean City', place:'Ocean City, New Jersey', lat:39.277, lon:-74.575, tz:'America/New_York', shore:110},
+  {key:'uluwatu', name:'Nyang Nyang / Uluwatu', place:'Bukit Peninsula, Bali', lat:-8.815, lon:115.089, tz:'Asia/Makassar', shore:220}
+];
+var B_SPOTS = [
+  {key:'nazare', name:'Nazaré — Praia do Norte', place:'Portugal', lat:39.604, lon:-9.072, tz:'Europe/Lisbon', shore:270,
+   line:'An underwater canyon funnels North Atlantic swell straight at the beach, tripling its size — home of the biggest waves ever ridden.',
+   cam:{id:'UxWrI6s5Si4', label:'Live cam — clifftop scenic view over Sítio and Praia do Norte (Beachcam.pt stream)'}},
+  {key:'jaws', name:'Peʻahi — Jaws', place:'Maui, Hawaiʻi', lat:20.945, lon:-156.299, tz:'Pacific/Honolulu', shore:350,
+   line:'A deep-water reef focuses open-ocean swell into a wave so fast and steep it was a tow-in-only spot for years.',
+   cam:null},
+  {key:'mavericks', name:'Mavericks', place:'Half Moon Bay, California', lat:37.494, lon:-122.513, tz:'America/Los_Angeles', shore:270,
+   line:'Cold, sharky and brutally heavy — a reef ledge jacks swells up over a rock-strewn bottom a half-mile offshore.',
+   cam:{id:'ER6VCHLI5NI', label:'Live cam — Mavericks cam (stream carried in Surfline coverage on YouTube)'}},
+  {key:'waimea-bw', name:'Waimea Bay', place:'North Shore, Oʻahu, Hawaiʻi', lat:21.642, lon:-158.065, tz:'Pacific/Honolulu', shore:330,
+   line:'The original big-wave arena — a shorebreak-adjacent bay that only truly turns on with the largest North Pacific swells. Home of the Eddie.',
+   cam:{id:'drckaPuBNws', label:'Live cam — Waimea Bay (same verified stream as the Cams tab)'}},
+  {key:'teahupoo', name:'Teahupoʻo', place:'Tahiti, French Polynesia', lat:-17.847, lon:-149.267, tz:'Pacific/Tahiti', shore:200,
+   line:'Swell hits a shallow, near-dry reef shelf and folds below sea level into the thickest barrel in surfing — “the wall of skulls”.',
+   cam:null},
+  {key:'shipstern', name:'Shipstern Bluff', place:'Tasmania, Australia', lat:-43.235, lon:147.755, tz:'Australia/Hobart', shore:180,
+   line:'A right-hand slab with a notorious mid-face “step” that launches the wave — and the rider — sideways in freezing Southern Ocean water.',
+   cam:null},
+  {key:'cortes', name:'Cortes Bank', place:'Open ocean, ~100 mi off San Diego, California', lat:32.45, lon:-119.17, tz:'America/Los_Angeles', shore:270,
+   line:'A seamount rising to near the surface in the middle of the Pacific — nothing between it and the storm but open ocean, so swells arrive at full size.',
+   cam:null}
+];
+var store = {}; /* spot.key -> {fetchedAt, stale, times[], rows[], cur, score} */
+
+/* ---------- Open-Meteo fetch (in-memory last-good cache) ---------- */
+function fetchSpot(spot){
+  var marine = 'https://marine-api.open-meteo.com/v1/marine?latitude='+spot.lat+'&longitude='+spot.lon+
+    '&hourly=wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,swell_wave_period&forecast_days=4&timezone='+encodeURIComponent(spot.tz);
+  var wind = 'https://api.open-meteo.com/v1/forecast?latitude='+spot.lat+'&longitude='+spot.lon+
+    '&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=mph&forecast_days=4&timezone='+encodeURIComponent(spot.tz);
+  function getJSON(u){ return fetch(u).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }); }
+  return Promise.all([getJSON(marine), getJSON(wind)]).then(function(res){
+    var m = res[0].hourly, w = res[1].hourly;
+    var windByTime = {};
+    w.time.forEach(function(t,i){ windByTime[t] = {s:w.wind_speed_10m[i], d:w.wind_direction_10m[i], g:w.wind_gusts_10m[i]}; });
+    var rows = m.time.map(function(t,i){
+      var sw = (m.swell_wave_height && m.swell_wave_height[i]!=null) ? m.swell_wave_height[i] : m.wave_height[i];
+      var swp = (m.swell_wave_period && m.swell_wave_period[i]!=null) ? m.swell_wave_period[i] : m.wave_period[i];
+      var swd = (m.swell_wave_direction && m.swell_wave_direction[i]!=null) ? m.swell_wave_direction[i] : m.wave_direction[i];
+      var wd = windByTime[t] || {};
+      return { t:t, swellH:sw, swellP:swp, swellD:swd, windS:wd.s!=null?wd.s:null, windD:wd.d!=null?wd.d:null, windG:wd.g!=null?wd.g:null };
+    });
+    var lp = localParts(spot.tz);
+    var idx = 0;
+    rows.forEach(function(r,i){ if(r.t<=lp.key) idx=i; });
+    var data = { fetchedAt:new Date(), stale:false, rows:rows, nowIdx:idx, cur:rows[idx] };
+    data.score = scoreOf(spot, data.cur);
+    store[spot.key] = data;
+    return data;
+  }).catch(function(err){
+    if(store[spot.key]){ var c = store[spot.key]; c.stale = true; return c; }
+    throw err;
+  });
+}
+
+/* ---------- SVG charts (hand-rolled, no library) ---------- */
+function buildCharts(spot, data){
+  var rows = data.rows.slice(data.nowIdx, data.nowIdx+72);
+  if(!rows.length) return '<p class="small">No chart data.</p>';
+  var W=720, H=178, padL=6, padR=6, top=16, base=H-24, plotW=W-padL-padR, plotH=base-top;
+  var bw = plotW/rows.length;
+  function x(i){ return padL + i*bw; }
+  function daylightAndDays(){
+    var out='', runStart=-1, prevDate=rows[0].t.slice(0,10);
+    function dayLabel(i, dateStr){
+      var d = new Date(Date.UTC(+dateStr.slice(0,4), +dateStr.slice(5,7)-1, +dateStr.slice(8,10)));
+      var lbl = new Intl.DateTimeFormat('en-US',{weekday:'short', month:'short', day:'numeric', timeZone:'UTC'}).format(d);
+      return '<text x="'+(x(i)+3)+'" y="11" font-size="10.5" fill="#9db9c6" font-weight="700">'+lbl+'</text>';
+    }
+    out += dayLabel(0, prevDate);
+    rows.forEach(function(r,i){
+      var hr = +r.t.slice(11,13), date = r.t.slice(0,10);
+      var day = hr>=6 && hr<19;
+      if(day && runStart<0) runStart=i;
+      if((!day || i===rows.length-1) && runStart>=0){
+        var end = day && i===rows.length-1 ? i+1 : i;
+        out += '<rect x="'+x(runStart)+'" y="'+top+'" width="'+((end-runStart)*bw)+'" height="'+plotH+'" fill="#eec27a" opacity="0.07"/>';
+        runStart=-1;
+      }
+      if(date!==prevDate){
+        out += '<line x1="'+x(i)+'" y1="'+top+'" x2="'+x(i)+'" y2="'+base+'" stroke="#2a5a78" stroke-width="1"/>' + dayLabel(i, date);
+        prevDate = date;
+      }
+    });
+    return out;
+  }
+  function nowLine(){
+    return '<line x1="'+x(0)+'" y1="'+top+'" x2="'+x(0)+'" y2="'+base+'" stroke="#ff6b6b" stroke-width="1.6"/><text x="'+(x(0)+3)+'" y="'+(base+15)+'" font-size="10" fill="#ff8a6b" font-weight="700">NOW</text>';
+  }
+  /* Swell: bars ft + period line s + direction labels */
+  var maxFt = 10; rows.forEach(function(r){ var v=ft(r.swellH); if(v && v>maxFt) maxFt=v; });
+  var maxP = 20;
+  var s = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Swell chart, next 72 hours">';
+  s += daylightAndDays();
+  rows.forEach(function(r,i){
+    var v = ft(r.swellH)||0, h = v/maxFt*plotH;
+    s += '<rect x="'+x(i).toFixed(1)+'" y="'+(base-h).toFixed(1)+'" width="'+Math.max(bw-0.6,1).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="#2f9dc4"/>';
+  });
+  var pts = rows.map(function(r,i){ var p=r.swellP||0; return (x(i)+bw/2).toFixed(1)+','+(base-(p/maxP)*plotH).toFixed(1); }).join(' ');
+  s += '<polyline points="'+pts+'" fill="none" stroke="#eec27a" stroke-width="1.8"/>';
+  rows.forEach(function(r,i){
+    if(i%6===0){ s += '<text x="'+(x(i)+bw/2)+'" y="'+(base+15)+'" font-size="9.5" fill="#9db9c6" text-anchor="middle">'+compass(r.swellD)+'</text>'; }
+  });
+  s += nowLine();
+  s += '<text x="'+(W-padR)+'" y="'+(top-4)+'" font-size="10" fill="#9db9c6" text-anchor="end">max '+fmt0(maxFt)+' ft · period to '+maxP+' s</text>';
+  s += '</svg>';
+  var swellSVG = s;
+  /* Wind: mph bars colored by offshore favorability + gust line */
+  var maxW = 30; rows.forEach(function(r){ if(r.windG && r.windG>maxW) maxW=r.windG; if(r.windS && r.windS>maxW) maxW=r.windS; });
+  var w = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Wind chart, next 72 hours">';
+  w += daylightAndDays();
+  rows.forEach(function(r,i){
+    var v=r.windS||0, h=v/maxW*plotH, c=offshoreCos(r.windD, spot.shore);
+    var col = c>0.4 ? '#37d99a' : (c<-0.4 ? '#ff8a6b' : '#5b84a0');
+    w += '<rect x="'+x(i).toFixed(1)+'" y="'+(base-h).toFixed(1)+'" width="'+Math.max(bw-0.6,1).toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+col+'"/>';
+  });
+  var gpts = rows.map(function(r,i){ var g=r.windG||0; return (x(i)+bw/2).toFixed(1)+','+(base-(g/maxW)*plotH).toFixed(1); }).join(' ');
+  w += '<polyline points="'+gpts+'" fill="none" stroke="#e8f3f7" stroke-width="1.4" opacity="0.75"/>';
+  w += nowLine();
+  w += '<text x="'+(W-padR)+'" y="'+(top-4)+'" font-size="10" fill="#9db9c6" text-anchor="end">wind to '+fmt0(maxW)+' mph · white line = gusts</text>';
+  w += '</svg>';
+  return '<div class="chartbox"><h3>Swell — feet (bars) · period seconds (line) · direction under bars</h3>'+swellSVG+
+    '<div class="legend"><span><i style="background:#2f9dc4"></i>swell height</span><span><i style="background:#eec27a"></i>period</span><span><i style="background:#eec27a;opacity:.25"></i>daylight 06–19</span></div></div>'+
+    '<div class="chartbox"><h3>Wind — mph, colored by offshore favorability</h3>'+w+
+    '<div class="legend"><span><i style="background:#37d99a"></i>offshore (grooming)</span><span><i style="background:#5b84a0"></i>cross-shore</span><span><i style="background:#ff8a6b"></i>onshore (chopping it up)</span></div></div>'+
+    '<p class="tiny">Open-Meteo model data · fetched '+data.fetchedAt.toLocaleTimeString()+(data.stale?' · STALE — showing last good data':'')+'</p>';
+}
+
+/* ---------- Spot card rendering (forecast + big wave share this) ---------- */
+function xlPill(cur){
+  if(!cur || cur.swellH==null || cur.swellP==null) return '';
+  if(cur.swellH>=4 && cur.swellP>=14) return '<span class="pill xl">XL potential</span>';
+  if(cur.swellH>=2.5 && cur.swellP>=12) return '<span class="pill large">Large — below XL</span>';
+  return '<span class="pill small-w">Below XL size</span>';
+}
+function renderSpots(spots, prefix, isBig){
+  var list = $('#'+prefix+'List');
+  list.innerHTML = '';
+  var bestKey=null, bestScore=-1;
+  spots.forEach(function(sp){
+    var d = store[sp.key];
+    if(d && d.score!=null && d.score>bestScore){ bestScore=d.score; bestKey=sp.key; }
+  });
+  spots.forEach(function(sp){
+    var d = store[sp.key];
+    var card = document.createElement('div'); card.className='card';
+    var head = '<div class="row"><div style="flex:1;min-width:0;"><h2 style="margin-bottom:0;">'+sp.name+'</h2><div class="small">'+sp.place+'</div></div>';
+    if(!isBig && d && d.score!=null){
+      head += '<div class="score">'+d.score+'<small>/ 100</small></div>';
+    }
+    head += '</div>';
+    if(!isBig && sp.key===bestKey && d && d.score!=null) head += '<div style="margin-top:7px;"><span class="pill best">Best now</span></div>';
+    if(isBig) head += '<p class="small" style="margin:7px 0 0;">'+sp.line+'</p>';
+    if(!d){
+      head += '<p class="small" style="margin-top:8px;">Conditions unavailable right now — no numbers shown rather than invented ones. Try Refresh.</p>';
+    } else {
+      var c = d.cur;
+      head += '<div class="metric">'+
+        '<div><div class="v">'+fmt1(ft(c.swellH))+' ft</div><div class="k">Swell height</div></div>'+
+        '<div><div class="v">'+fmt0(c.swellP)+' s</div><div class="k">Period</div></div>'+
+        '<div><div class="v">'+compass(c.swellD)+'</div><div class="k">Swell dir</div></div>'+
+        '<div><div class="v">'+fmt0(c.windS)+' mph</div><div class="k">Wind '+compass(c.windD)+' · '+windLabel(c.windD, sp.shore)+'</div></div>'+
+        (c.windG!=null? '<div><div class="v">'+fmt0(c.windG)+' mph</div><div class="k">Gusts</div></div>':'')+
+      '</div>';
+      if(isBig) head += '<div style="margin-top:8px;">'+xlPill(c)+' <span class="tiny">heuristic, not a forecast</span></div>';
+      if(d.stale) head += '<div style="margin-top:7px;"><span class="pill stale">Stale — last good data, '+d.fetchedAt.toLocaleTimeString()+'</span></div>';
+      head += '<details><summary>Next 72 hours — swell &amp; wind charts</summary><div class="charts-slot">'+buildCharts(sp, d)+'</div></details>';
+    }
+    if(isBig){
+      if(sp.cam){
+        head += '<details class="cam-slot"><summary>'+sp.cam.label+'</summary><div class="vidbox" style="margin-top:8px;"><iframe title="'+sp.name+' live cam" loading="lazy" data-camsrc="https://www.youtube.com/embed/'+sp.cam.id+'?autoplay=1&mute=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div></details>';
+      } else {
+        head += '<p class="tiny" style="margin-top:9px;">No public live cam — no verified public stream exists for this spot, so none is embedded.</p>';
+      }
+    }
+    card.innerHTML = head;
+    list.appendChild(card);
+  });
+  /* lazy-load big-wave cam iframes only when their card is opened */
+  $$('#'+prefix+'List .cam-slot').forEach(function(det){
+    det.addEventListener('toggle', function(){
+      if(det.open){
+        var f = det.querySelector('iframe[data-camsrc]');
+        if(f && !f.getAttribute('src')) f.setAttribute('src', f.getAttribute('data-camsrc'));
+      }
+    });
+  });
+  var fEl = $('#'+prefix+'Fetched');
+  if(fEl){
+    var any = spots.map(function(sp){ return store[sp.key]; }).filter(Boolean)[0];
+    fEl.textContent = any ? ('Updated '+any.fetchedAt.toLocaleTimeString()+(any.stale?' · some data stale':'')) : '';
+  }
+}
+function loadAll(spots, prefix){
+  var isBig = prefix==='bw';
+  var jobs = spots.map(function(sp){
+    return fetchSpot(sp).catch(function(){ return null; });
+  });
+  Promise.all(jobs).then(function(){
+    renderSpots(spots, prefix, isBig);
+    if(prefix==='fc'){ camsOnScores(); }
+  });
+}
+$('#fcRefresh').addEventListener('click', function(){ loadAll(F_SPOTS,'fc'); });
+$('#bwRefresh').addEventListener('click', function(){ loadAll(B_SPOTS,'bw'); });
+
+/* ---------- Contests ---------- */
+var EVENTS = [
+  {n:1, event:'Rip Curl Pro Bells Beach', brk:'Bells Beach, Victoria, Australia', s:'2026-04-01', e:'2026-04-11'},
+  {n:2, event:'Margaret River Pro', brk:'Margaret River, Western Australia', s:'2026-04-17', e:'2026-04-27'},
+  {n:3, event:'Gold Coast Pro', brk:'Snapper Rocks, Queensland, Australia', s:'2026-05-02', e:'2026-05-12'},
+  {n:4, event:'Surf City El Salvador Pro', brk:'Punta Roca, El Salvador', s:'2026-05-28', e:'2026-06-07'},
+  {n:5, event:'Rio Pro', brk:'Saquarema, Rio de Janeiro, Brazil', s:'2026-06-12', e:'2026-06-20'},
+  {n:6, event:'Corona Open J-Bay', brk:'Jeffreys Bay, South Africa', s:'2026-07-10', e:'2026-07-20'},
+  {n:7, event:'Tahiti Pro', brk:'Teahupoʻo, Tahiti', s:'2026-08-08', e:'2026-08-18'},
+  {n:8, event:'Fiji Pro', brk:'Cloudbreak, Fiji', s:'2026-08-25', e:'2026-09-04'},
+  {n:9, event:'Trestles Pro', brk:'Lower Trestles, San Clemente, California', s:'2026-09-11', e:'2026-09-20'},
+  {n:10, event:'Surf Abu Dhabi Pro', brk:'Surf Abu Dhabi, UAE', s:'2026-10-14', e:'2026-10-18', cancelled:true,
+   note:'WSL announced in-season that this stop would not run in 2026 — listed as reported, not as a completed event.'},
+  {n:11, event:'MEO Rip Curl Pro Portugal', brk:'Supertubos, Peniche, Portugal', s:'2026-10-22', e:'2026-11-01'},
+  {n:12, event:'Lexus Pipe Masters', brk:'Banzai Pipeline, Oʻahu, Hawaiʻi', s:'2026-12-08', e:'2026-12-20'}
+];
+function fmtRange(s, e){
+  function f(dstr){ var d=new Date(Date.UTC(+dstr.slice(0,4), +dstr.slice(5,7)-1, +dstr.slice(8,10))); return new Intl.DateTimeFormat('en-US',{month:'short', day:'numeric', timeZone:'UTC'}).format(d); }
+  return f(s)+' – '+f(e)+', 2026';
+}
+function initContests(){
+  var p = $('#wslPlayer');
+  if(!p.getAttribute('src')) p.setAttribute('src','https://www.youtube.com/embed/live_stream?channel=UChuLeaTGRcfzo0UjL-2qSbQ');
+  var today = new Date(); var tKey = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  var list = $('#eventList'); list.innerHTML='';
+  EVENTS.forEach(function(ev){
+    var pill;
+    if(ev.cancelled) pill = '<span class="pill cancel">Reported cancelled</span>';
+    else if(tKey>ev.e) pill = '<span class="pill done">Completed</span>';
+    else if(tKey>=ev.s) pill = '<span class="pill wait">In waiting period</span>';
+    else pill = '<span class="pill up">Upcoming</span>';
+    var div = document.createElement('div'); div.className='event';
+    div.innerHTML = '<div class="n">'+ev.n+'</div><div style="flex:1;min-width:0;"><h3 style="margin-bottom:1px;">'+ev.event+'</h3>'+
+      '<div class="small">'+ev.brk+'</div><div class="tiny">Waiting period: '+fmtRange(ev.s, ev.e)+'</div>'+
+      (ev.note? '<div class="tiny" style="color:var(--sand);">'+ev.note+'</div>':'')+'</div><div>'+pill+'</div>';
+    list.appendChild(div);
+  });
+}
+
+/* ---------- Boards: families + explorer (research-refined) ---------- */
+var FAMILIES = [
+  {n:'Shortboard (performance)', s:'~5\'6"–6\'4" · low volume', w:'Medium, pitching waves; vertical surfing and barrels.', k:'Intermediate–advanced. Gives up paddle power and early entry — it only works once you can paddle in at the moment the wave breaks.'},
+  {n:'Fish', s:'~5\'0"–6\'0" · short, wide, thick', w:'Small–medium, soft to moderately steep surf (~2–4 ft). Flat rocker, wide nose, deep swallow tail, twin keels or quad.', k:'All levels on a weak day. Gives up hold in steep, powerful surf — the wide tail and twins can slide out.'},
+  {n:'Groveler', s:'Under ~6\'0" · shortboard outline, foam moved forward', w:'Small, weak waves with flat sections a shortboard can\'t catch or carry speed through.', k:'All small-wave surfers. Still surfable vertically, but muted when the waves turn good.'},
+  {n:'Funboard / Mid-length', s:'~6\'6"–8\'0"', w:'Small–medium, long and gentle to everyday waves; glides through flat sections.', k:'Beginner–intermediate (funboard); every level (mid-length). A funboard turns where a longboard trims — neither does the other\'s job fully.'},
+  {n:'Longboard — classic log', s:'9\'0"+ · low rocker, soft 50/50 rails, single fin', w:'Small, rolling waves; cross-stepping and noseriding.', k:'Every level; the beginner default. Gives up duck-diving, turning radius and big-surf handling.'},
+  {n:'Longboard — performance', s:'9\'0"+ · thinner rails, 2+1 fins', w:'Decent-size rolling waves where early entry and maneuverability both matter.', k:'Intermediate+. Trades the log\'s noseriding stability for turning.'},
+  {n:'Step-up', s:'A few inches to ~1 ft over your shortboard', w:'Bigger, more powerful, hollow surf than the daily shortboard handles. Longer, narrower, more rocker, pulled-in tail.', k:'Advanced. Pure cost in small surf — length and rocker drag with no wave energy to pay for it.'},
+  {n:'Gun / semi-gun', s:'~7\'0"–11\'+', w:'Big, fast-moving waves that must be caught by paddling.', k:'Expert only. The length is a paddling solution: a big wave moves fast, and your waterline speed has to match it. The pin tail minimizes lift so the tail stays in the face at speed.'},
+  {n:'SUP (surf)', s:'Largest volume of all', w:'Caught very early; small–medium waves (flatwater SUP: flat days, lakes, rivers).', k:'Standing paddling removes the prone-paddle limit. Costs turning, duck-diving and lineup maneuverability.'},
+  {n:'Foil board', s:'Short board + submerged wing', w:'Small, weak or open-ocean swell a normal board can\'t plane on.', k:'Specialist. A different regime entirely: once flying, lift comes from the submerged foil and the board rides clear of the surface.'},
+  {n:'Tow board (limit case)', s:'~5\'5"–6\'2", slim', w:'Waves pitching too fast to paddle into at all (~25 ft+).', k:'Jet-ski tow replaces paddle power, so the board can shrink to pure speed-and-control. Proof that a gun\'s length is mostly about paddling.'}
+];
+var EXPLORER = [
+  {t:'Volume, width & thickness', lines:[
+    '<b>More volume →</b> floats higher at paddle speed (buoyancy ≈ 1 L per kg), less paddle drag, earlier entry, longer sessions. Past what you need it fights you: turning starts by sinking a rail, and excess volume refuses to sink.',
+    '<b>Wider outline / tail →</b> more planing surface, so it planes at lower speed and stays stable — how fish and grovelers stay short yet catch weak waves. At speed in big surf a wide tail generates so much lift it skips and won\'t hold a rail.',
+    '<b>Volume forward (under the chest) →</b> paddle power, drive and trim stability, drawn-out turns. <b>Volume back (between the feet) →</b> tighter, back-foot rail-to-rail surfing — and harder paddling.',
+    '<b>Flat deck vs domed deck →</b> flat carries volume out to the rail (stability, drive); domed concentrates it on the stringer and thins the rail (looser rail-to-rail). Same stated thickness, two different boards.']},
+  {t:'Rocker', lines:[
+    '<b>More rocker →</b> fits a steeper face, tighter turning radius, later drops without pearling. Costs drag at every speed, a later takeoff, and stalls in flat sections — on the flat, only a small mid-patch of a curved bottom is wet.',
+    '<b>Nose flip →</b> raises the entry so the board survives steep, late drops. <b>Tail kick →</b> pivots the board around the back foot, at the cost of drive.',
+    '<b>Continuous rocker →</b> one unbroken curve: smooth weight shifts and rail-to-rail flow when the wave supplies the power. <b>Staged rocker →</b> a flat mid-section “speed box” that planes efficiently, with the flip and kick added only where needed. Most modern boards are effectively staged.']},
+  {t:'Outline', lines:[
+    '<b>Wide point back →</b> the rail\'s curve peaks between your feet: pivot and a shorter turning radius, paid for in drive. <b>Wide point forward →</b> more rail stays engaged: drawn-out, drive-conserving, front-footed turns and trim.',
+    '<b>Wings / hips →</b> release points, not pivots: a sudden narrowing lets a wide tail penetrate and release without curving the whole board. That\'s why wide fish and quads so often wear them.']},
+  {t:'Tails — it\'s about area', lines:[
+    'Britt Merrick (Channel Islands) puts it plainly: the governing variable is <b>tail area</b>. More area = more lift, the board rides on top of the water, more release. Less area = the board sits in the water, more control.',
+    '<b>Squash →</b> near-max area with softened corners: lift and release for soft, everyday waves; the default performance tail.',
+    '<b>Round pin / pin →</b> area removed, tail sits in and holds — the step-up and gun choice for steep, powerful surf. In small surf a pin just sinks.',
+    '<b>Swallow / fish tail →</b> keeps a wide tail\'s straight, drivey rail lines while cutting away the center — planing speed plus two points that bite and pivot.']},
+  {t:'Rails', lines:[
+    '<b>Round 50/50 rails →</b> water wraps around them and stays attached (the Coanda effect): suction, hold and forgiveness — paid for in drag. The log and noserider rail.',
+    '<b>Hard / down rails (60/40 to 80/20) and tucked edges →</b> give the flow a clean separation point: the board planes instead of sucking water around the rail — bite, release and speed.',
+    '<b>Full rails →</b> buoyant, stable, drivey, forgiving. <b>Pinched rails →</b> sink on demand: quick engagement and high-line hold in steep faces, but unforgiving and boggy in weak surf. Most boards blend: soft forward, hard aft.']},
+  {t:'Bottom contours', lines:[
+    '<b>Single concave →</b> the speed/lift contour. Best-supported mechanism: it flattens the stringer rocker against the rail rocker, making flatter planing panels while the rails keep their curve — speed and maneuverability from one cut.',
+    '<b>Double concave →</b> splits the flow across a center spine: less turbulence between the feet, more control at speed, easier tipping rail-to-rail. Single-to-double is the modern default.',
+    '<b>Vee →</b> the board sits in the water and rolls panel-to-panel — control where the wave supplies speed (bigger surf, wide tails). Too deep and it turns tracky and resists getting on rail at all.',
+    '<b>Flat →</b> simple, predictable, efficient — and slappy in chop. <b>Channels →</b> direct flow aft for drive and hold in clean, powerful waves; tracky, and they sink in weak surf.']},
+  {t:'Fin setups', lines:[
+    '<b>Single fin →</b> a center pivot: smooth, drawn-out arcs, trim and noseriding stability. Surf the rail and the wave\'s energy rather than pumping.',
+    '<b>2+1 →</b> a big center fin plus small sidebites: single-fin flow with added hold and tighter turning. It is <b>not</b> a thruster — the fin sizes and jobs are reversed.',
+    '<b>Twin →</b> least center drag: early planing, top-end speed, skatey looseness — and a slide-out risk when pushed hard on a steep face.',
+    '<b>Thruster →</b> the balanced default since 1980: side fins drive and hold, the center fin steadies and pivots. Drive, pivot and hold in one package.',
+    '<b>Quad →</b> no center drag and double rail-fin area: fast down the line with strong hold in hollow waves, less pivot in tight turns.',
+    '<b>“Five-fin” means two things →</b> convertible 5-box setups (run thruster, quad or twin+trailer from one board) — or a true Bonzer 5, five fins ridden at once with deep concaves. Always ask which one is meant.']}
+];
+(function renderBoards(){
+  var fg = $('#famGrid');
+  FAMILIES.forEach(function(f){
+    var d = document.createElement('div'); d.className='fam';
+    d.innerHTML = '<h3>'+f.n+'</h3><div class="tiny" style="margin-bottom:5px;">'+f.s+'</div><p class="small" style="margin:0 0 5px;">'+f.w+'</p><p class="small" style="margin:0;color:#cfe3ea;">'+f.k+'</p>';
+    fg.appendChild(d);
+  });
+  var ex = $('#explorer');
+  EXPLORER.forEach(function(sec, i){
+    var det = document.createElement('details'); if(i===0) det.open = true;
+    det.innerHTML = '<summary>'+sec.t+'</summary>' + sec.lines.map(function(l){ return '<div class="mapline"><span class="small" style="color:#d7e8ee;">'+l+'</span></div>'; }).join('');
+    ex.appendChild(det);
+  });
+})();
+
+/* ---------- Brands (Bing first — the owner's brand) ---------- */
+var BRANDS = [
+  {name:'Bing Surfboards', meta:'Bing Copeland · today shaped by Matt Calvani · est. 1959 · Hermosa Beach → Encinitas / Leucadia, California',
+   hist:'Bing Copeland started surfing at the Manhattan Beach pier in 1949, at 13, alongside Greg Noll. In the fall of 1959 he opened his first shop on the Hermosa Beach strand with Rick Stoner; a year later he bought Rick out and it became Bing Surfboards. At its peak the factory turned out up to 40 boards a day, and the team — David Nuuhiwa, Dru Harrison, Chris Schlickenmeyer, Rolf Aurness — defined the era. Bing licensed the name to Gordon & Smith in 1974 and moved his family to Idaho; Mike Eaton kept the boards coming through the 80s and 90s. In 2000, in Baja, a young shaper named Matt Calvani introduced himself — and with Eaton\'s blessing took the label over. Production moved to Encinitas in 2010, and the Bing shop now sits on Coast Highway in Leucadia.',
+   models:'Signature models: Nuuhiwa Noserider · Pipeliner (designed with Dick Brewer) · Mr. Rodgers · Elevator · Levitator · Continental',
+   inv:'https://bingsurf.com/collections/all-boards-in-stock', invLabel:'Shop Bing boards in stock',
+   spotlight:{t:'Spotlight: the Mr. Rodgers', b:'Designed in collaboration with Bing rider Mick Rodgers as a traditional single-fin log built for noseriding. Per Bing\'s own catalog: a Nuuhiwa-influenced noserider with a pronounced nose concave and a wide moon tail for lift and stability on the nose, a slight roll in the bottom and flatter rocker for smooth trim and transitions — made for point surf and tapered peelers, and it holds its line once the rail is set for a noseride. The owner\'s own custom Mr. Rodgers is why this brand leads this list.'}},
+  {name:'Channel Islands', meta:'Al Merrick · today led by Britt Merrick · est. 1969 · Santa Barbara, California',
+   hist:'Al and Terry Merrick founded Channel Islands in Santa Barbara in 1969, and the brand stayed rider-driven to an unusual degree: Tom Curren and Kelly Slater built their careers on Merrick shapes, and CI riders have earned a combined 20 World Titles. Al\'s son Britt, who grew up in the factory and started shaping alongside his father in 1990, is now lead shaper and CEO; the Merrick family, staff and team riders bought the company back from Burton in 2021. The philosophy never changed: build the best possible equipment for the best surfers, and let the surfing argue.',
+   models:'Known for: Flyer · Neck Beard · Happy · Two Happy · Feb\'s Fish',
+   inv:'https://cisurfboards.com/collections/surfboards', invLabel:'Shop Channel Islands surfboards'},
+  {name:'...Lost (Mayhem)', meta:'Matt “Mayhem” Biolos · shaping since 1985 · San Clemente, California',
+   hist:'Matt Biolos has been handcrafting boards under the ...Lost banner since 1985 out of San Clemente. The label broke through in the 90s on the back of surf films and a team that surfed like it had something to prove, and Biolos\'s small-wave designs — above all the Round Nose Fish — changed what everyday surfers ride. He\'s still at it: Biolos won the Vissla CT Shaper Rankings three straight years through 2025, with riders like Griffin Colapinto and Yago Dora on his Formula-1 and Driver shapes.',
+   models:'Known for: RNF \'96 · Puddle Jumper · Driver 2.0 · Sub Driver · Rad Ripper',
+   inv:'https://lostsurfboards.net/product-category/surfboards/', invLabel:'Shop ...Lost surfboards'},
+  {name:'Pyzel', meta:'Jon Pyzel · est. ~1995 · North Shore, Oʻahu, Hawaiʻi',
+   hist:'Pyzel Surfboards began in a backyard shaping room on the North Shore around 1995. Jon Pyzel had moved from Santa Barbara in 1992, worked ding repair and glassing at Country Surfboards, and learned shaping under Jeff Bushman. In 1997 Alex Florence asked him to make a board for her five-year-old son, John John — the start of one of surfing\'s great shaper-rider partnerships, and two World Titles. The Ghost, a step-up that turned out to work in almost everything, became the modern signature. Factories run on the North Shore and in Oceanside, California.',
+   models:'Known for: Ghost · Phantom · Gremlin · Padillac · PyzAlien',
+   inv:'https://pyzelsurfboards.com/collections/surfboards', invLabel:'Shop Pyzel stock boards'},
+  {name:'DHD', meta:'Darren Handley · est. 1989 · Gold Coast, Australia',
+   hist:'Darren Handley, a Kirra local, started at Pipedream Surfboards in 1985 and served a decade-long apprenticeship under Murray Bourton before establishing DHD on the Gold Coast in 1989. His name is welded to two careers: Mick Fanning and Stephanie Gilmore rode DHDs to a combined 11 World Titles, most of them on evolutions of the DNA — the model Handley and Fanning refined together for decades. The shop celebrated 40 years of Handley making boards in 2025.',
+   models:'Known for: MF DNA · MF Lightning · Phoenix · Utopia · Black Diamond',
+   inv:'https://dhdsurf.com/collections/surfboards', invLabel:'Shop DHD surfboards'},
+  {name:'JS Industries', meta:'Jason Stevenson · est. 1999 · Gold Coast, Australia',
+   hist:'Jason Stevenson grew up on North Stradbroke Island, talked his way into the Pipedream factory on the Gold Coast, apprenticed under Murray Bourton, and spent four years working for Darren Handley before starting JS Industries in 1999. The Traktor logo — a toy tractor, a nod to his dad — became one of the most recognized marks in surfing after first team rider Dean Morrison won the Quiksilver Pro in 2003 and Joel Parkinson rode JS to the 2012 World Title. JS is built on elite-team feedback and its HYFI construction.',
+   models:'Known for: Monsta · Xero · Blak Box · Golden Child · Black Baron',
+   inv:'https://jsindustries.com/collections/surfboards', invLabel:'Shop JS surfboards'},
+  {name:'Firewire', meta:'Designer stable: Dan Mann · Slater Designs · Rob Machado · Tomo · est. 2005 · Carlsbad, California',
+   hist:'Firewire was formed in 2005 by Australian shaper Nev Hyman with Mark Price (later CEO) and partners, to build boards a different way: EPS/epoxy sandwich construction with parabolic balsa rails, based on Bert Burger\'s work — the first major change in board composition in decades. (Some sources date the formal founding to 2006 in Australia; the company is now headquartered in Carlsbad, California, and Kelly Slater has been majority owner since 2015.) Rather than one shaper, Firewire runs a designer stable — Dan Mann\'s Mannkine shapes, Kelly Slater\'s Slater Designs, Rob Machado, Tomo (Daniel Thomson) and Stu Kenson — in constructions like Helium and I-Bolic.',
+   models:'Known for: Seaside · Mashup · Dominator 2.0 · Sci-Fi 2.0 · FRK · Sweet Potato',
+   inv:'https://www.firewiresurfboards.com/collections/prestige-surfboards', invLabel:'Shop Firewire surfboards'},
+  {name:'Rusty', meta:'Rusty Preisendorfer · est. 1985 · San Diego, California',
+   hist:'Rusty Preisendorfer was fixing dings on a $10 garage-sale log before he\'d even started surfing. Influenced by Dick Brewer, Mike Hynson and Skip Frye, he shaped for Gordon & Smith while at UC San Diego, launched Music Surfboards in 1974, and built a stacked team at Canyon — then left in 1985 to start Rusty Surfboards. With Dave Parmenter and a radical young Mark Occhilupo aboard, more than half the world\'s Top 16 were riding the “R.” at one point in the mid-80s. Four decades later he\'s still in the shaping bay, and the site marks 55 years of shaping.',
+   models:'Known for: SD · Blackbird · Twin Fin · 419 Fish · Smoothie · Dwart',
+   inv:'https://rustysurfboards.com/collections/in-stock', invLabel:'Shop Rusty in-stock boards'},
+  {name:'Christenson', meta:'Chris Christenson · since 1992 · Carlsbad, California',
+   hist:'Chris Christenson apprenticed under two legends — Dick Brewer and Skip Frye — and has handcrafted customs in Carlsbad for over 30 years; the brand dates itself to 1992. The range runs from classic fish and refined longboards to step-ups and big-wave guns, all shaped by Christenson himself. His boards are trusted in heavy water: team riders Greg Long, Ian Walsh and Tom Lowe have earned XXL Big Wave Awards and world titles on his designs, alongside Beau Cram and Oscar Langburne.',
+   models:'Known for: Fish · Christenson Flat Tracker lineage · Cafe Racer · OP series · Chris Craft',
+   inv:'https://christensonsurfboards.com/collections/surfboards', invLabel:'Shop Christenson boards in stock'},
+  {name:'HaydenShapes', meta:'Hayden Cox · est. 1996 · Sydney, Australia',
+   hist:'Hayden Cox broke his favorite board at 15, couldn\'t afford another, and learned to make one instead — founding HaydenShapes in Sydney in 1996 and opening his first factory at Mona Vale at 20. His patented FutureFlex construction (2006) replaced the wooden stringer with a parabolic carbon-fiber frame around the rails. The Hypto Krypto — a hybrid that works in almost anything, developed with Craig Anderson — was named Surfboard of the Year in 2014 and 2015 and became one of the best-selling performance boards ever. US operations run out of Oceanside, California.',
+   models:'Known for: Hypto Krypto · Holy Grail · White Noiz · DarkSide',
+   inv:'https://haydenshapes.com/collections/surfboards', invLabel:'Shop HaydenShapes surfboards'},
+  {name:'Album', meta:'Matt Parker · shaping since 2001 · San Clemente, California',
+   hist:'Matt Parker started shaping in his garage in 2001, bringing a design and fine-arts eye to San Clemente. Album became the standard-bearer for “alternative” performance craft — twin fins and asymmetrical boards, hand-shaped in PU with one-of-a-kind resin tints — under riders like Josh Kerr, Asher Pacey and Jack Freestone. The Twinsman, a performance twin in the lineage of Mark Richards\' 80s twins, is the flagship. (Album\'s exact founding year as a label: to confirm.)',
+   models:'Known for: Twinsman · Plasmic · Insanity · Sunstone · Vesper · Moonstone',
+   inv:'https://albumsurf.com/collections/new-boards', invLabel:'Shop Album new boards'}
+];
+(function renderBrands(){
+  var list = $('#brandList');
+  BRANDS.forEach(function(b){
+    var d = document.createElement('div'); d.className='card brand';
+    d.innerHTML = '<h2>'+b.name+'</h2><div class="meta">'+b.meta+'</div><p>'+b.hist+'</p><div class="models">'+b.models+'</div>'+
+      '<a class="invbtn" href="'+b.inv+'" target="_blank" rel="noopener">'+b.invLabel+' →</a>'+
+      (b.spotlight? '<div class="spotlight"><h3>'+b.spotlight.t+'</h3><p style="margin:0;" class="small">'+b.spotlight.b+'</p></div>':'');
+    list.appendChild(d);
+  });
+})();
+
+/* ============================================================
+   CAMS — YouTube IFrame API player, dead-stream skipping,
+   flick cycling, pinch zoom, in-place fullscreen, auto modes.
+   ============================================================ */
+var CAMS = [
+  {id:'Fp7l8XASb9Y', name:'Banzai Pipeline', place:'ʻEhukai Beach, Oʻahu, Hawaiʻi', tz:'Pacific/Honolulu', spot:'pipeline', note:'The real thing — Pipeline itself, live.'},
+  {id:'drckaPuBNws', name:'Waimea Bay', place:'North Shore, Oʻahu, Hawaiʻi', tz:'Pacific/Honolulu', spot:'waimea', note:'Waimea Bay live — home of the Eddie.'},
+  {id:'mhQjsLBfOoY', name:'Huntington Beach Pier', place:'Huntington Beach, California', tz:'America/Los_Angeles', spot:'huntington', note:'Surf City USA, from the pier.'},
+  {id:'v97JpT3ZA0w', name:'Santa Monica', place:'Santa Monica, California', tz:'America/Los_Angeles', spot:'santamonica', note:'Honest label: this is a nearby Santa Monica view standing in for the break — not a dedicated surf-break cam.'},
+  {id:'1l-nqyyhzro', name:'Ocean City', place:'Ocean City, New Jersey', tz:'America/New_York', spot:'oceancity', note:'East Coast check — Ocean City, NJ live.'},
+  {id:'NYCpE9Bx6m8', name:'Nyang Nyang — Bali', place:'Near Uluwatu, Bukit Peninsula, Bali', tz:'Asia/Makassar', spot:'uluwatu', note:'Nyang Nyang beach, just along the Bukit from Uluwatu.'}
+];
+var camIdx = 0, deadCams = {}, ytPlayer = null, ytReady = false, soundOn = false;
+var camLoadTimer = null, autoTimer = null, lastAutoSwitch = 0, clockTimer = null;
+
+function aliveList(){ return CAMS.map(function(c,i){ return i; }).filter(function(i){ return !deadCams[CAMS[i].id]; }); }
+function markDead(id){
+  if(!deadCams[id]){ deadCams[id]=true; }
+  renderChips(); updateCamStatus();
+}
+function clearDead(id){ if(deadCams[id]){ delete deadCams[id]; renderChips(); updateCamStatus(); } }
+function renderChips(){
+  var wrap = $('#camChips'); wrap.innerHTML='';
+  CAMS.forEach(function(c,i){
+    var b = document.createElement('button'); b.type='button'; b.className='chip'+(deadCams[c.id]?' dead':'');
+    b.setAttribute('aria-pressed', i===camIdx?'true':'false');
+    b.textContent = c.name + (deadCams[c.id]?' · offline':'');
+    b.addEventListener('click', function(){ userPick(i); });
+    wrap.appendChild(b);
+  });
+}
+function updateCamStatus(){
+  var dead = Object.keys(deadCams).length;
+  $('#camStatus').textContent = dead? (dead+' stream'+(dead>1?'s':'')+' offline — skipped') : 'All streams reporting';
+  var allDead = aliveList().length===0;
+  $('#camStageMsg').classList.toggle('show', allDead);
+}
+function showCamInfo(){
+  var c = CAMS[camIdx];
+  $('#camName').innerHTML = '<span class="dotlive"></span>'+c.name;
+  $('#camPlace').textContent = c.place;
+  $('#camNote').textContent = c.note;
+  renderChips(); tickClock();
+}
+function tickClock(){
+  var c = CAMS[camIdx]; if(!c) return;
+  var lp = localParts(c.tz);
+  $('#camLocalTime').textContent = 'Local time there: '+lp.label;
+}
+function loadCam(i, opts){
+  opts = opts||{};
+  camIdx = i;
+  var c = CAMS[i];
+  showCamInfo();
+  if(camLoadTimer){ clearTimeout(camLoadTimer); camLoadTimer=null; }
+  if(ytReady && ytPlayer && ytPlayer.loadVideoById){
+    ytPlayer.loadVideoById(c.id);
+    if(!soundOn && ytPlayer.mute) ytPlayer.mute();
+  } else {
+    /* fallback: plain embed (also used if the API script is blocked) */
+    $('#camPlayerHolder').innerHTML = '<iframe id="camFrame" title="'+c.name+' live cam" src="https://www.youtube.com/embed/'+c.id+'?autoplay=1&mute=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>';
+    var fr = $('#camFrame');
+    fr.addEventListener('load', function(){ clearDead(c.id); });
+  }
+  camLoadTimer = setTimeout(function(){
+    if(ytReady && ytPlayer && ytPlayer.getPlayerState){
+      try{
+        var st = ytPlayer.getPlayerState();
+        var dur = ytPlayer.getDuration ? ytPlayer.getDuration() : 0;
+        if((st===-1) && !dur){ onCamDead(c.id); }
+      }catch(e){}
+    }
+  }, 14000);
+}
+function onCamDead(id){
+  markDead(id);
+  if(CAMS[camIdx].id===id){
+    var alive = aliveList();
+    if(alive.length){ loadCam(alive[0]); }
+    else { updateCamStatus(); }
+  }
+}
+function userPick(i){
+  if(deadCams[CAMS[i].id]) clearDead(CAMS[i].id); /* explicit pick = retry */
+  lastAutoSwitch = Date.now();
+  loadCam(i);
+}
+function cycle(dir){
+  var alive = aliveList();
+  if(!alive.length) return;
+  var pos = alive.indexOf(camIdx);
+  var next = alive[(pos + dir + alive.length) % alive.length];
+  if(pos===-1) next = alive[0];
+  lastAutoSwitch = Date.now();
+  loadCam(next);
+}
+$('#camPrev').addEventListener('click', function(){ cycle(-1); });
+$('#camNext').addEventListener('click', function(){ cycle(1); });
+$('#camDead').addEventListener('click', function(){ onCamDead(CAMS[camIdx].id); });
+$('#camSound').addEventListener('click', function(){
+  soundOn = !soundOn;
+  this.textContent = 'Sound: '+(soundOn?'On':'Off');
+  this.setAttribute('aria-pressed', soundOn?'true':'false');
+  if(ytPlayer){ try{ soundOn? ytPlayer.unMute() : ytPlayer.mute(); }catch(e){} }
+  var fr = $('#camFrame');
+  if(fr){ var c=CAMS[camIdx]; fr.src = 'https://www.youtube.com/embed/'+c.id+'?autoplay=1&mute='+(soundOn?0:1)+'&playsinline=1&rel=0'; }
+});
+$('#camFull').addEventListener('click', function(){
+  var st = $('#camStage');
+  if(st.requestFullscreen){ st.requestFullscreen().catch(function(){ st.classList.add('fs-fallback'); }); }
+  else if(st.webkitRequestFullscreen){ st.webkitRequestFullscreen(); }
+  else { st.classList.toggle('fs-fallback'); }
+});
+document.addEventListener('fullscreenchange', function(){
+  if(!document.fullscreenElement){ $('#camStage').classList.remove('fs-fallback'); }
+});
+$('#camMode').addEventListener('change', function(){ lastAutoSwitch = 0; autoTick(true); });
+
+/* auto modes */
+function camsOnScores(){ if($('#camMode').value==='best') autoTick(true); }
+function autoTick(force){
+  var mode = $('#camMode').value;
+  var now = Date.now();
+  if(mode==='manual') return;
+  if(!force && now-lastAutoSwitch < 20*60*1000) return;
+  var alive = aliveList(); if(!alive.length) return;
+  if(mode==='sun'){
+    var inDay = alive.filter(function(i){ var h = localParts(CAMS[i].tz).hour; return h>=6 && h<19; });
+    if(!inDay.length) return;
+    if(!force && inDay.indexOf(camIdx)>-1) return;
+    var best = inDay[0], bestDist = 99;
+    inDay.forEach(function(i){ var h = localParts(CAMS[i].tz).hour; var d = Math.abs(h-12.5); if(d<bestDist){ bestDist=d; best=i; } });
+    if(best!==camIdx){ lastAutoSwitch=now; loadCam(best); }
+  } else if(mode==='best'){
+    var bestI=-1, bestS=-1;
+    alive.forEach(function(i){
+      var d = store[CAMS[i].spot];
+      if(d && d.score!=null && d.score>bestS){ bestS=d.score; bestI=i; }
+    });
+    if(bestI===-1){ /* scores not loaded yet — fetch them, then re-tick */
+      if(!loaded.forecast){ loaded.forecast=true; loadAll(F_SPOTS,'fc'); }
+      return;
+    }
+    if(bestI!==camIdx){ lastAutoSwitch=now; loadCam(bestI); }
+  }
+}
+autoTimer = setInterval(function(){ autoTick(false); }, 30000);
+clockTimer = setInterval(tickClock, 30000);
+
+/* flick + pinch on the stage (single in-place player) */
+(function(){
+  var stage = $('#camStage'), zoomEl = $('#camZoom');
+  var scale=1, tx=0, ty=0, pinchD0=0, pinchS0=1, panSX=0, panSY=0, panTX=0, panTY=0;
+  var flickSX=0, flickSY=0, flickT=0, gesturing=false;
+  function apply(){ zoomEl.style.transform = 'translate('+tx+'px,'+ty+'px) scale('+scale+')'; }
+  function clampPan(){
+    var r = stage.getBoundingClientRect();
+    var mx = r.width*(scale-1)/2, my = r.height*(scale-1)/2;
+    tx = Math.max(-mx, Math.min(mx, tx)); ty = Math.max(-my, Math.min(my, ty));
+  }
+  stage.addEventListener('touchstart', function(e){
+    if(e.touches.length===2){
+      gesturing=true;
+      pinchD0 = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      pinchS0 = scale;
+    } else if(e.touches.length===1){
+      flickSX = panSX = e.touches[0].clientX; flickSY = panSY = e.touches[0].clientY; flickT = Date.now();
+      panTX = tx; panTY = ty; gesturing=false;
+    }
+  }, {passive:true});
+  stage.addEventListener('touchmove', function(e){
+    if(e.touches.length===2){
+      var d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      scale = Math.max(1, Math.min(3, pinchS0 * (d/Math.max(pinchD0,1))));
+      clampPan(); apply();
+      if(e.cancelable) e.preventDefault();
+    } else if(e.touches.length===1 && scale>1){
+      tx = panTX + (e.touches[0].clientX-panSX); ty = panTY + (e.touches[0].clientY-panSY);
+      clampPan(); apply();
+      if(e.cancelable) e.preventDefault();
+    }
+  }, {passive:false});
+  stage.addEventListener('touchend', function(e){
+    if(gesturing){ gesturing=false; return; }
+    if(e.changedTouches.length!==1 || scale>1) return;
+    var dx = e.changedTouches[0].clientX - flickSX, dy = e.changedTouches[0].clientY - flickSY;
+    if(Date.now()-flickT < 600 && Math.abs(dx)>56 && Math.abs(dx) > Math.abs(dy)*1.4){
+      cycle(dx<0 ? 1 : -1); /* flick left = next, flick right = previous */
+    }
+  });
+  stage.addEventListener('dblclick', function(){ scale=1; tx=0; ty=0; apply(); });
+})();
+
+/* YouTube IFrame API wiring */
+window.onYouTubeIframeAPIReady = function(){
+  ytPlayer = new YT.Player('camPlayerHolder', {
+    videoId: CAMS[0].id,
+    playerVars: { autoplay:1, mute:1, playsinline:1, rel:0, modestbranding:1 },
+    events: {
+      onReady: function(ev){
+        ytReady = true;
+        try{ ev.target.mute(); ev.target.playVideo(); }catch(e){}
+        clearDead(CAMS[camIdx].id);
+      },
+      onStateChange: function(ev){
+        if(ev.data===YT.PlayerState.PLAYING || ev.data===YT.PlayerState.BUFFERING){ clearDead(CAMS[camIdx].id); }
+      },
+      onError: function(){ onCamDead(CAMS[camIdx].id); }
+    }
+  });
+};
+var apiTag = document.createElement('script');
+apiTag.src = 'https://www.youtube.com/iframe_api';
+document.head.appendChild(apiTag);
+/* if the API never arrives (blocked network), the plain-embed fallback in loadCam covers it */
+setTimeout(function(){ if(!ytReady){ loadCam(0); } }, 2500);
+showCamInfo();
+updateCamStatus();
+})();
+</script>
+</body>
+</html>
