@@ -9,29 +9,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        --bg: #0d1119;
-        --bg-deep: #060b09;
-        --surface: #131a17;
-        --surface-2: #1a231f;
-        --line: #33513a;
-        --ink: #f0f6e7;
-        --ink-soft: #c2d6b2;
-        --ink-faint: #8aa87e;
-        --ember: #f5a83c;
-        --ember-deep: #e07f16;
-        --ember-soft: rgba(245, 168, 60, 0.14);
-        --leaf: #6fce62;
-        --leaf-deep: #2f8f46;
-        --leaf-soft: rgba(111, 206, 98, 0.14);
-        --green: #6fce62;
-        --blue: #5aa9e6;
-        --red: #e06c5a;
-        --radius: 22px;
+        --bg: #05070f;
+        --bg-deep: #02030a;
+        --surface: #0a0f1e;
+        --surface-2: #101828;
+        --line: #22345c;
+        --ink: #eef6ff;
+        --ink-soft: #b9cbe8;
+        --ink-faint: #7c90b8;
+        --ember: #2fd9ff;
+        --ember-deep: #0ea5c8;
+        --ember-soft: rgba(47, 217, 255, 0.13);
+        --leaf: #3dffa0;
+        --leaf-deep: #0e9f6e;
+        --leaf-soft: rgba(61, 255, 160, 0.12);
+        --green: #3dffa0;
+        --blue: #57b6ff;
+        --red: #ff5d73;
+        --grid-line: rgba(110, 170, 255, 0.055);
+        --radius: 14px;
         --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
         --leaf-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50.0 86.0 L48.8 81.7 L47.0 77.3 L46.4 73.0 L43.9 68.7 L44.5 64.3 L42.7 60.0 L44.2 55.7 L42.7 51.3 L44.5 47.0 L43.4 42.7 L45.3 38.3 L44.7 34.0 L46.6 29.7 L46.5 25.3 L48.2 21.0 L48.7 16.7 L50.2 12.3 L51.5 8.0 L52.5 12.3 L53.7 16.7 L53.9 21.0 L55.3 25.3 L55.0 29.7 L56.6 34.0 L55.8 38.3 L57.5 42.7 L56.3 47.0 L57.9 51.3 L56.3 55.7 L57.6 60.0 L55.8 64.3 L56.2 68.7 L53.7 73.0 L53.0 77.3 L51.2 81.7 L50.0 86.0 Z M50.0 86.0 L47.1 83.0 L43.6 80.3 L41.2 77.0 L37.2 74.6 L36.0 70.7 L32.8 67.8 L32.0 63.7 L29.0 60.8 L28.5 56.6 L25.8 53.4 L25.3 49.2 L23.1 45.8 L22.5 41.7 L20.7 38.1 L19.8 34.0 L18.7 30.1 L21.8 33.0 L25.1 35.8 L27.4 39.2 L30.8 41.9 L32.6 45.5 L36.1 48.2 L37.4 52.0 L40.8 54.8 L41.7 58.8 L44.8 61.7 L45.4 65.9 L48.0 69.1 L47.8 73.7 L49.0 77.5 L49.3 81.9 L50.0 86.0 Z M50.0 86.0 L50.8 82.1 L51.2 77.9 L52.5 74.3 L52.4 69.9 L55.0 67.0 L55.7 63.0 L58.8 60.3 L59.7 56.5 L63.1 54.0 L64.5 50.4 L67.9 48.0 L69.7 44.6 L73.1 42.1 L75.4 39.1 L78.7 36.5 L81.8 33.9 L80.6 37.6 L79.7 41.4 L77.8 44.8 L77.1 48.7 L74.8 51.8 L74.2 55.8 L71.6 58.7 L70.9 62.7 L68.0 65.4 L67.1 69.3 L63.9 71.9 L62.7 75.6 L58.8 77.8 L56.3 80.8 L52.9 83.2 L50.0 86.0 Z M50.0 86.0 L46.4 84.8 L42.4 84.2 L39.1 82.7 L35.1 82.1 L32.7 79.3 L28.9 78.3 L26.8 75.3 L23.3 74.0 L21.2 70.8 L18.0 69.1 L15.9 66.0 L13.0 63.9 L10.7 61.0 L8.3 58.3 L12.0 59.3 L15.9 60.0 L19.1 61.7 L23.1 62.3 L26.0 64.5 L29.9 65.2 L32.4 67.8 L36.2 68.8 L38.4 71.8 L41.8 73.1 L43.6 76.7 L46.1 79.3 L47.9 82.9 L50.0 86.0 Z M50.0 86.0 L52.1 83.1 L53.9 79.8 L56.4 77.4 L58.2 74.1 L61.5 73.1 L63.7 70.3 L67.3 69.7 L69.8 67.3 L73.6 66.9 L76.4 65.0 L80.2 64.7 L83.3 63.3 L87.0 62.8 L90.6 62.2 L88.2 64.6 L86.0 67.3 L83.1 69.1 L81.0 71.9 L77.9 73.3 L75.8 76.3 L72.5 77.3 L70.3 80.1 L66.7 80.8 L64.4 83.3 L60.5 83.5 L57.3 84.8 L53.5 85.1 L50.0 86.0 Z M50.0 86.0 L46.4 86.5 L42.5 87.8 L39.2 87.3 L35.5 87.8 L32.5 86.1 L29.0 86.0 L25.9 84.2 L22.6 83.5 L19.5 81.7 L16.4 80.2 L20.1 79.4 L23.8 78.5 L27.3 78.7 L31.0 77.8 L34.3 78.9 L37.9 78.4 L40.9 80.2 L44.2 81.1 L47.0 83.9 L50.0 86.0 Z M50.0 86.0 L52.8 84.2 L55.5 81.6 L58.5 81.0 L61.4 79.5 L64.7 80.1 L67.7 79.4 L71.0 80.4 L74.2 80.4 L77.6 81.6 L80.9 82.5 L78.0 83.8 L75.1 85.3 L72.0 85.7 L69.2 87.3 L66.0 87.2 L63.1 88.5 L59.8 87.9 L56.7 88.2 L53.3 86.7 L50.0 86.0 Z M48.4 84 L51.6 84 L51.6 99.5 L48.4 99.5 Z'/%3E%3C/svg%3E");
         --leaf-mask-sm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50.0 86.0 L46.7 76.2 L41.6 66.5 L42.6 56.8 L41.1 47.0 L44.2 37.2 L44.8 27.5 L48.4 17.8 L51.5 8.0 L53.9 17.8 L56.9 27.5 L57.0 37.2 L59.6 47.0 L57.8 56.8 L58.6 66.5 L53.4 76.2 L50.0 86.0 Z M50.0 86.0 L43.6 80.3 L35.8 75.3 L32.8 67.8 L27.6 61.5 L25.8 53.4 L22.1 46.3 L20.7 38.1 L18.7 30.1 L25.1 35.8 L31.8 41.4 L36.1 48.2 L42.3 54.0 L44.8 61.7 L49.4 68.4 L49.0 77.5 L50.0 86.0 Z M50.0 86.0 L51.2 77.9 L51.1 69.2 L55.7 63.0 L58.3 55.7 L64.5 50.4 L68.8 44.1 L75.4 39.1 L81.8 33.9 L79.7 41.4 L78.0 49.2 L74.2 55.8 L72.3 63.5 L67.1 69.3 L64.0 76.3 L56.3 80.8 L50.0 86.0 Z M50.0 86.0 L41.1 83.9 L32.1 82.1 L26.1 76.2 L19.0 71.7 L13.8 64.8 L8.3 58.3 L17.1 60.4 L26.1 62.3 L33.1 66.9 L40.9 70.4 L45.5 78.2 L50.0 86.0 Z M50.0 86.0 L54.6 78.8 L59.1 71.5 L66.7 68.7 L73.5 64.8 L82.1 63.6 L90.6 62.2 L85.2 68.1 L80.0 74.4 L73.1 78.2 L67.2 83.5 L58.5 84.6 L50.0 86.0 Z M50.0 86.0 L43.8 87.5 L37.5 89.2 L32.2 87.0 L26.6 86.2 L21.6 83.0 L16.4 80.2 L22.6 78.7 L28.9 77.0 L34.5 78.0 L40.4 77.8 L45.2 81.9 L50.0 86.0 Z M50.0 86.0 L54.6 82.4 L59.1 78.8 L64.5 79.3 L69.6 78.7 L75.3 80.7 L80.9 82.5 L76.1 84.9 L71.4 87.6 L66.2 88.0 L61.3 89.8 L55.6 87.8 L50.0 86.0 Z M48.4 84 L51.6 84 L51.6 99.5 L48.4 99.5 Z'/%3E%3C/svg%3E");
@@ -42,108 +43,113 @@
         --ease-spring: cubic-bezier(.34, 1.35, .4, 1);
         --ease-io: cubic-bezier(.45, 0, .2, 1);
         /* ---- Theme-driven scenic colors (Deep Space defaults) ---- */
-        --nebula-a: rgba(122, 76, 196, 0.17);
-        --nebula-b: rgba(47, 143, 70, 0.26);
-        --nebula-c: rgba(122, 76, 196, 0.08);
-        --top-glow: rgba(245, 168, 60, 0.10);
-        --card-a: rgba(30, 44, 33, 0.66);
-        --card-b: rgba(17, 26, 20, 0.74);
-        --card-c: rgba(12, 19, 15, 0.82);
-        --card-line: rgba(96, 138, 104, 0.32);
-        --btn-a: #ffb15e; --btn-b: #f5a83c; --btn-c: #e07f16;
-        --btn-ink: #1d1206;
-        --btn-glow: rgba(229, 106, 13, 0.42);
-        --tab-bg: rgba(6, 10, 9, 0.6);
-        --accent-2: #7a4cc4;
+        --nebula-a: rgba(88, 60, 255, 0.20);
+        --nebula-b: rgba(14, 116, 180, 0.26);
+        --nebula-c: rgba(47, 217, 255, 0.10);
+        --top-glow: rgba(47, 217, 255, 0.12);
+        --card-a: rgba(18, 28, 52, 0.66);
+        --card-b: rgba(10, 16, 32, 0.74);
+        --card-c: rgba(5, 8, 18, 0.85);
+        --card-line: rgba(94, 140, 220, 0.30);
+        --btn-a: #7df3ff; --btn-b: #2fd9ff; --btn-c: #2563eb;
+        --btn-ink: #02141f;
+        --btn-glow: rgba(38, 150, 255, 0.45);
+        --tab-bg: rgba(3, 6, 14, 0.62);
+        --accent-2: #8b5cf6;
         --type-indica: #b18cff;
-        --type-sativa: #ffb15e;
-        --type-hybrid: #6fce62;
+        --type-sativa: #ffd166;
+        --type-hybrid: #3dffa0;
       }
       /* ================= Themes (data-theme on <html>, set before paint) ================= */
       html[data-theme="emerald"] {
-        --bg: #0a1710; --bg-deep: #040805;
-        --surface: #12211a; --surface-2: #1a2f22; --line: #2e5c3e;
-        --ink: #f2f9ec; --ink-soft: #c4dcb6; --ink-faint: #8fb183;
-        --ember: #eec643; --ember-deep: #d9a514; --ember-soft: rgba(238, 198, 67, 0.14);
-        --leaf: #7fe07a; --leaf-deep: #35a04c; --leaf-soft: rgba(127, 224, 122, 0.14);
-        --green: #7fe07a; --blue: #5ac8e6; --red: #e06c5a;
-        --nebula-a: rgba(64, 190, 120, 0.16); --nebula-b: rgba(20, 120, 80, 0.30);
-        --nebula-c: rgba(238, 198, 67, 0.07); --top-glow: rgba(238, 198, 67, 0.10);
-        --card-a: rgba(24, 46, 30, 0.66); --card-b: rgba(13, 26, 17, 0.74); --card-c: rgba(8, 17, 11, 0.82);
-        --card-line: rgba(90, 150, 105, 0.32);
-        --btn-a: #ffd968; --btn-b: #eec643; --btn-c: #c9930a; --btn-ink: #221a04;
-        --btn-glow: rgba(238, 198, 67, 0.40);
-        --tab-bg: rgba(4, 10, 6, 0.6);
-        --accent-2: #3ec97e;
-        --type-indica: #b18cff; --type-sativa: #ffd968; --type-hybrid: #7fe07a;
+        --bg: #020604; --bg-deep: #010302;
+        --surface: #07130c; --surface-2: #0c1d12; --line: #1d4630;
+        --ink: #eafff3; --ink-soft: #b7e6c8; --ink-faint: #74a986;
+        --ember: #4dff9d; --ember-deep: #12b76a; --ember-soft: rgba(77, 255, 157, 0.12);
+        --leaf: #b6ff4d; --leaf-deep: #7ac70c; --leaf-soft: rgba(182, 255, 77, 0.12);
+        --green: #4dff9d; --blue: #3fd2ff; --red: #ff5d73;
+        --grid-line: rgba(110, 255, 180, 0.05);
+        --nebula-a: rgba(30, 220, 130, 0.16); --nebula-b: rgba(8, 90, 50, 0.30);
+        --nebula-c: rgba(182, 255, 77, 0.07); --top-glow: rgba(77, 255, 157, 0.10);
+        --card-a: rgba(14, 34, 22, 0.66); --card-b: rgba(7, 20, 12, 0.74); --card-c: rgba(3, 10, 6, 0.85);
+        --card-line: rgba(80, 200, 130, 0.30);
+        --btn-a: #a7ffd0; --btn-b: #4dff9d; --btn-c: #0ea968; --btn-ink: #02150a;
+        --btn-glow: rgba(46, 230, 140, 0.40);
+        --tab-bg: rgba(2, 7, 4, 0.62);
+        --accent-2: #3fd2ff;
+        --type-indica: #b18cff; --type-sativa: #ffe066; --type-hybrid: #4dff9d;
       }
       html[data-theme="purple"] {
-        --bg: #150b24; --bg-deep: #0a0514;
-        --surface: #1e1332; --surface-2: #281b42; --line: #4b3670;
-        --ink: #f4efff; --ink-soft: #cfc2ea; --ink-faint: #9d8cc4;
-        --ember: #c77dff; --ember-deep: #9d4edd; --ember-soft: rgba(199, 125, 255, 0.14);
-        --leaf: #7ee8a2; --leaf-deep: #3fae6a; --leaf-soft: rgba(126, 232, 162, 0.13);
-        --green: #7ee8a2; --blue: #7ec8e8; --red: #f07a9a;
-        --nebula-a: rgba(157, 78, 221, 0.28); --nebula-b: rgba(90, 40, 160, 0.30);
-        --nebula-c: rgba(199, 125, 255, 0.12); --top-glow: rgba(199, 125, 255, 0.12);
-        --card-a: rgba(46, 30, 74, 0.66); --card-b: rgba(27, 17, 46, 0.74); --card-c: rgba(18, 10, 32, 0.82);
-        --card-line: rgba(140, 110, 200, 0.32);
-        --btn-a: #e0aaff; --btn-b: #c77dff; --btn-c: #9d4edd; --btn-ink: #22083d;
-        --btn-glow: rgba(157, 78, 221, 0.45);
-        --tab-bg: rgba(10, 5, 18, 0.6);
-        --accent-2: #ff7ad9;
-        --type-indica: #e0aaff; --type-sativa: #ffd166; --type-hybrid: #7ee8a2;
+        --bg: #0a0416; --bg-deep: #05020d;
+        --surface: #140a2a; --surface-2: #1d1038; --line: #3d2a6e;
+        --ink: #f3efff; --ink-soft: #cdc0f2; --ink-faint: #9a86d6;
+        --ember: #b78bff; --ember-deep: #8b46ff; --ember-soft: rgba(183, 139, 255, 0.14);
+        --leaf: #4dffc3; --leaf-deep: #12b76a; --leaf-soft: rgba(77, 255, 195, 0.12);
+        --green: #4dffc3; --blue: #6fd3ff; --red: #ff5d7e;
+        --grid-line: rgba(170, 140, 255, 0.055);
+        --nebula-a: rgba(140, 60, 255, 0.26); --nebula-b: rgba(80, 20, 160, 0.30);
+        --nebula-c: rgba(255, 79, 216, 0.10); --top-glow: rgba(183, 139, 255, 0.12);
+        --card-a: rgba(38, 22, 70, 0.66); --card-b: rgba(20, 11, 42, 0.74); --card-c: rgba(11, 5, 24, 0.85);
+        --card-line: rgba(150, 110, 240, 0.32);
+        --btn-a: #e3b3ff; --btn-b: #b78bff; --btn-c: #7c3aed; --btn-ink: #170332;
+        --btn-glow: rgba(150, 80, 255, 0.50);
+        --tab-bg: rgba(6, 3, 14, 0.62);
+        --accent-2: #ff4fd8;
+        --type-indica: #d3a6ff; --type-sativa: #ffd166; --type-hybrid: #4dffc3;
       }
       html[data-theme="sunset"] {
-        --bg: #190d06; --bg-deep: #0d0502;
-        --surface: #241209; --surface-2: #301a0e; --line: #6b3d22;
-        --ink: #fdf3e7; --ink-soft: #eccdb2; --ink-faint: #bd926e;
-        --ember: #ff9a3c; --ember-deep: #e05e16; --ember-soft: rgba(255, 154, 60, 0.14);
-        --leaf: #d9b84a; --leaf-deep: #a8842c; --leaf-soft: rgba(217, 184, 74, 0.14);
-        --green: #d9b84a; --blue: #5aa9e6; --red: #e05a3a;
-        --nebula-a: rgba(255, 110, 40, 0.16); --nebula-b: rgba(190, 60, 20, 0.28);
-        --nebula-c: rgba(255, 180, 60, 0.08); --top-glow: rgba(255, 154, 60, 0.14);
-        --card-a: rgba(56, 32, 16, 0.66); --card-b: rgba(34, 18, 9, 0.74); --card-c: rgba(22, 11, 5, 0.82);
-        --card-line: rgba(180, 120, 70, 0.32);
-        --btn-a: #ffc46b; --btn-b: #ff9a3c; --btn-c: #e05e16; --btn-ink: #2a1204;
-        --btn-glow: rgba(255, 110, 30, 0.45);
-        --tab-bg: rgba(14, 6, 2, 0.6);
-        --accent-2: #ff5e3a;
-        --type-indica: #c98cff; --type-sativa: #ffcf5e; --type-hybrid: #d9b84a;
+        --bg: #0d0407; --bg-deep: #060205;
+        --surface: #180810; --surface-2: #221019; --line: #571f33;
+        --ink: #fff1ec; --ink-soft: #f0c4b4; --ink-faint: #c07f74;
+        --ember: #ff8a5c; --ember-deep: #e84855; --ember-soft: rgba(255, 138, 92, 0.13);
+        --leaf: #ffd166; --leaf-deep: #d99a06; --leaf-soft: rgba(255, 209, 102, 0.12);
+        --green: #ffd166; --blue: #57b6ff; --red: #ff4d5e;
+        --grid-line: rgba(255, 150, 120, 0.05);
+        --nebula-a: rgba(255, 90, 60, 0.16); --nebula-b: rgba(160, 20, 60, 0.30);
+        --nebula-c: rgba(255, 180, 60, 0.08); --top-glow: rgba(255, 138, 92, 0.13);
+        --card-a: rgba(46, 18, 26, 0.66); --card-b: rgba(26, 9, 15, 0.74); --card-c: rgba(15, 4, 8, 0.85);
+        --card-line: rgba(220, 110, 90, 0.30);
+        --btn-a: #ffe29a; --btn-b: #ff8a5c; --btn-c: #e84855; --btn-ink: #26060a;
+        --btn-glow: rgba(255, 100, 60, 0.45);
+        --tab-bg: rgba(10, 3, 5, 0.62);
+        --accent-2: #ff4fd8;
+        --type-indica: #c99aff; --type-sativa: #ffd166; --type-hybrid: #5cf2b8;
       }
       html[data-theme="ocean"] {
-        --bg: #061420; --bg-deep: #02090f;
-        --surface: #0b1f2e; --surface-2: #10293c; --line: #26506b;
-        --ink: #eaf7fd; --ink-soft: #bcd9e8; --ink-faint: #7fa6ba;
-        --ember: #38c6d9; --ember-deep: #1a94ad; --ember-soft: rgba(56, 198, 217, 0.13);
-        --leaf: #4fd8a8; --leaf-deep: #1f9e77; --leaf-soft: rgba(79, 216, 168, 0.13);
-        --green: #4fd8a8; --blue: #5aa9e6; --red: #e06c5a;
-        --nebula-a: rgba(30, 130, 180, 0.20); --nebula-b: rgba(10, 80, 110, 0.32);
-        --nebula-c: rgba(56, 198, 217, 0.08); --top-glow: rgba(56, 198, 217, 0.10);
-        --card-a: rgba(16, 42, 60, 0.66); --card-b: rgba(9, 26, 38, 0.74); --card-c: rgba(5, 16, 24, 0.82);
-        --card-line: rgba(80, 140, 175, 0.32);
-        --btn-a: #6fe3f2; --btn-b: #38c6d9; --btn-c: #1a94ad; --btn-ink: #04222b;
-        --btn-glow: rgba(56, 198, 217, 0.40);
-        --tab-bg: rgba(2, 8, 12, 0.6);
-        --accent-2: #3a7bd5;
-        --type-indica: #9db8ff; --type-sativa: #ffd166; --type-hybrid: #4fd8a8;
+        --bg: #020a14; --bg-deep: #01040a;
+        --surface: #061627; --surface-2: #0a2138; --line: #174a6b;
+        --ink: #eaf9ff; --ink-soft: #b3d9ec; --ink-faint: #6f9dbd;
+        --ember: #33e0ff; --ember-deep: #0e9fd8; --ember-soft: rgba(51, 224, 255, 0.12);
+        --leaf: #2bffb0; --leaf-deep: #0da678; --leaf-soft: rgba(43, 255, 176, 0.12);
+        --green: #2bffb0; --blue: #4da3ff; --red: #ff5d73;
+        --grid-line: rgba(100, 200, 255, 0.05);
+        --nebula-a: rgba(20, 120, 200, 0.20); --nebula-b: rgba(4, 60, 100, 0.34);
+        --nebula-c: rgba(51, 224, 255, 0.08); --top-glow: rgba(51, 224, 255, 0.10);
+        --card-a: rgba(10, 32, 54, 0.66); --card-b: rgba(5, 20, 36, 0.74); --card-c: rgba(2, 11, 20, 0.85);
+        --card-line: rgba(70, 150, 200, 0.30);
+        --btn-a: #8ff2ff; --btn-b: #33e0ff; --btn-c: #0b7fd4; --btn-ink: #02161f;
+        --btn-glow: rgba(40, 180, 255, 0.42);
+        --tab-bg: rgba(2, 7, 13, 0.62);
+        --accent-2: #7c6cff;
+        --type-indica: #9db8ff; --type-sativa: #ffd166; --type-hybrid: #2bffb0;
       }
       html[data-theme="daylight"] {
-        --bg: #eef2e6; --bg-deep: #dde5d2;
-        --surface: #ffffff; --surface-2: #f2f5ec; --line: #5c7350;
-        --ink: #16240f; --ink-soft: #33482a; --ink-faint: #54684c;
-        --ember: #b35c00; --ember-deep: #96500a; --ember-soft: rgba(179, 92, 0, 0.12);
-        --leaf: #1e7a2e; --leaf-deep: #14591f; --leaf-soft: rgba(30, 122, 46, 0.12);
-        --green: #1e7a2e; --blue: #0b5fa5; --red: #b3372a;
-        --nebula-a: rgba(120, 160, 90, 0.10); --nebula-b: rgba(90, 140, 80, 0.12);
-        --nebula-c: rgba(200, 160, 60, 0.06); --top-glow: rgba(255, 200, 90, 0.10);
-        --card-a: rgba(255, 255, 255, 0.97); --card-b: rgba(250, 251, 246, 0.98); --card-c: rgba(244, 247, 238, 0.99);
-        --card-line: rgba(70, 100, 60, 0.45);
-        --btn-a: #ffb84d; --btn-b: #f59d23; --btn-c: #d97c06; --btn-ink: #241100;
-        --btn-glow: rgba(217, 124, 6, 0.30);
+        --bg: #e8eef7; --bg-deep: #d5e0ef;
+        --surface: #ffffff; --surface-2: #eef3fa; --line: #4a6f9e;
+        --ink: #0a1830; --ink-soft: #2c4568; --ink-faint: #4d6a8c;
+        --ember: #0284c7; --ember-deep: #0369a1; --ember-soft: rgba(2, 132, 199, 0.10);
+        --leaf: #059669; --leaf-deep: #047857; --leaf-soft: rgba(5, 150, 105, 0.10);
+        --green: #059669; --blue: #2563eb; --red: #dc2626;
+        --grid-line: rgba(30, 90, 160, 0.06);
+        --nebula-a: rgba(56, 130, 246, 0.08); --nebula-b: rgba(14, 165, 183, 0.10);
+        --nebula-c: rgba(124, 108, 255, 0.05); --top-glow: rgba(56, 189, 248, 0.12);
+        --card-a: rgba(255, 255, 255, 0.97); --card-b: rgba(248, 251, 255, 0.98); --card-c: rgba(238, 244, 252, 0.99);
+        --card-line: rgba(40, 90, 150, 0.40);
+        --btn-a: #67e8f9; --btn-b: #22d3ee; --btn-c: #0284c7; --btn-ink: #04222e;
+        --btn-glow: rgba(2, 132, 199, 0.30);
         --tab-bg: rgba(255, 255, 255, 0.96);
-        --accent-2: #5b3ea8;
-        --type-indica: #5b3ea8; --type-sativa: #b35c00; --type-hybrid: #1e7a2e;
+        --accent-2: #6d28d9;
+        --type-indica: #6d28d9; --type-sativa: #b45309; --type-hybrid: #059669;
       }
       * { box-sizing: border-box; }
       html { -webkit-text-size-adjust: 100%; }
@@ -1746,6 +1752,14 @@
       .surf-gesture[hidden] { display: none !important; }
       .surf-zoom-btn { display: inline-flex; align-items: center; gap: 5px; }
       .surf-zoom-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
+      /* Sound toggle: the page-owned unmute control. Streams must start
+         muted (autoplay rule), so sound is a deliberate tap here in the
+         dock — a gesture in THIS frame, which is what iOS counts when it
+         decides whether a webview may keep playing audio. */
+      .surf-sound-btn { display: inline-flex; align-items: center; gap: 5px; }
+      .surf-sound-btn .surf-sound-waves { opacity: 0.35; }
+      .surf-sound-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
+      .surf-sound-btn[aria-pressed="true"] .surf-sound-waves { opacity: 1; }
       .surf-zoombar {
         display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
         margin-top: 8px;
@@ -2179,6 +2193,299 @@
       .isl-exp-sub { font-size: 13px; } .str-count { font-size: 13.5px; } .surf-dock-meta { font-size: 12.5px; }
       html[data-theme="daylight"] .isl-sub { color: #33482a; }
       html[data-theme="daylight"] .island { background: #ffffff; color: #16240f; }
+
+      /* ================= FUTURISTIC CONSOLE PASS (2026-11-05) =================
+         The vintage botanical skin (warm ember + leaf-green, soft bubbly
+         radii, letterpress type, leaf-glyph ornaments, starfield paper) is
+         replaced end to end with a next-gen console language: Orbitron
+         display type + Rajdhani UI type, a neon-on-void palette (per theme
+         above), a fine blueprint grid under the nebula field, angular
+         geometry with HUD corner brackets on every card, a hex-core glyph
+         in place of the leaf mask, and hard neon edge-light instead of
+         soft vintage shadows. Every hook, id, class and behavior from the
+         earlier passes is untouched — this layer is paint only. */
+      :root {
+        /* Hex-core glyph (hexagon ring + core dot) replaces the leaf mask
+           everywhere it was stamped: brand mark, status dot, chip icon. */
+        --leaf-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill-rule='evenodd' d='M50 3 L89 25.5 L89 74.5 L50 97 L11 74.5 L11 25.5 Z M50 27 L70 38.5 L70 61.5 L50 73 L30 61.5 L30 38.5 Z M43 50 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 Z'/%3E%3C/svg%3E");
+        --leaf-mask-sm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill-rule='evenodd' d='M50 3 L89 25.5 L89 74.5 L50 97 L11 74.5 L11 25.5 Z M50 34 L63.5 42 L63.5 58 L50 66 L36.5 58 L36.5 42 Z M45 50 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z'/%3E%3C/svg%3E");
+      }
+      ::selection { background: var(--ember); color: var(--btn-ink); }
+      :focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+
+      /* ---------- Type system: Orbitron display, Rajdhani UI ---------- */
+      body { font-family: "Rajdhani", "Segoe UI", system-ui, sans-serif; font-size: 17px; letter-spacing: 0.01em; }
+      h1, .tab-title, .big-temp .value, .fu-set-val, .alt-step-mid span, .bh-estimate, .armed-big {
+        font-family: "Orbitron", "Rajdhani", sans-serif;
+      }
+      h1 { font-size: 27px; font-weight: 700; letter-spacing: 0.01em; }
+      h1, h2, h3, .bh-estimate { text-shadow: none; }
+      h1 { text-shadow: 0 0 22px var(--ember-soft); }
+      .tab-title { font-size: 25px; font-weight: 700; letter-spacing: 0.02em; position: relative; padding-bottom: 11px; }
+      .tab-title::after {
+        content: ""; position: absolute; left: 2px; bottom: 0;
+        width: 56px; height: 3px;
+        background: linear-gradient(90deg, var(--ember), transparent);
+        box-shadow: 0 0 10px var(--ember-soft);
+      }
+      .card h2 {
+        font-family: "Orbitron", "Rajdhani", sans-serif;
+        font-size: 12px; font-weight: 600;
+        letter-spacing: 0.18em;
+        color: var(--ink-soft);
+      }
+      .card h2::before {
+        content: ""; flex: none;
+        width: 14px; height: 2px;
+        background: var(--ember);
+        box-shadow: 0 0 8px var(--ember);
+      }
+      .card h3.bg-h3, .band-detail h3, .tut-card h3, .str-hero h3, .sheet-title { font-family: "Rajdhani", sans-serif; font-weight: 700; }
+      .sub { font-size: 15px; }
+
+      /* ---------- Background: blueprint grid over the nebula field ---------- */
+      body {
+        background-image:
+          linear-gradient(var(--grid-line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+          radial-gradient(120% 55% at 50% -10%, var(--top-glow), transparent 60%),
+          radial-gradient(85% 48% at 12% 18%, var(--nebula-a), transparent 62%),
+          radial-gradient(90% 50% at 88% 94%, var(--nebula-b), transparent 62%),
+          radial-gradient(72% 46% at 6% 46%, var(--nebula-c), transparent 60%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+        background-size: 44px 44px, 44px 44px, auto, auto, auto, auto, auto;
+        background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+      }
+
+      /* ---------- Cards: angular glass with HUD corner brackets ---------- */
+      .card {
+        border-radius: 14px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.12),
+          0 16px 40px rgba(0, 0, 0, 0.45),
+          0 3px 12px rgba(0, 0, 0, 0.35);
+      }
+      .card::after {
+        content: ""; position: absolute;
+        top: 7px; right: 7px; left: auto;
+        width: 16px; height: 16px;
+        background: none;
+        border-top: 2px solid var(--ember);
+        border-right: 2px solid var(--ember);
+        opacity: 0.85;
+        pointer-events: none;
+      }
+      .card::before {
+        content: ""; position: absolute;
+        bottom: 7px; left: 7px;
+        width: 16px; height: 16px;
+        border-bottom: 2px solid var(--ember);
+        border-left: 2px solid var(--ember);
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .orb-card::after, .temp-card::after { content: none; }
+      @media (hover: hover) {
+        .card:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 24px var(--ember-soft), 0 22px 48px rgba(0,0,0,0.5), 0 6px 16px rgba(0,0,0,0.4); }
+      }
+
+      /* ---------- Brand + hero ---------- */
+      .brand h1::before {
+        background: linear-gradient(135deg, var(--ember), var(--accent-2));
+        filter: drop-shadow(0 0 8px var(--ember-soft));
+      }
+      .leaf-badge {
+        border-radius: 10px;
+        border-color: var(--card-line);
+        box-shadow: 0 0 18px var(--leaf-soft), inset 0 0 14px rgba(0, 0, 0, 0.25);
+      }
+      .alt-badge-main, .alt-badge-isl {
+        border-radius: 5px;
+        font-family: "Orbitron", sans-serif;
+        letter-spacing: 0.14em;
+      }
+      .hero { border-radius: 14px; border-color: var(--card-line); }
+      .hero img { filter: saturate(1.06) contrast(1.06); }
+      .hero::after {
+        background:
+          linear-gradient(115deg, var(--nebula-c), transparent 52%),
+          linear-gradient(180deg, transparent 42%, rgba(2, 6, 16, 0.55) 100%);
+      }
+
+      /* ---------- Buttons: angular, uppercase, neon edge-light ---------- */
+      .btn {
+        border-radius: 9px;
+        font-family: "Rajdhani", sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+      .btn-primary, .btn-set-live, .fu-go {
+        font-family: "Orbitron", "Rajdhani", sans-serif;
+        font-size: 15px; font-weight: 700;
+        border: 1px solid rgba(255, 255, 255, 0.38);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.55),
+          inset 0 -2px 6px rgba(0, 10, 30, 0.25),
+          0 8px 28px var(--btn-glow),
+          0 0 22px var(--btn-glow);
+      }
+      .btn-primary:active, .btn-set-live:active { box-shadow: inset 0 3px 10px rgba(0, 10, 30, 0.4), 0 2px 10px var(--btn-glow); }
+      .btn-ghost {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+        border: 1px solid var(--card-line);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 4px 14px rgba(0, 0, 0, 0.3);
+      }
+      .btn-stop {
+        background: linear-gradient(180deg, #ff9d86 0%, #ff6a5e 45%, #e8324a 100%);
+        color: #2b040a;
+        border: 1px solid rgba(255, 190, 180, 0.45);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.45),
+          inset 0 -2px 5px rgba(90, 5, 20, 0.3),
+          0 6px 22px rgba(232, 50, 74, 0.4),
+          0 0 16px rgba(232, 50, 74, 0.25);
+      }
+      .btn-small { border-radius: 7px; letter-spacing: 0.05em; }
+      .btn-goto { background: var(--leaf-soft); }
+      @keyframes breatheGlow {
+        0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 6px 24px var(--btn-glow), 0 0 10px var(--btn-glow); }
+        50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 6px 30px var(--btn-glow), 0 0 30px var(--btn-glow); }
+      }
+      @keyframes stirPulse {
+        0%, 100% { box-shadow: 0 0 0 0 transparent; }
+        50% { box-shadow: 0 0 0 4px var(--ember-soft), 0 0 18px var(--ember-soft); }
+      }
+
+      /* ---------- Controls: squared tech geometry ---------- */
+      .chip { border-radius: 8px; letter-spacing: 0.04em; }
+      .chip[aria-pressed="true"] { box-shadow: 0 0 14px var(--leaf-soft), inset 0 1px 0 rgba(255, 255, 255, 0.18); }
+      .seg-control { border-radius: 11px; }
+      .seg-control button { border-radius: 7px; letter-spacing: 0.04em; }
+      .seg-control button[aria-pressed="true"], .unit-toggle button[aria-pressed="true"] {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 0 14px var(--btn-glow);
+      }
+      .unit-toggle { border-radius: 9px; }
+      .unit-toggle button { border-radius: 6px; }
+      .step-btn {
+        border-radius: 10px;
+        font-family: "Orbitron", sans-serif;
+        border-color: var(--card-line);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 12px var(--ember-soft);
+      }
+      .switch { border-radius: 8px; }
+      .switch::after { border-radius: 5px; }
+      .switch[aria-checked="true"] { box-shadow: 0 0 12px var(--leaf-soft); }
+      .status-pill { border-radius: 9px; letter-spacing: 0.05em; text-transform: uppercase; font-size: 12.5px; }
+      .auth-pill { border-radius: 7px; letter-spacing: 0.05em; text-transform: uppercase; font-size: 12px; }
+      .tag, .mode-temp { border-radius: 6px; }
+      .ro-tag { border-radius: 5px; }
+      .str-tag-cat, .grade { border-radius: 4px; }
+      .theme-swatch { border-radius: 10px; }
+      .theme-swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ember-soft), 0 0 18px var(--ember-soft); }
+
+      /* ---------- Inputs: dark glass, neon focus ---------- */
+      .str-search, .text-input, .q-text, .q-num, .q-area, .theme-select,
+      .cal-input-row input[type="number"] { border-radius: 8px; }
+      .str-search:focus, .text-input:focus, .q-text:focus, .q-num:focus, .q-area:focus,
+      .theme-select:focus, .cal-input-row input[type="number"]:focus {
+        outline: none;
+        border-color: var(--ember);
+        box-shadow: 0 0 0 3px var(--ember-soft), 0 0 14px var(--ember-soft);
+      }
+
+      /* ---------- Readouts ---------- */
+      .big-temp .value { font-weight: 800; font-size: 78px; text-shadow: 0 0 30px var(--ember-soft); }
+      .big-temp .unit { font-family: "Orbitron", sans-serif; font-size: 26px; }
+      .fu-set-val { font-weight: 800; text-shadow: 0 0 26px var(--ember-soft); }
+      .device-now strong { text-shadow: 0 0 10px var(--leaf-soft); }
+      .prog { border-radius: 3px; }
+      .prog > i { background: linear-gradient(90deg, var(--leaf), var(--ember)); box-shadow: 0 0 10px var(--ember-soft); }
+      .batt-steps span { border-radius: 2px; }
+      .batt-steps span.on { box-shadow: 0 0 8px var(--leaf-soft); }
+
+      /* ---------- Range slider: neon rail + core thumb ---------- */
+      input[type="range"]::-webkit-slider-thumb {
+        background: radial-gradient(circle, var(--ember) 0 24%, #0a0f1e 27% 100%);
+        border: 2px solid var(--ember);
+        box-shadow: 0 0 16px var(--btn-glow), 0 4px 12px rgba(0, 0, 0, 0.55);
+      }
+      input[type="range"]::-moz-range-thumb {
+        background: radial-gradient(circle, var(--ember) 0 24%, #0a0f1e 27% 100%);
+        border: 2px solid var(--ember);
+        box-shadow: 0 0 16px var(--btn-glow), 0 4px 12px rgba(0, 0, 0, 0.55);
+      }
+
+      /* ---------- Panels, lists, sheets ---------- */
+      .band, .band-detail, .tut-card, .log-row, .rq-row, .alt-log-row { border-radius: 11px; }
+      .str-card { border-radius: 12px; }
+      .str-mono { border-radius: 8px; }
+      .str-hero .str-mono { border-radius: 12px; }
+      .str-fav { border-radius: 8px; }
+      .kv-row, .compound-list li, .pick-row, .cal-row, .bh-step-row, .bh-runs li, .ref-panel { border-radius: 8px; }
+      .auth-box, .led-note, .connect-msg, .mini-msg, .warn-line, .comp-note, .honest-box,
+      .fu-honest, .vapebox, .plan-card, .q-auto, .switch-row { border-radius: 9px; }
+      .warn-line, .honest-box, .fu-honest, .q-auto, .wheel-empty { border-style: solid; }
+      .warn-line { border-color: var(--red); }
+      .connect-msg[data-kind="err"], .mini-msg[data-kind="err"] { border-color: var(--red); }
+      .btn-ghost.armed { border-color: var(--red); }
+      .del-arm { border-color: var(--red) !important; color: var(--red) !important; }
+      .log { border-radius: 10px; }
+      .wheel { border-radius: 14px; }
+      .wheel-band { border-radius: 10px; }
+      .fu-sel { border-radius: 11px; }
+      .fu-sel .str-mono { border-radius: 9px; }
+      .photo-zoom img { border-radius: 14px; }
+      .browser-opt { border-radius: 12px; }
+      .flame-badge { border-radius: 10px; }
+
+      /* ---------- Island: black console capsule with neon rim ---------- */
+      .island {
+        border: 1px solid var(--card-line);
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 26px var(--ember-soft);
+      }
+      .island[data-state="expanded"] { border-radius: 20px; }
+      .isl-temp, .isl-exp-name { font-family: "Orbitron", sans-serif; }
+      .isl-temp { font-size: 13px; letter-spacing: 0.03em; }
+      html[data-theme="daylight"] .island { background: #060b16; color: #eef6ff; }
+      html[data-theme="daylight"] .isl-sub { color: #b9cbe8; }
+      html[data-theme="daylight"] .isl-exp-sub { color: #9fb4d8; }
+      html[data-theme="daylight"] .isl-rows { color: #d7e3f5; }
+
+      /* ---------- Chrome: tab bar, tray, dock ---------- */
+      .alt-tabbar {
+        background: var(--tab-bg);
+        -webkit-backdrop-filter: blur(16px) saturate(1.4);
+        backdrop-filter: blur(16px) saturate(1.4);
+        border-top: 1px solid var(--card-line);
+        box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.4), 0 -1px 12px var(--ember-soft);
+      }
+      .alt-tabbar button { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .alt-tabbar button[aria-selected="true"], .alt-tabbar button.alt-more-on {
+        color: var(--ember);
+        box-shadow: inset 0 2px 0 var(--ember);
+        text-shadow: 0 0 12px var(--ember-soft);
+      }
+      .alt-more { border-radius: 12px; border-color: var(--card-line); background: var(--surface); }
+      .alt-more button { border-radius: 9px; }
+      .alt-more button[aria-selected="true"] { border-color: var(--ember); box-shadow: 0 0 12px var(--ember-soft); }
+      .tray { border-radius: 0 16px 16px 0; }
+      .tray button[role="tab"] { border-radius: 10px; }
+      .tray button[role="tab"][aria-selected="true"] {
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 8px 22px var(--btn-glow), 0 0 18px var(--btn-glow);
+      }
+      .tray-mark { border-radius: 8px; }
+      .tray-handle-pill { border-radius: 8px; }
+      .surf-dock { border-radius: 14px; }
+      .surf-facade, .surf-player, .surf-fallback, .surf-stage { border-radius: 10px; }
+      .surf-play {
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 26px var(--btn-glow), 0 0 20px var(--btn-glow), inset 0 1px 0 rgba(255,255,255,0.5);
+      }
+      .isl-hint { border-radius: 10px; border-color: var(--card-line); }
+      details.card > summary { font-family: "Orbitron", sans-serif; font-size: 12px; letter-spacing: 0.16em; }
 </style>
     <script>
       /* Theme + motion boot — runs before first paint so a saved theme/motion
@@ -2238,6 +2545,7 @@
 <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
 <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7"/></g></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 13.6A8.2 8.2 0 1 1 10.4 4 6.6 6.6 0 0 0 20 13.6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-wave" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 9q2.5-3.2 5 0t5 0t5 0t5 0"/><path d="M2 15.5q2.5-3.2 5 0t5 0t5 0t5 0"/></g></symbol>
 </defs></svg>
 
     <!-- ============ Layered parallax background (decorative) ============ -->
@@ -2287,6 +2595,7 @@
       <button type="button" role="tab" id="tab-temperature" aria-selected="false" aria-controls="panel-temperature"><svg class="tab-ic" aria-hidden="true"><use href="#i-thermo"/></svg><span>Temperature</span></button>
       <button type="button" role="tab" id="tab-session" aria-selected="true" aria-controls="panel-session"><svg class="tab-ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Session</span></button>
       <button type="button" role="tab" id="tab-strains" aria-selected="false" aria-controls="panel-strains"><svg class="tab-ic" aria-hidden="true"><use href="#ff-leaf-sm"/></svg><span>Strains</span></button>
+      <button type="button" role="tab" id="tab-surf" aria-selected="false" aria-controls="panel-surf"><svg class="tab-ic" aria-hidden="true"><use href="#i-wave"/></svg><span>Surf</span></button>
       <button type="button" id="altMoreBtn" aria-expanded="false" aria-controls="altMorePanel"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span>More</span></button>
     </nav>
     <div class="alt-more" id="altMorePanel" hidden role="group" aria-label="More sections">
@@ -2307,6 +2616,7 @@
         <span class="surf-dock-spot" id="surfDockSpot">Banzai Pipeline</span>
         <span class="surf-dock-meta" id="surfDockMeta"></span>
         <span class="surf-dock-btns">
+          <button class="btn-small surf-sound-btn" id="surfSoundBtn" type="button" aria-pressed="false" aria-label="Turn the stream sound on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z" fill="currentColor" stroke="none"/><path class="surf-sound-waves" d="M15.5 8.5a5 5 0 0 1 0 7"/><path class="surf-sound-waves" d="M18.5 5.5a9.4 9.4 0 0 1 0 13"/></svg><span id="surfSoundLbl">Sound off</span></button>
           <button class="btn-small surf-zoom-btn" id="surfZoomBtn" type="button" aria-pressed="false" aria-label="Toggle digital zoom"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Zoom</button>
           <button class="btn-small" id="surfCollapseBtn" type="button">Collapse</button>
           <button class="btn-small" id="surfExpandBtn" type="button" hidden>Expand</button>
@@ -2459,12 +2769,12 @@
           <button class="btn-small" id="altBreathBtn" type="button" aria-pressed="false">Breathing guide — off</button>
           <label for="themeQuick">Theme</label>
           <select class="theme-select" id="themeQuick" aria-label="Theme — quick switch">
-            <option value="space">Deep Space</option>
-            <option value="emerald">Emerald Garden</option>
-            <option value="purple">Purple Haze</option>
-            <option value="sunset">Sunset Ember</option>
-            <option value="ocean">Ocean Depths</option>
-            <option value="daylight">Daylight</option>
+            <option value="space">Orbital Void</option>
+            <option value="emerald">Photon</option>
+            <option value="purple">Ultraviolet</option>
+            <option value="sunset">Solar Flare</option>
+            <option value="ocean">Abyssal</option>
+            <option value="daylight">Lab Light</option>
           </select>
         </div>
       </section>
@@ -3129,7 +3439,7 @@
       <h2 class="tab-title">Device</h2>
 
       <!-- Device / battery -->
-            <div class="seg-control seg-tabs" data-segtabs="device" role="group" aria-label="Device views"><button type="button" data-seg="device" aria-pressed="true">Device</button><button type="button" data-seg="battery" aria-pressed="false">Battery</button><button type="button" data-seg="charges" aria-pressed="false">Charges</button><button type="button" data-seg="surf" aria-pressed="false">Surf</button><button type="button" data-seg="help" aria-pressed="false">Help</button></div>
+            <div class="seg-control seg-tabs" data-segtabs="device" role="group" aria-label="Device views"><button type="button" data-seg="device" aria-pressed="true">Device</button><button type="button" data-seg="battery" aria-pressed="false">Battery</button><button type="button" data-seg="charges" aria-pressed="false">Charges</button><button type="button" data-seg="help" aria-pressed="false">Help</button></div>
       <div class="seg-view" data-segtab="device" data-segview="device">
 <section class="card" aria-labelledby="device-h">
         <h2 id="device-h">Your Firefly right now</h2>
@@ -3289,39 +3599,6 @@
         <ul class="bh-runs" id="bhChargeList"></ul>
       </section>
       </div>
-      <div class="seg-view" data-segtab="device" data-segview="surf" hidden>
-<section class="card surf-card" aria-labelledby="surf-h">
-        <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap the speaker inside the player if you want the sound of the ocean. The player itself lives in a dock pinned to the bottom of the screen, so it rides along on <strong style="color:var(--ink);">every tab</strong> — this card is its control center: pick a break, show or hide the player, and set auto-play here.</p>
-
-        <div class="surf-nowrow">
-          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
-          <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
-        </div>
-
-        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Auto-play streams</div>
-            <div class="sw-sub">On: when you open Surf Break, the best daylight break starts by itself, muted, and Follow the Sun keeps cycling. Surf Break is summon-only — nothing loads until you open it. Off: the player dock stays hidden and nothing loads until you tap Show player here or Play in the dock — kinder to your data plan. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
-        </div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Lineup zones</div>
-            <div class="sw-sub">On: each spot's poster still in the player dock carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
-        </div>
-
-        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">Data note:</strong> these are live video streams and they use data — on a cellular connection that can be significant. Surf Break stays closed (and uses no data) until you open it.</p>
-        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. The player dock rides along on every tab and switching tabs never stops the stream; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen.</p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
-      </section>      </div>
       <div class="seg-view" data-segtab="device" data-segview="help" hidden>
 <section class="card" aria-labelledby="tut-h">
         <h2 id="tut-h">Tutorial</h2>
@@ -3329,31 +3606,31 @@
         <button class="btn btn-primary" id="tutOpen" type="button">Open the tutorial</button>
       </section><section class="card" aria-labelledby="theme-h">
         <h2 id="theme-h">Look &amp; theme</h2>
-        <p class="card-sub">Five moods, one app — every color, glow and accent follows the theme you pick, and your pick is remembered on this device. The same switch sits on the Session tab for a quick change mid-session.</p>
+        <p class="card-sub">Six console themes, one app — every color, glow and accent follows the theme you pick, and your pick is remembered on this device. The same switch sits on the Session tab for a quick change mid-session.</p>
         <div class="theme-grid" id="themeGrid" role="group" aria-label="Theme">
           <button type="button" class="theme-swatch" data-theme-x="space" aria-pressed="true">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#0d1119,#3a2a6b 55%,#2f8f46);"></span>
-            <span class="ts-name">Deep Space<small>The original — starfield, nebula and leaf</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#02030a,#123a6e 55%,#2fd9ff);"></span>
+            <span class="ts-name">Orbital Void<small>Deep void black, cyan console light, violet nebula</small></span>
           </button>
           <button type="button" class="theme-swatch" data-theme-x="emerald" aria-pressed="false">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#040805,#1d5c38 55%,#eec643);"></span>
-            <span class="ts-name">Emerald Garden<small>Lush greens and garden gold</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#010302,#0b5c34 55%,#4dff9d);"></span>
+            <span class="ts-name">Photon<small>Laser green on black glass, lime edge-light</small></span>
           </button>
           <button type="button" class="theme-swatch" data-theme-x="purple" aria-pressed="false">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#0a0514,#5a28a0 55%,#c77dff);"></span>
-            <span class="ts-name">Purple Haze<small>Deep purples in a hazy nebula</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#05020d,#4c1d95 55%,#ff4fd8);"></span>
+            <span class="ts-name">Ultraviolet<small>Electric violet with a magenta edge</small></span>
           </button>
           <button type="button" class="theme-swatch" data-theme-x="sunset" aria-pressed="false">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#0d0502,#a03c14 55%,#ff9a3c);"></span>
-            <span class="ts-name">Sunset Ember<small>Warm amber, ember glow</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#060205,#a1173a 55%,#ff8a5c);"></span>
+            <span class="ts-name">Solar Flare<small>Coral and amber plasma over black</small></span>
           </button>
           <button type="button" class="theme-swatch" data-theme-x="ocean" aria-pressed="false">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#02090f,#0e5a78 55%,#38c6d9);"></span>
-            <span class="ts-name">Ocean Depths<small>Deep teal, calm blue</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#01040a,#0b5a78 55%,#33e0ff);"></span>
+            <span class="ts-name">Abyssal<small>Deep-sea black with aqua neon</small></span>
           </button>
           <button type="button" class="theme-swatch" data-theme-x="daylight" aria-pressed="false">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#ffffff,#cfe3b8 55%,#f5c542);"></span>
-            <span class="ts-name">Daylight<small>Light, opaque, high contrast — for outdoors</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#ffffff,#a8cdf5 55%,#22d3ee);"></span>
+            <span class="ts-name">Lab Light<small>Light, opaque, high contrast — for outdoors</small></span>
           </button>
         </div>
       </section><section class="card" aria-labelledby="prefs-h">
@@ -3415,6 +3692,44 @@
       </section>
       </div><!-- /panel-device -->
 
+      <!-- ================= Tab: Surf ================= -->
+      <div id="panel-surf" role="tabpanel" aria-labelledby="tab-surf" hidden>
+      <h2 class="tab-title">Surf Break</h2>
+
+<section class="card surf-card" aria-labelledby="surf-h">
+        <h2 id="surf-h">Surf Break — live cams</h2>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player dock if you want the sound of the ocean. Once sound is on it stays on when the break changes, and if the player ever goes quiet on its own the app brings the sound back by itself within a couple of seconds — no need to touch your phone's volume buttons. The player itself lives in a dock pinned to the bottom of the screen, so it rides along on <strong style="color:var(--ink);">every tab</strong> — this card is its control center: pick a break, show or hide the player, and set auto-play here.</p>
+
+        <div class="surf-nowrow">
+          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
+          <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
+        </div>
+
+        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Auto-play streams</div>
+            <div class="sw-sub">On: when you open Surf Break, the best daylight break starts by itself, muted, and Follow the Sun keeps cycling. Surf Break is summon-only — nothing loads until you open it. Off: the player dock stays hidden and nothing loads until you tap Show player here or Play in the dock — kinder to your data plan. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
+        </div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Lineup zones</div>
+            <div class="sw-sub">On: each spot's poster still in the player dock carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
+        </div>
+
+        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">Data note:</strong> these are live video streams and they use data — on a cellular connection that can be significant. Surf Break stays closed (and uses no data) until you open it.</p>
+        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. The player dock rides along on every tab and switching tabs never stops the stream; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen.</p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
+      </section>
+      </div>
+
       <!-- ================= Tab: Info ================= -->
       <div id="panel-info" role="tabpanel" aria-labelledby="tab-info" hidden>
       <h2 class="tab-title">Info</h2>
@@ -3440,7 +3755,7 @@
         <p class="muted" style="margin:0 0 10px;"><span class="alt-badge-main">ALTERNATIVE</span> This is the <strong style="color:var(--ink);">Alternative</strong> version of the app — a separate build with its own separate data on this device, so it can run side-by-side with the regular version without touching it.</p>
         <p class="muted" style="margin:0 0 10px;"><strong style="color:var(--ink);">How information is labeled in this app:</strong> <span class="ic-badge ic-measured">Measured</span> reported by the device itself · <span class="ic-badge ic-confirmed">Read-back confirmed</span> setpoints your Firefly has read back · <span class="ic-badge ic-inferred">Inferred</span> estimated between visits, like charge history · <span class="ic-badge ic-graded">Graded / folklore</span> per-strain guidance and effect claims, which keep their evidence grades (A–F) visible.</p>
         <p class="muted" style="margin:0 0 10px;">Everything you keep here — favorite strains, session logs, battery history, and your own strain photos — is stored only on this device, with the app's other data. It is never uploaded anywhere.</p>
-        <p class="muted" style="margin:0 0 4px;">Six themes — Deep Space, Emerald Garden, Purple Haze, Sunset Ember, Ocean Depths, and Daylight (light, opaque, high-contrast, for outdoor use) — every color, glow and accent follows the theme you pick, and your pick is remembered on this device.</p>
+        <p class="muted" style="margin:0 0 4px;">Six themes — Orbital Void, Photon, Ultraviolet, Solar Flare, Abyssal, and Lab Light (light, opaque, high-contrast, for outdoor use) — every color, glow and accent follows the theme you pick, and your pick is remembered on this device.</p>
       </section>
 <section class="card" aria-labelledby="strsci-h">
         <h2 id="strsci-h">How the numbers are made</h2>
@@ -3468,7 +3783,6 @@
         <h2 id="info-sources-h">Sources</h2>
         <p class="src-line" style="margin-top:0;"><strong>Sources</strong> — strain data compiled 2026-11-04 from:</p>
         <div class="src-line" id="strainSources"></div>
-        <p class="src-line" style="margin-top:14px;"><strong>Temperature science</strong> — the boiling points in the Terpenes chart marked “NIST, normal pressure” are NIST measurements, cited inline on each compound's line. The famous 157°C “THC boiling point” is a vacuum value (0.05 Torr — Adams 1941; Gaoni &amp; Mechoulam 1964), not an atmospheric boiling point; the full note lives under “How the numbers are made” on the Strains tab and “How solid is this?” on the Terpenes tab.</p>
         <details class="src-group"><summary>Surf cams</summary><div class="src-line" style="margin-top:14px;">
         <div style="margin:3px 0;">[Surf cams] <a href="https://www.youtube.com/watch?v=Fp7l8XASb9Y" target="_blank" rel="noopener">Banzai Pipeline</a> — Cam by Explore.org — “Explore Big Surf, Beaches and Sunsets” on YouTube.</div>
         <div style="margin:3px 0;">[Surf cams] <a href="https://www.youtube.com/watch?v=drckaPuBNws" target="_blank" rel="noopener">Waimea Bay</a> — Cam by AfarTV — 24/7 North Shore 4K cam over the mouth of Waimea Bay, on YouTube.</div>
@@ -3581,7 +3895,14 @@
             var items = byCat[cat].map(function (r) {
               return '<div style="margin:3px 0;"><a href="' + strEsc(r[2]) + '" target="_blank" rel="noopener">' + strEsc(r[1]) + '</a></div>';
             }).join("");
-            return '<details class="src-group"' + (gi === 0 ? " open" : "") + '><summary>' + strEsc(cat) + ' (' + byCat[cat].length + ')</summary>' + items + "</details>";
+            /* The Temperature science note belongs inside its own
+               category group, with the Temperature science links —
+               not as a loose paragraph outside the grouped list. */
+            var note = "";
+            if (cat === "Temperature science") {
+              note = '<p class="src-line" style="margin:10px 0 2px;"><strong>Temperature science</strong> — the boiling points in the Terpenes chart marked “NIST, normal pressure” are NIST measurements, cited inline on each compound\'s line. The famous 157°C “THC boiling point” is a vacuum value (0.05 Torr — Adams 1941; Gaoni &amp; Mechoulam 1964), not an atmospheric boiling point; the full note lives under “How the numbers are made” on the Strains tab and “How solid is this?” on the Terpenes tab.</p>';
+            }
+            return '<details class="src-group"' + (gi === 0 ? " open" : "") + '><summary>' + strEsc(cat) + ' (' + byCat[cat].length + ')</summary>' + items + note + "</details>";
           }).join("");
         }
 
@@ -6171,6 +6492,7 @@
           session: document.getElementById("tab-session"),
           temperature: document.getElementById("tab-temperature"),
           strains: document.getElementById("tab-strains"),
+          surf: document.getElementById("tab-surf"),
           terpene: document.getElementById("tab-terpene"),
           burnguard: document.getElementById("tab-burnguard"),
           device: document.getElementById("tab-device"),
@@ -6180,6 +6502,7 @@
           session: document.getElementById("panel-session"),
           temperature: document.getElementById("panel-temperature"),
           strains: document.getElementById("panel-strains"),
+          surf: document.getElementById("panel-surf"),
           terpene: document.getElementById("panel-terpene"),
           burnguard: document.getElementById("panel-burnguard"),
           device: document.getElementById("panel-device"),
@@ -8994,12 +9317,13 @@ var STRAIN_SRC_LINKS = {
         function fxDrawStars(t) {
           if (!bgCtx) return;
           bgCtx.clearRect(0, 0, fxW, fxH);
-          bgCtx.fillStyle = "#eef4e6";
+          bgCtx.fillStyle = "#e8f4ff";
           for (var i = 0; i < fxStars.length; i++) {
             var st = fxStars[i];
             st.y += st.s; if (st.y > fxH + 2) { st.y = -2; st.x = Math.random() * fxW; }
             bgCtx.globalAlpha = 0.28 + 0.3 * (0.5 + 0.5 * Math.sin(t / 1100 + st.p));
-            bgCtx.beginPath(); bgCtx.arc(st.x, st.y, st.r, 0, 6.283); bgCtx.fill();
+            if (i % 4 === 0) { bgCtx.fillRect(st.x - st.r, st.y - st.r, st.r * 2, st.r * 2); }
+            else { bgCtx.beginPath(); bgCtx.arc(st.x, st.y, st.r, 0, 6.283); bgCtx.fill(); }
           }
           bgCtx.globalAlpha = 1;
         }
@@ -9027,11 +9351,23 @@ var STRAIN_SRC_LINKS = {
           sph.addColorStop(0.75, orbPalette.deep); sph.addColorStop(1, orbPalette.deep);
           c.fillStyle = sph;
           c.beginPath(); c.arc(cx, cy, 62, 0, 6.283); c.fill();
-          /* rotating leaf silhouette */
+          /* rotating hex-core reticle */
           c.save();
-          c.translate(cx, cy); c.rotate(Math.sin(ang * 0.9) * 0.5 - 0.35); c.scale(1.5, 1.5); c.translate(-50, -50);
-          c.fillStyle = "rgba(10, 24, 10, 0.34)";
-          c.fill(new Path2D(ORB_LEAF));
+          c.translate(cx, cy); c.rotate(ang * 0.9);
+          c.strokeStyle = "rgba(6, 12, 26, 0.40)"; c.lineWidth = 5;
+          c.beginPath();
+          for (var hi = 0; hi < 6; hi++) {
+            var ha = hi * Math.PI / 3 - Math.PI / 2;
+            var hx = Math.cos(ha) * 34, hy = Math.sin(ha) * 34;
+            if (hi === 0) c.moveTo(hx, hy); else c.lineTo(hx, hy);
+          }
+          c.closePath(); c.stroke();
+          c.rotate(-ang * 1.7);
+          c.setLineDash([10, 7]); c.lineWidth = 3.5;
+          c.beginPath(); c.arc(0, 0, 44, 0, 6.283); c.stroke();
+          c.setLineDash([]);
+          c.fillStyle = "rgba(6, 12, 26, 0.45)";
+          c.beginPath(); c.arc(0, 0, 9, 0, 6.283); c.fill();
           c.restore();
           /* orbiting particles (front) */
           for (var j = 0; j < 9; j++) {
@@ -10015,6 +10351,8 @@ var STRAIN_SRC_LINKS = {
         var credit = document.getElementById("surfCredit");
         var zoneEl = document.getElementById("surfZone");
         var zoneSwitch = document.getElementById("surfZoneSwitch");
+        var soundBtn = document.getElementById("surfSoundBtn");
+        var soundLbl = document.getElementById("surfSoundLbl");
         var zoomBtn = document.getElementById("surfZoomBtn");
         var zoomBar = document.getElementById("surfZoomBar");
         var zoomOutBtn = document.getElementById("surfZoomOut");
@@ -10077,6 +10415,25 @@ var STRAIN_SRC_LINKS = {
            same-spot retry a manual pick gets before its fallback. */
         var chainTried = [], chainManualRetried = false;
         function resetChain() { chainTried = []; chainManualRetried = false; }
+        /* --- sound state (the ~30-second audio-drop repair) ---
+           Reported symptom: the picture keeps playing but the sound cuts
+           out after roughly 30 seconds, and a press of the phone's
+           hardware volume button brings it back. That signature is the
+           webview's audio session / the player going quiet on its own —
+           NOT a stream reload (a reload restarts the picture and stays
+           muted; the 20-minute Follow the Sun dwell also can't explain a
+           30-second cut). The app previously had no defence: sound lived
+           only inside the cross-origin player, every new player was
+           hard-started muted, and nothing re-checked the player after it
+           started. Now sound is an intent owned by THIS page:
+           soundWanted is set by the dock's Sound button (a tap in this
+           frame — the gesture iOS counts), it is re-applied to every new
+           player (rotation, recovery chain, background resume, plain
+           fallback), and a 2-second watchdog restores it if the player
+           is found muted or paused while it should be playing. */
+        var soundWanted = false, soundVolume = 100;
+        var soundRestores = 0, watchdogResumes = 0;
+        var lastWatchdogResumeAt = 0, watchdogStandDown = false;
 
         function setNow(html) { nowLine.innerHTML = html; }
 
@@ -10370,6 +10727,63 @@ var STRAIN_SRC_LINKS = {
           setNow(nowText("Now showing:"));
           syncDockChrome();
         }
+        function syncSoundBtn() {
+          if (soundBtn) {
+            soundBtn.setAttribute("aria-pressed", soundWanted ? "true" : "false");
+            soundBtn.setAttribute("aria-label", soundWanted ? "Turn the stream sound off" : "Turn the stream sound on");
+          }
+          if (soundLbl) soundLbl.textContent = soundWanted ? "Sound on" : "Sound off";
+        }
+        function applySound(player) {
+          if (!player) return;
+          try {
+            if (soundWanted) {
+              if (player.unMute) player.unMute();
+              if (player.setVolume) player.setVolume(soundVolume);
+            } else if (player.mute) {
+              player.mute();
+            }
+          } catch (e) { /* ignore */ }
+        }
+        /* --- playback watchdog: while a stream should be playing, check
+           every 2 seconds that it still IS playing and, if the viewer
+           turned sound on, that it is still audible. iOS webviews can
+           drop a stream's audio (or pause it) shortly after an in-player
+           unmute — the viewer then hears silence until some system event
+           (like a hardware volume press) revives the audio session. The
+           watchdog revives it from the page instead, within ~2 seconds.
+           A deliberate pause inside the player is respected: if the
+           viewer pauses again within 5 seconds of a watchdog resume, the
+           watchdog stands down until the next stream start. The plain
+           (no-API) fallback player exposes no state to poll, so the
+           watchdog can only guard API players; the fallback still
+           inherits soundWanted on every rebuild. --- */
+        function watchdogTick() {
+          if (!ytPlayer || mode !== "playing" || stoppedByUser || document.hidden || dock.hidden) return;
+          try {
+            /* Adopt an unmute done inside the player itself: if the
+               player is audibly playing, that IS the viewer's intent —
+               protect it exactly like a dock Sound tap. */
+            if (!soundWanted && ytPlayer.isMuted && !ytPlayer.isMuted()) { soundWanted = true; syncSoundBtn(); }
+            if (soundWanted && ytPlayer.isMuted && ytPlayer.isMuted()) {
+              applySound(ytPlayer);
+              soundRestores++;
+            } else if (soundWanted && ytPlayer.getVolume) {
+              var v = ytPlayer.getVolume();
+              if (typeof v === "number" && v > 0) soundVolume = v; /* follow volume set inside the player */
+            }
+            var st = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
+            if (st === 2 && !watchdogStandDown) { /* 2 = YT.PlayerState.PAUSED */
+              var now = Date.now();
+              if (lastWatchdogResumeAt && now - lastWatchdogResumeAt < 5000) { watchdogStandDown = true; return; }
+              lastWatchdogResumeAt = now;
+              watchdogResumes++;
+              if (ytPlayer.playVideo) ytPlayer.playVideo();
+              if (soundWanted) applySound(ytPlayer);
+            }
+          } catch (e) { /* player mid-teardown — next tick re-checks */ }
+        }
+        setInterval(watchdogTick, 2000);
         function onWaitingGesture() {
           if (mode === "playing" || mode === "fallback") return;
           mode = "waiting";
@@ -10385,13 +10799,13 @@ var STRAIN_SRC_LINKS = {
           var triedTxt = (triedNames && triedNames.length > 1) ? " Tried, in order: " + triedNames.join(" · ") + "." : "";
           if (kind === "ended") {
             fbTitle.textContent = "That live stream has ended";
-            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, watch it on YouTube, or pick another break in the Surf Break card on the Device tab." + triedTxt;
+            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, watch it on YouTube, or pick another break on the Surf tab." + triedTxt;
           } else if (triedNames && triedNames.length > 1) {
             fbTitle.textContent = "None of the breaks loaded";
-            fbText.textContent = "Every break was tried in Follow the Sun order and none came through — they may have restarted, or the connection hiccuped." + triedTxt + " Try again, or pick a break in the Surf Break card on the Device tab.";
+            fbText.textContent = "Every break was tried in Follow the Sun order and none came through — they may have restarted, or the connection hiccuped." + triedTxt + " Try again, or pick a break on the Surf tab.";
           } else {
             fbTitle.textContent = "Couldn't load " + spot.name + " just now";
-            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, watch " + spot.name + " on YouTube, or pick another break in the Surf Break card on the Device tab.";
+            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, watch " + spot.name + " on YouTube, or pick another break on the Surf tab.";
           }
           ytLink.href = "https://www.youtube.com/watch?v=" + spot.id;
           setNow("Stream not playing — nothing is using data." + (triedNames && triedNames.length ? " Tried: " + triedNames.join(", ") + "." : ""));
@@ -10435,7 +10849,7 @@ var STRAIN_SRC_LINKS = {
         function buildPlainFrame(spot) {
           plainFrame = true;
           var f = document.createElement("iframe");
-          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1";
+          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
           f.title = spot.name + " live surf cam";
           f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
           f.setAttribute("allowfullscreen", "");
@@ -10445,6 +10859,8 @@ var STRAIN_SRC_LINKS = {
         }
         function startStream(spot, keepChain) {
           exitZoom(); /* every spot change — Follow the Sun, recovery chain, manual pick, replay — resets zoom */
+          watchdogStandDown = false; /* a fresh stream re-arms the watchdog's pause-resume */
+          lastWatchdogResumeAt = 0;
           if (!keepChain) resetChain();
           currentKey = spot.key;
           bgPaused = false;
@@ -10465,9 +10881,9 @@ var STRAIN_SRC_LINKS = {
               ytPlayer = new YT.Player(target, {
                 videoId: spot.id,
                 host: "https://www.youtube-nocookie.com",
-                playerVars: { autoplay: 1, mute: 1, playsinline: 1, rel: 0, modestbranding: 1 },
+                playerVars: { autoplay: 1, mute: soundWanted ? 0 : 1, playsinline: 1, rel: 0, modestbranding: 1 },
                 events: {
-                  onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } },
+                  onReady: function (e) { try { applySound(e.target); e.target.playVideo(); } catch (err) { /* ignore */ } },
                   onStateChange: function (e) {
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
                     else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
@@ -10517,6 +10933,29 @@ var STRAIN_SRC_LINKS = {
           stoppedByUser = false;
           startStream(spotByKey(currentKey));
         });
+        /* Sound button: the tap happens in THIS frame, inside a real user
+           gesture — the strongest claim a web page can make on iOS's
+           audio session, unlike a tap on the speaker icon inside the
+           cross-origin player. Toggling records the intent first, then
+           applies it to the live player; with the plain fallback (no
+           API to unmute through) the frame is rebuilt with the new mute
+           setting, still inside this same gesture. When no stream is
+           loaded the intent is simply kept for the next start. */
+        if (soundBtn) soundBtn.addEventListener("click", function () {
+          soundWanted = !soundWanted;
+          watchdogStandDown = false;
+          if (ytPlayer) {
+            applySound(ytPlayer);
+            if (soundWanted && ytPlayer.playVideo) { try { ytPlayer.playVideo(); } catch (e) { /* ignore */ } }
+          } else if (plainFrame && (mode === "playing" || mode === "loading")) {
+            startStream(spotByKey(currentKey), true);
+          }
+          syncSoundBtn();
+          if (mode === "playing" || mode === "loading") {
+            setNow(nowText("Now showing:") + (soundWanted ? " · sound on — it stays on when the break changes." : " · sound off."));
+          }
+        });
+        syncSoundBtn();
         dockStopBtn.addEventListener("click", stopStream);
         collapseBtn.addEventListener("click", function () { setDockState("mini"); syncDockChrome(); });
         expandBtn.addEventListener("click", function () { setDockState("expanded"); syncDockChrome(); });
@@ -10574,7 +11013,7 @@ var STRAIN_SRC_LINKS = {
         function arm() {
           gestureArmed = true;
           if (mode === "waiting" && ytPlayer && ytPlayer.playVideo) {
-            try { ytPlayer.playVideo(); } catch (e) { /* ignore */ }
+            try { applySound(ytPlayer); ytPlayer.playVideo(); } catch (e) { /* ignore */ }
             loadTimer = setTimeout(function () { if (mode === "waiting") handleStreamFailure("error"); }, 6000);
           }
         }
@@ -10583,7 +11022,7 @@ var STRAIN_SRC_LINKS = {
         });
 
         /* --- Follow the Sun cycle + clock refresh (runs on EVERY tab now —
-           the player lives in the dock, not on the Device tab) --- */
+           the player lives in the dock, not on the Surf tab) --- */
         setInterval(function () {
           refreshChipTimes();
           syncDockHead();
@@ -10665,6 +11104,10 @@ var STRAIN_SRC_LINKS = {
               manualHold: manualHold,
               stopped: stoppedByUser,
               bgPaused: bgPaused,
+              soundWanted: soundWanted,
+              soundMuted: (ytPlayer && ytPlayer.isMuted) ? ytPlayer.isMuted() : null,
+              soundRestores: soundRestores,
+              watchdogResumes: watchdogResumes,
               iframes: frameWrap.querySelectorAll("iframe").length,
               inPanel: !!dock.closest("[role='tabpanel']"),
               head: dockSpot.textContent + " | " + dockMeta.textContent
@@ -10718,7 +11161,7 @@ var STRAIN_SRC_LINKS = {
           moreBtn.classList.toggle("alt-more-on", on);
         }
         if (moreBtn) moreBtn.addEventListener("click", function () { setMore(!moreOpen); });
-        ["tab-terpene", "tab-burnguard", "tab-device", "tab-info", "tab-session", "tab-temperature", "tab-strains"].forEach(function (id) {
+        ["tab-terpene", "tab-burnguard", "tab-device", "tab-info", "tab-session", "tab-temperature", "tab-strains", "tab-surf"].forEach(function (id) {
           var b = document.getElementById(id);
           if (b) b.addEventListener("click", function () { setMore(false); window.setTimeout(syncMoreActive, 0); });
         });
