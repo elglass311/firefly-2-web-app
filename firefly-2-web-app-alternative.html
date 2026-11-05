@@ -1392,6 +1392,40 @@
       .tag.hot { border-color: var(--ember-deep); color: var(--ember); }
       .src-line { font-size: 12.5px; color: var(--ink-faint); margin: 10px 0 0; }
       .src-line a { color: var(--ink-soft); }
+
+      /* ---------- Accessories (Info tab, Device view) ---------- */
+      .acc-store {
+        display: block;
+        border: 1px solid var(--ember-deep);
+        background: var(--ember-soft);
+        border-radius: 12px;
+        padding: 13px 14px;
+        text-decoration: none;
+      }
+      .acc-store-name { display: block; color: var(--ink); font-weight: 800; font-size: 15.5px; }
+      .acc-store-url { display: block; color: var(--ember); font-size: 13px; font-weight: 700; margin-top: 2px; overflow-wrap: anywhere; }
+      .acc-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+      .acc-list li {
+        background: var(--surface-2); border: 1px solid var(--line);
+        border-radius: 10px; padding: 9px 12px; font-size: 14px; color: var(--ink-soft);
+      }
+      .acc-list li strong { color: var(--ink); }
+      .acc-entries { display: grid; gap: 8px; }
+      .acc-entry {
+        background: var(--surface-2); border: 1px solid var(--line);
+        border-radius: 10px; padding: 11px 12px; font-size: 14px; color: var(--ink-soft);
+      }
+      .acc-entry p { margin: 4px 0 6px; }
+      .acc-entry p:last-child { margin-bottom: 0; }
+      .acc-entry a { color: var(--ember); font-weight: 700; }
+      .acc-entry-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+      .acc-entry-name { color: var(--ink); font-weight: 800; font-size: 15px; }
+      .acc-role {
+        font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+        padding: 2px 8px; border-radius: 999px;
+        background: var(--surface); color: var(--ink-faint);
+        border: 1px solid var(--line); white-space: nowrap;
+      }
       .grade {
         display: inline-block; min-width: 30px; text-align: center;
         font-size: 12px; font-weight: 800; border-radius: 7px;
@@ -3994,6 +4028,55 @@
           <div class="kv-row"><span class="k">Touch sensors</span>The sensors start a draw, in the mode you pick on the Device tab: <span class="v">Left, Right, Both, or Either</span>. Holding both sensors until the LED blinks green puts the Firefly in pairing mode; a blue blink means you're connected.</div>
           <div class="kv-row"><span class="k">What this app can and can't do</span>The app sets the <span class="v">temperature, the touch-sensor mode, and the coil calibration</span> — and a change only counts when your Firefly reads the new setting back. It <span class="v">cannot start the heater</span>: only your fingers on the Firefly's touch sensors do that.</div>
         </div>
+      </section>
+      <section class="card" aria-labelledby="info-factory-h">
+        <h2 id="info-factory-h">Factory accessories</h2>
+        <p class="card-sub">Genuine Firefly parts and accessories, straight from Firefly's own store — which is still operating. Firefly's own mobile and desktop apps, on the other hand, are discontinued: control today is this app, or the device itself.</p>
+        <a class="acc-store" href="https://thefirefly.com/collections/accessories" target="_blank" rel="noopener">
+          <span class="acc-store-name">Firefly — official accessories collection</span>
+          <span class="acc-store-url">thefirefly.com/collections/accessories</span>
+        </a>
+        <p class="muted" style="margin:12px 0 0;">The factory catalog, as documented by Firefly and its retailers. No prices and no stock promises here — what's actually on the shelf changes, so check the store for both.</p>
+        <ul class="acc-list">
+          <li><strong>Replacement battery</strong> — 770 mAh Li-ion spare; fits Firefly 1, 2 and 2+.</li>
+          <li><strong>Charging dock</strong> — the USB charging cradle, as a replacement or a spare.</li>
+          <li><strong>Quickcharge Wall Adapter</strong> — Firefly's own wall adapter for the dock; full charge in about 45 minutes.</li>
+          <li><strong>External battery charger</strong> — charges a spare battery outside the device.</li>
+          <li><strong>Mouthpieces, 2-pack</strong> — with micro-particulate filter screen; Firefly 2 / 2+ only.</li>
+          <li><strong>Concentrate pads, 3-pack</strong> — stainless mesh pads for wax and liquid concentrates.</li>
+          <li><strong>Cleaning kit</strong> — picks, brush and wipes for the heating chamber and vapor path.</li>
+          <li><strong>Magnetic lids in alternate colors</strong> — swap the top lid to change the device's look.</li>
+          <li><strong>Cases</strong> — a zipper case, a leather case, and a hard case.</li>
+          <li><strong>Car charger</strong> — 12 V car-outlet charger for the dock.</li>
+          <li><strong>Replacement battery door</strong> — spare aluminum battery cover.</li>
+        </ul>
+      </section>
+      <section class="card" aria-labelledby="info-thirdparty-h">
+        <h2 id="info-thirdparty-h">Third-party accessories</h2>
+        <p class="card-sub">Kept short on purpose: the real aftermarket for the Firefly 2/2+ is thin. The mouthpiece and magnetic lid are proprietary designs, and most "Firefly accessories" sold online are factory parts carried by retailers — labeled that way below.</p>
+        <div class="acc-entries">
+          <div class="acc-entry">
+            <div class="acc-entry-top"><span class="acc-entry-name">Planet of the Vapes</span><span class="acc-role">Retailer</span></div>
+            <p>Its Firefly 2 Accessories &amp; Parts collection is a dedicated shelf of genuine factory parts — spares, chargers and mouthpieces — from a major US vaporizer retailer.</p>
+            <p><a href="https://www.planetofthevapes.com/collections/firefly-2-parts-accessories" target="_blank" rel="noopener">planetofthevapes.com — Firefly 2 parts &amp; accessories</a></p>
+          </div>
+          <div class="acc-entry">
+            <div class="acc-entry-top"><span class="acc-entry-name">DankGeek · Vape Store ZA</span><span class="acc-role">Retailers</span></div>
+            <p>Two more retailers carrying genuine factory Firefly parts — handy alternates when the official store is out of something. Vape Store ZA keeps a full Firefly brand page:</p>
+            <p><a href="https://vapestore.co.za/firefly-brand/" target="_blank" rel="noopener">vapestore.co.za — Firefly brand page</a></p>
+          </div>
+          <div class="acc-entry">
+            <div class="acc-entry-top"><span class="acc-entry-name">Delta 3D Studios — Mini Scoop-N-Poke</span><span class="acc-role">Maker · universal tool</span></div>
+            <p>A small stainless loading and stirring scoop that works with the Firefly's glass bowl — genuinely useful, since the Firefly likes a mid-session stir. It is a universal tool, <strong style="color:var(--ink);">not</strong> a Firefly-specific product.</p>
+            <p><a href="https://delta3dstudios.com/mini-scoop-n-poke-tool/" target="_blank" rel="noopener">delta3dstudios.com — Mini Scoop-N-Poke tool</a></p>
+          </div>
+          <div class="acc-entry">
+            <div class="acc-entry-top"><span class="acc-entry-name">Delta 3D Studios — Nearly Universal WPA (Medium)</span><span class="acc-role">Maker · universal adapter</span></div>
+            <p>A universal aquarium-grade silicone water-pipe adapter that slips over the mouthpiece for 14/18mm female water tools. Delta 3D Studios lists the Firefly V2 on its own confirmed-fit list — “Fits mouthpiece, tight fit but works!!” It is a universal adapter, <strong style="color:var(--ink);">not</strong> a Firefly-specific part.</p>
+            <p><a href="https://delta3dstudios.com/nearly-universal-wpa-medium/" target="_blank" rel="noopener">delta3dstudios.com — Nearly Universal WPA (Medium)</a></p>
+          </div>
+        </div>
+        <p class="muted" style="margin:12px 0 0;">Stated plainly: <strong style="color:var(--ink);">no Firefly-specific water-pipe adapter and no dosing capsules exist for the Firefly 2/2+</strong> from established makers — the device loads loose into a glass bowl. The one adapter that does work is the universal silicone WPA above, which Delta 3D Studios itself confirms fits the Firefly 2 mouthpiece (tight fit). Any listing claiming a dedicated Firefly water-pipe adapter is still worth treating with suspicion.</p>
       </section>      </div>
       <div class="seg-view" data-segtab="info" data-segview="app" hidden>
 <section class="card" aria-labelledby="info-app-h">
