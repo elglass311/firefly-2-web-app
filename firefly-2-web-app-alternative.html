@@ -1886,7 +1886,9 @@
       .surf-fallback-title { font-size: 16px; font-weight: 800; color: var(--ink); margin: 0 0 6px; }
       .surf-fallback-actions { display: flex; flex-wrap: wrap; gap: 8px; }
       .surf-yt-link { text-decoration: none; display: inline-flex; align-items: center; }
-      .surf-nowrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; min-height: 34px; }
+      .surf-nowrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; min-height: 34px; flex-wrap: wrap; }
+      .surf-nowrow .btn-small { flex: none; }
+      .surf-nowrow .surf-now { flex: 1 1 140px; min-width: 0; }
       .surf-now { margin: 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
       .surf-now strong { color: var(--ink); }
       .surf-stop { flex: none; }
@@ -1930,7 +1932,7 @@
       }
       .surf-dock-spot { font-weight: 800; font-size: 14.5px; color: var(--ink); min-width: 0; overflow-wrap: anywhere; }
       .surf-dock-meta { color: var(--ink-soft); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
-      .surf-dock-btns { margin-left: auto; display: inline-flex; gap: 6px; flex: none; }
+      .surf-dock-btns { margin-left: auto; display: inline-flex; gap: 6px; flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; }
       .surf-dock-btns .btn-small { min-height: 38px; padding: 7px 12px; }
       .surf-dock-status { margin: 8px 2px 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
       .surf-dock-status[hidden] { display: none !important; }
@@ -2192,12 +2194,23 @@
       .alt-tabbar button .tab-ic { width: 22px; height: 22px; }
       .alt-tabbar button[aria-selected="true"] { color: var(--ember); }
       .alt-tabbar button.alt-more-on { color: var(--ember); }
-      .alt-more { position: fixed; left: 8px; right: 8px; bottom: calc(64px + env(safe-area-inset-bottom)); z-index: 56; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 8px; display: grid; gap: 4px; box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
-      .alt-more[hidden] { display: none; }
-      .alt-more button { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 12px; background: var(--surface-2); border: 1px solid transparent; border-radius: 12px; color: var(--ink); font: inherit; font-size: 16px; font-weight: 700; text-align: left; cursor: pointer; }
-      .alt-more button .tab-ic { width: 22px; height: 22px; flex: none; }
-      .alt-more button small { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
-      .alt-more button[aria-selected="true"] { border-color: var(--ember); color: var(--ember); }
+      /* More is a full SCREEN (panel-more), never a floating sheet: its
+         entries are full-width rows inside that screen's own card. */
+      .more-list { display: grid; gap: 10px; }
+      .more-entry { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 68px; padding: 12px 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; color: var(--ink); font: inherit; font-size: 17px; font-weight: 700; text-align: left; cursor: pointer; }
+      .more-entry .tab-ic { width: 24px; height: 24px; flex: none; color: var(--ember); }
+      .more-entry small { display: block; font-size: 13.5px; font-weight: 500; color: var(--ink-soft); margin-top: 2px; }
+      .more-entry .more-chev { margin-left: auto; flex: none; color: var(--ink-faint); font-size: 20px; }
+      .more-entry[aria-selected="true"] { border-color: var(--ember); color: var(--ember); }
+      /* Wave Forecast rows */
+      .fc-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 13px 14px; margin-bottom: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; }
+      .fc-main { flex: 1 1 180px; min-width: 0; }
+      .fc-name { font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .fc-best { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 999px; background: var(--leaf-deep); color: #fff; }
+      .fc-cond { color: var(--ink-soft); font-size: 13.5px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+      .fc-score { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+      .fc-actions { display: inline-flex; gap: 8px; flex: none; }
+      .fc-actions .btn-small { text-decoration: none; display: inline-flex; align-items: center; }
       .wrap { padding-bottom: 110px !important; }
       /* Segmented switchers: sticky, opaque, labeled */
       .seg-control.seg-tabs { position: sticky; top: calc(env(safe-area-inset-top) + 64px); z-index: 40; background: var(--surface); }
@@ -2500,9 +2513,8 @@
         box-shadow: inset 0 2px 0 var(--ember);
         text-shadow: 0 0 12px var(--ember-soft);
       }
-      .alt-more { border-radius: 12px; border-color: var(--card-line); background: var(--surface); }
-      .alt-more button { border-radius: 9px; }
-      .alt-more button[aria-selected="true"] { border-color: var(--ember); box-shadow: 0 0 12px var(--ember-soft); }
+      .more-entry { border-radius: 9px; }
+      .more-entry[aria-selected="true"] { border-color: var(--ember); box-shadow: 0 0 12px var(--ember-soft); }
       .tray { border-radius: 0 16px 16px 0; }
       .tray button[role="tab"] { border-radius: 10px; }
       .tray button[role="tab"][aria-selected="true"] {
@@ -2595,7 +2607,7 @@
          zooms — the surf stage's transform zoom and the strain photo
          tap-to-enlarge viewer — are page transforms, not browser zoom,
          and keep working exactly as before. */
-      body, #app, .wrap, .alt-tabbar, .alt-more, .tray, .sheet, .surf-dock,
+      body, #app, .wrap, .alt-tabbar, .more-entry, .tray, .sheet, .surf-dock,
       button, a, input, select, textarea, summary, label,
       [role="tab"], [role="button"], [role="switch"], .chip, .card {
         touch-action: manipulation;
@@ -2787,7 +2799,123 @@
       }
       .surf-mini-btn svg { width: 16px; height: 16px; }
       .surf-mini-btn:active { transform: scale(0.92); }
-</style>
+      /* ---- Stream fullscreen (in place, same player node) ----
+         Native: #surfDock itself is the fullscreen element. Fallback
+         (no element fullscreen, e.g. iPhone web views): the same dock
+         node gets .surf-fs-fake and fills the viewport fixed. Either
+         way nothing navigates and the stream never reloads. The exit
+         control lives INSIDE the dock so it is visible in both. */
+      .surf-fs-btn {
+        display: none;
+        position: absolute; top: 8px; right: 8px; z-index: 8;
+        appearance: none; cursor: pointer; font: inherit;
+        width: 38px; height: 38px; border-radius: 50%;
+        align-items: center; justify-content: center;
+        background: rgba(0, 0, 0, 0.55); color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        padding: 0;
+      }
+      .surf-fs-btn svg { width: 18px; height: 18px; }
+      .surf-fs-btn:active { transform: scale(0.92); }
+      .surf-dock:fullscreen .surf-fs-btn, .surf-dock.surf-fs-fake .surf-fs-btn { display: inline-flex; }
+      .surf-dock:fullscreen {
+        background: #000; width: 100%; height: 100%; max-width: 100%;
+        display: flex; flex-direction: column; justify-content: center;
+        overflow-y: auto; border-radius: 0;
+      }
+      .surf-dock.surf-fs-fake {
+        position: fixed !important; inset: 0 !important; z-index: 96;
+        width: 100% !important; max-width: 100% !important; height: 100dvh;
+        margin: 0 !important; transform: none !important; left: 0 !important; bottom: auto !important;
+        border-radius: 0 !important; background: #000;
+        display: flex; flex-direction: column; justify-content: center;
+        overflow-y: auto;
+      }
+      body.surf-fs-lock { overflow: hidden; }
+      .surf-overlay.is-moving .surf-overlay-sheet { outline: 2px solid var(--ember); outline-offset: -2px; }
+      /* Owned tag toggle on strain cards */
+      .str-own {
+        flex: none; align-self: center;
+        font-size: 11px; font-weight: 800; letter-spacing: 0.05em;
+        padding: 5px 9px; border-radius: 999px;
+        border: 1px solid var(--line); background: var(--surface);
+        color: var(--ink-faint); cursor: pointer;
+      }
+      .str-own[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
+      /* Vibe survey + result */
+      .vibe-q { margin: 14px 0 6px; font-weight: 800; font-size: 15px; }
+      .vibe-q:first-child { margin-top: 2px; }
+      .vibe-result { margin-top: 16px; padding: 16px; border: 1px solid var(--leaf-deep); border-radius: 12px; background: var(--leaf-soft); }
+      .vibe-result .vibe-strain { font-size: 21px; font-weight: 800; line-height: 1.2; }
+      .vibe-temp { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 6px; }
+      .vibe-temp small { font-size: 14px; font-weight: 700; color: var(--ink-soft); }
+      /* ===== Motion + depth layer (2026-11-05): transform/opacity ONLY.
+         Governed by the existing Motion setting via the global
+         html[data-motion] rules above (Reduced collapses durations,
+         Off kills animations/transitions) and prefers-reduced-motion. ===== */
+      .bg-fx::before { animation: bgBreathe 14s ease-in-out infinite; }
+      @keyframes bgBreathe { 0%,100% { opacity: 0.82; } 50% { opacity: 1; } }
+      .leaf-badge { animation: markFloat 6s ease-in-out infinite; }
+      @keyframes markFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+      .isl-dot { animation: dotPulse 2.6s ease-in-out infinite; }
+      @keyframes dotPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.35); } }
+      /* Screen transitions with depth: slide + scale instead of a hard cut */
+      .panel-enter { animation: panelDepth var(--dur-3) var(--ease-out); }
+      @keyframes panelDepth { from { opacity: 0; transform: translateY(12px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+      /* Cards tilt subtly in 3D when pressed */
+      .card { transition: transform var(--dur-1) var(--ease-out); }
+      .card:active { transform: perspective(700px) rotateX(1.4deg) scale(0.995); }
+      .str-card { transition: transform var(--dur-1) var(--ease-out); }
+      .str-card:active { transform: perspective(700px) rotateX(1.6deg) scale(0.99); }
+      .str-photo { transition: transform var(--dur-2) var(--ease-out); }
+      .str-card:active .str-photo { transform: scale(1.04); }
+      /* Bottom bar: springy press + pop when a destination becomes active */
+      .alt-tabbar button { transition: transform var(--dur-1) var(--ease-out); }
+      .alt-tabbar button:active { transform: scale(0.88); }
+      .alt-tabbar button[aria-selected="true"] .tab-ic,
+      .alt-tabbar button.active .tab-ic { animation: tabPop 0.32s var(--ease-out); display: inline-flex; }
+      @keyframes tabPop { 0% { transform: scale(0.7) translateY(2px); } 60% { transform: scale(1.15) translateY(-1px); } 100% { transform: scale(1) translateY(0); } }
+      /* Chips pop on select; switches land with weight */
+      .chip[aria-pressed="true"], .chip.on { animation: chipPop 0.26s var(--ease-out); }
+      @keyframes chipPop { 0% { transform: scale(0.92); } 55% { transform: scale(1.07); } 100% { transform: scale(1); } }
+      .switch { transition: transform var(--dur-1) var(--ease-out); }
+      .switch:active { transform: scale(0.94); }
+      /* Pager dots animate their state */
+      .swipe-dots span { transition: transform var(--dur-2) var(--ease-out), opacity var(--dur-2) var(--ease-out); }
+      .swipe-dots span.on { transform: scale(1.4); }
+      /* Surf: living wave shimmer across the stage + bobbing wave glyph */
+      .surf-stage::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0.10;
+        background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+        transform: translateX(-120%); animation: surfShimmer 7s ease-in-out infinite; }
+      @keyframes surfShimmer { 0%,72% { transform: translateX(-120%); } 88%,100% { transform: translateX(120%); } }
+      .surf-fab svg { animation: waveBob 3.4s ease-in-out infinite; }
+      @keyframes waveBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+      .surf-facade:active .surf-poster { transform: scale(1.03); }
+      .surf-poster { transition: transform var(--dur-3) var(--ease-out); }
+      /* Loading as shimmer, not a bare block */
+      .surf-loading { overflow: hidden; }
+      .surf-loading::before { content: ""; position: absolute; inset: 0;
+        background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.14) 50%, transparent 80%);
+        transform: translateX(-110%); animation: loadShimmer 1.6s ease-in-out infinite; }
+      @keyframes loadShimmer { to { transform: translateX(110%); } }
+      /* Forecast rows stagger in; Best-now badge breathes */
+      .fc-row { animation: fcIn var(--dur-3) var(--ease-out) backwards; }
+      .fc-row:nth-child(2) { animation-delay: 0.05s; } .fc-row:nth-child(3) { animation-delay: 0.10s; }
+      .fc-row:nth-child(4) { animation-delay: 0.15s; } .fc-row:nth-child(5) { animation-delay: 0.20s; }
+      .fc-row:nth-child(6) { animation-delay: 0.25s; } .fc-row:nth-child(7) { animation-delay: 0.30s; }
+      @keyframes fcIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .fc-best { animation: bestPulse 2.2s ease-in-out infinite; }
+      @keyframes bestPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+      /* Vibe: questions glide in per render; the pick reveals in stages */
+      .vibe-q { animation: vibeQIn var(--dur-3) var(--ease-out) backwards; }
+      .vibe-q:nth-of-type(2) { animation-delay: 0.05s; } .vibe-q:nth-of-type(3) { animation-delay: 0.10s; } .vibe-q:nth-of-type(4) { animation-delay: 0.15s; }
+      @keyframes vibeQIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
+      .vibe-result > * { animation: vibeStage var(--dur-3) var(--ease-out) backwards; }
+      .vibe-result > *:nth-child(2) { animation-delay: 0.08s; } .vibe-result > *:nth-child(3) { animation-delay: 0.16s; }
+      .vibe-result > *:nth-child(4) { animation-delay: 0.24s; } .vibe-result > *:nth-child(5) { animation-delay: 0.32s; }
+      @keyframes vibeStage { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    </style>
     <script>
       /* Theme + motion boot — runs before first paint so a saved theme/motion
          choice is already applied when the page appears. Persisted in this
@@ -2899,13 +3027,9 @@
       <button type="button" role="tab" id="tab-session" aria-selected="false" aria-controls="panel-session"><svg class="tab-ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Session</span></button>
       <button type="button" role="tab" id="tab-strains" aria-selected="false" aria-controls="panel-strains"><svg class="tab-ic" aria-hidden="true"><use href="#ff-leaf-sm"/></svg><span>Strains</span></button>
       <button type="button" role="tab" id="tab-terpene" aria-selected="false" aria-controls="panel-terpene"><svg class="tab-ic" aria-hidden="true"><use href="#i-drop"/></svg><span>Terpenes</span></button>
-      <button type="button" id="altMoreBtn" aria-expanded="false" aria-controls="altMorePanel"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span>More</span></button>
+      <button type="button" role="tab" id="tab-forecast" aria-selected="false" aria-controls="panel-forecast"><svg class="tab-ic" aria-hidden="true"><use href="#i-wave"/></svg><span>Forecast</span></button>
+      <button type="button" role="tab" id="altMoreBtn" aria-selected="false" aria-controls="panel-more"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span>More</span></button>
     </nav>
-    <div class="alt-more" id="altMorePanel" hidden role="group" aria-label="More sections">
-      <button type="button" role="tab" id="tab-burnguard" aria-selected="false" aria-controls="panel-burnguard"><svg class="tab-ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Burn Guard<small>Calibration</small></span></button>
-      <button type="button" role="tab" id="tab-device" aria-selected="false" aria-controls="panel-device"><svg class="tab-ic" aria-hidden="true"><use href="#i-device"/></svg><span>Device<small>Details, battery &amp; backup</small></span></button>
-      <button type="button" role="tab" id="tab-info" aria-selected="false" aria-controls="panel-info"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span>Info<small>Device, app &amp; sources</small></span></button>
-    </div>
 
     <div class="isl-hint" id="islHint" hidden><span>Tip: tap the island above any time to open session controls.</span><button type="button" id="islHintX">Got it</button></div>
 
@@ -2933,7 +3057,8 @@
              the small floating stream frame — fold away (stream keeps
              playing) and expand to the full Surf Break sheet. -->
         <div class="surf-mini-controls" id="surfMiniControls">
-          <button class="surf-mini-btn" id="surfMiniExpand" type="button" aria-label="Expand to the full Surf Break"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg></button>
+          <button class="surf-mini-btn" id="surfMiniExpand" type="button" aria-label="Watch the stream fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg></button>
+          <button class="surf-mini-btn" id="surfMiniFull" type="button" aria-label="Open the full Surf Break sheet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16"/></svg></button>
           <button class="surf-mini-btn" id="surfMiniClose" type="button" aria-label="Close the minimized stream view"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
         </div>
         <div class="surf-overlay-scroll" id="surfOverlayScroll">
@@ -2945,6 +3070,7 @@
         <span class="surf-dock-btns">
           <button class="btn-small surf-sound-btn" id="surfSoundBtn" type="button" aria-pressed="false" aria-label="Turn the stream sound on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z" fill="currentColor" stroke="none"/><path class="surf-sound-waves" d="M15.5 8.5a5 5 0 0 1 0 7"/><path class="surf-sound-waves" d="M18.5 5.5a9.4 9.4 0 0 1 0 13"/></svg><span id="surfSoundLbl">Sound off</span></button>
           <button class="btn-small surf-zoom-btn" id="surfZoomBtn" type="button" aria-pressed="false" aria-label="Toggle digital zoom"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Zoom</button>
+          <button class="btn-small" id="surfDockFsBtn" type="button">Fullscreen</button>
           <button class="btn-small" id="surfCollapseBtn" type="button">Collapse</button>
           <button class="btn-small" id="surfExpandBtn" type="button" hidden>Expand</button>
           <button class="btn-small" id="surfDockStopBtn" type="button">Stop</button>
@@ -2983,6 +3109,7 @@
             </div>
           </div>
           <div class="surf-gesture" id="surfGesture" hidden aria-hidden="true"></div>
+          <button class="surf-fs-btn" id="surfFsBtn" type="button" aria-label="Exit fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg></button>
 
           <div class="surf-fallback" id="surfFallback" hidden>
             <p class="surf-fallback-title" id="surfFallbackTitle">This stream is taking a break</p>
@@ -3004,7 +3131,20 @@
 
         <div class="surf-nowrow">
           <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
+          <button class="btn-small" id="surfForecastBtn" type="button">Wave forecast</button>
           <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
+        </div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Auto choice</div>
+            <div class="sw-sub">Best conditions picks the break by its live forecast score (Open-Meteo) and daylight; Follow the Sun picks by daylight alone; Off stops auto-picking. A break you pick yourself always wins until you re-enable auto here.</div>
+          </div>
+        </div>
+        <div class="seg-control" id="surfAutoModeSeg" role="group" aria-label="Auto choice" style="margin-top:10px;">
+          <button type="button" data-am="best" aria-pressed="true">Best conditions</button>
+          <button type="button" data-am="sun" aria-pressed="false">Follow the Sun</button>
+          <button type="button" data-am="off" aria-pressed="false">Off</button>
         </div>
 
         <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
@@ -3429,6 +3569,7 @@
         <p class="card-sub">Pick a strain, pick the effects you're after, get the temperature — then one tap sets the Firefly and stages the whole session.</p>
         <p class="fu-honest"><strong>One honest limit:</strong> this app sets the temperature and stages the session, but it cannot start the heat — only your fingers on the Firefly's touch sensors do that. The button below does everything up to that instant.</p>
 
+        <button type="button" class="btn btn-ghost" id="fuVibeBtn" style="margin:0 0 14px;">Vibe — pick from my stash for my current vibe</button>
         <p class="fu-step">Step 1 · Strain <span>— spin your favorites, search, or tap a recent one</span></p>
         <input id="fuSearch" type="search" class="str-search" placeholder="Search all 151 guides…" aria-label="Search strains for Fire Up" autocomplete="off" />
         <div class="fu-results" id="fuResults" hidden></div>
@@ -3471,6 +3612,11 @@
 
             <div class="seg-control seg-tabs" data-segtabs="strains" role="group" aria-label="Strains views"><button type="button" data-seg="browse" aria-pressed="true">Browse</button><button type="button" data-seg="favorites" aria-pressed="false">Favorites</button><button type="button" data-seg="reviews" aria-pressed="false">Reviews</button><button type="button" data-seg="reference" aria-pressed="false">Reference</button><button type="button" data-seg="mylogs" aria-pressed="false">My logs</button></div>
       <div class="seg-view" data-segtab="strains" data-segview="browse">
+<section class="card" id="vibeCard" aria-labelledby="vibe-h">
+        <h2 id="vibe-h">Vibe</h2>
+        <p class="card-sub">Tell Vibe what you're after right now — it recommends <strong style="color:var(--ink);">one strain from your own stash</strong> (the strains you've tagged Owned) plus a starting temperature. The survey is built only from your owned strains' own reported effects, and it rebuilds itself every time your stash changes.</p>
+        <div id="vibeBody"></div>
+      </section>
 <section class="card" aria-labelledby="strains-h">
         <h2 id="strains-h">Strain library</h2>
         <p class="card-sub">151 full guides, plus a 608-entry catalog harvested 2026-11-04 from six SeedFinder breeder catalogues and four AllBud strain pages. Search and the type filters span both tiers. Full guides carry the effect picker and temperature workflows; catalog entries (tagged CATALOG) carry only what their source published — a field the source didn't publish says “not listed”. No guide or catalog entry without a verified photo is left bare: it shows the flower image Leafly assigns to that strain's page, tagged STOCK and captioned “stock photo — similar flower, not this exact strain” where Leafly has one, and the stylized panel where it doesn't — your own photo outranks both. Temperatures assume flower stored at 58% RH.</p>
@@ -3481,6 +3627,7 @@
           <button type="button" class="chip" data-sttype="1" aria-pressed="false">Sativa</button>
           <button type="button" class="chip" data-sttype="2" aria-pressed="false">Hybrid</button>
           <button type="button" class="chip" data-sttype="fav" aria-pressed="false">Favorites ★</button>
+          <button type="button" class="chip" data-sttype="owned" aria-pressed="false" id="strainOwnedChip">Owned · 0</button>
         </div>
         <p class="str-count" id="strainCount"></p>
         <div class="str-list" id="strainList"></div>
@@ -4198,6 +4345,30 @@
             </section>
       </div>
       </div><!-- /panel-info -->
+
+      <div id="panel-more" role="tabpanel" aria-labelledby="altMoreBtn" hidden>
+      <h2 class="tab-title">More</h2>
+      <section class="card" aria-labelledby="more-h">
+        <h2 id="more-h">More sections</h2>
+        <p class="card-sub">Burn Guard, Device and Info each open as their own full screen.</p>
+        <div class="more-list">
+          <button type="button" role="tab" id="tab-burnguard" class="more-entry" aria-selected="false" aria-controls="panel-burnguard"><svg class="tab-ic" aria-hidden="true"><use href="#i-shield"/></svg><span>Burn Guard<small>Calibration</small></span><span class="more-chev" aria-hidden="true">›</span></button>
+          <button type="button" role="tab" id="tab-device" class="more-entry" aria-selected="false" aria-controls="panel-device"><svg class="tab-ic" aria-hidden="true"><use href="#i-device"/></svg><span>Device<small>Details, battery &amp; backup</small></span><span class="more-chev" aria-hidden="true">›</span></button>
+          <button type="button" role="tab" id="tab-info" class="more-entry" aria-selected="false" aria-controls="panel-info"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span>Info<small>Device, app &amp; sources</small></span><span class="more-chev" aria-hidden="true">›</span></button>
+        </div>
+      </section>
+      </div><!-- /panel-more -->
+
+      <div id="panel-forecast" role="tabpanel" aria-labelledby="tab-forecast" hidden>
+      <h2 class="tab-title">Wave Forecast</h2>
+      <section class="card" aria-labelledby="fc-h">
+        <h2 id="fc-h">Wave forecast — camera breaks</h2>
+        <p class="card-sub" id="forecastUpdated">Loading the live forecast…</p>
+        <div id="forecastRows"></div>
+        <button class="btn btn-ghost" id="forecastRefresh" type="button" style="margin-top:4px;">Refresh forecast</button>
+        <p class="muted" style="margin:12px 0 0;"><strong style="color:var(--ink-soft);">Best by live forecast data (Open-Meteo) — Surfline linked for full reports.</strong> Wave height and period come from the Open-Meteo Marine API; wind from the Open-Meteo forecast API. The score weights swell height and period most, scores light or offshore wind above strong onshore wind, and counts daylight at the break. It is a transparent ranking of published forecast data — not a guarantee of conditions.</p>
+      </section>
+      </div><!-- /panel-forecast -->
 
       <!-- Tutorial sheet — opens ONLY from the Tutorial button on the Device tab.
            Never auto-opens, never a first-run modal. -->
@@ -7156,6 +7327,34 @@ var STRAIN_SRC_LINKS = {
           strSave(strFavKey, strFav);
           if (typeof wheelRefreshAll === "function") wheelRefreshAll();
         }
+        /* ---- Owned stash: the strains he currently has. Same key
+           scheme as favorites (numeric guide id, or "c<index>" for
+           catalog entries), its own store. This set is the single
+           source of truth for the Vibe tool — Vibe derives everything
+           from it on every read and caches nothing of its own. ---- */
+        var strOwnedKey = "ff2alt.strainOwned.v1";
+        var strOwned = strLoad(strOwnedKey, []);
+        if (!Array.isArray(strOwned)) strOwned = [];
+        function strIsOwned(id) { return strOwned.indexOf(id) !== -1; }
+        function strOwnedCountUpdate() {
+          var chip = strEl("strainOwnedChip");
+          if (chip) chip.textContent = "Owned · " + strOwned.length;
+        }
+        function strToggleOwned(id) {
+          var i = strOwned.indexOf(id);
+          if (i === -1) strOwned.push(id); else strOwned.splice(i, 1);
+          strSave(strOwnedKey, strOwned);
+          strOwnedCountUpdate(); /* the filter chip count updates in the same moment */
+          if (typeof vibeRender === "function") vibeRender(); /* an open Vibe survey refreshes in place */
+        }
+        function strOwnSpan(key, name) {
+          var own = strIsOwned(key);
+          return '<span class="str-own" role="button" tabindex="0" data-own="' + key + '" aria-pressed="' + (own ? "true" : "false") + '" aria-label="Tag ' + strEsc(name) + ' as owned">' + (own ? "Owned ✓" : "Owned") + '</span>';
+        }
+        function strCOwnSpan(i, name) {
+          var own = strIsOwned(strCatKey(i));
+          return '<span class="str-own" role="button" tabindex="0" data-cown="' + i + '" aria-pressed="' + (own ? "true" : "false") + '" aria-label="Tag ' + strEsc(name) + ' as owned">' + (own ? "Owned ✓" : "Owned") + '</span>';
+        }
 
         /* ---- Effect grading, report §4.1 ----
            A = human pharmacology/RCT · B = aggregated user reports only ·
@@ -7702,7 +7901,8 @@ var STRAIN_SRC_LINKS = {
         function strCatalogActive() { return !!(strFilter.q || strFilter.type !== "all"); }
         function strCatMatches(i) {
           var e = CATALOG[i];
-          if (strFilter.type === "fav") { if (!strIsFav(strCatKey(i))) return false; }
+          if (strFilter.type === "owned") { if (!strIsOwned(strCatKey(i))) return false; }
+          else if (strFilter.type === "fav") { if (!strIsFav(strCatKey(i))) return false; }
           else if (strFilter.type !== "all" && String(strCatBucket(e[CF.type])) !== strFilter.type) return false;
           if (strFilter.q) {
             var hay = (e[CF.name] + " " + e[CF.breeder]).toLowerCase();
@@ -8338,6 +8538,7 @@ var STRAIN_SRC_LINKS = {
             '<span class="str-card-main"><span class="str-card-name">' + strEsc(e[CF.name]) + '<span class="str-tag-cat">CATALOG</span></span>' +
             '<span class="str-card-sub">' + strEsc(sub) + '</span></span>' +
             '<span class="str-fav" role="button" tabindex="0" data-cfav="' + i + '" aria-pressed="' + (fav ? "true" : "false") + '" aria-label="Favorite ' + strEsc(e[CF.name]) + " (" + strEsc(e[CF.breeder]) + ')"><svg class="ic-star" aria-hidden="true"><use href="#i-star"/></svg></span>' +
+            strCOwnSpan(i, e[CF.name]) +
             '</button>';
         }
         function strCatalogSectionHTML() {
@@ -8376,6 +8577,7 @@ var STRAIN_SRC_LINKS = {
                 : '<div class="alias" style="margin-top:4px;">Stylized panel — the harvest verified no true photo of this strain, so none is shown rather than a photo of a different strain. Add your own photo below and it takes this panel\u2019s place.</div>')) +
             '<div class="alias" style="margin-top:4px;">' + strEsc(e[CF.breeder]) + " · " + strEsc(e[CF.type]) + "</div></div></div>";
           h += '<button type="button" class="btn ' + (fav ? "btn-ghost" : "btn-primary") + '" id="catFav" style="margin:0 0 14px;">' + (fav ? "★ Favorited — tap to remove" : "☆ Favorite this entry") + "</button>";
+          h += '<button type="button" class="btn ' + (strIsOwned(key) ? "btn-primary" : "btn-ghost") + '" id="catOwn" style="margin:0 0 14px;">' + (strIsOwned(key) ? "Owned ✓ — in your stash (tap to untag)" : "Tag as Owned — I have this strain") + "</button>";
           if (guide) {
             h += '<div class="honest-box" style="margin:0 0 14px;"><strong>Full guide available</strong><p>This catalog entry keeps only its own harvested data — but a full guide for ' + strEsc(guide[SF.name]) + " exists, with lineage, terpenes, reported effects, a temperature workflow and the effect picker.</p>" +
               '<button type="button" class="btn btn-primary" id="catGuide" style="margin:8px 0 0;">Open the ' + strEsc(guide[SF.name]) + " full guide</button>" +
@@ -8400,6 +8602,7 @@ var STRAIN_SRC_LINKS = {
           body.innerHTML = h;
           openSheet(e[CF.name]);
           strEl("catFav").addEventListener("click", function () { strToggleFav(key); haptics.tick(); openCatalog(i); });
+          strEl("catOwn").addEventListener("click", function () { strToggleOwned(key); haptics.tick(); openCatalog(i); });
           var gb = strEl("catGuide");
           if (gb) gb.addEventListener("click", function () { haptics.tick(); openGuide(gid); });
           var cf = strEl("catFireUp");
@@ -8458,7 +8661,8 @@ var STRAIN_SRC_LINKS = {
         var strChunkLimit = 10;
         var strChunkSig = "";
         function strMatches(strain) {
-          if (strFilter.type === "fav") { if (!strIsFav(strain[SF.id])) return false; }
+          if (strFilter.type === "owned") { if (!strIsOwned(strain[SF.id])) return false; }
+          else if (strFilter.type === "fav") { if (!strIsFav(strain[SF.id])) return false; }
           else if (strFilter.type !== "all" && String(strain[SF.type]) !== strFilter.type) return false;
           if (strFilter.q) {
             var hay = (strain[SF.name] + " " + strain[SF.aliases]).toLowerCase();
@@ -8482,12 +8686,14 @@ var STRAIN_SRC_LINKS = {
               '<span class="str-card-main"><span class="str-card-name">' + strEsc(s[SF.name]) + '<span class="str-tag-guide">GUIDE</span></span>' +
               '<span class="str-card-sub"><span class="type-dot t' + s[SF.type] + '"></span>' + strEsc(strTypeName(s[SF.type])) + " · THC " + strEsc(s[SF.thc]) + '</span></span>' +
               '<span class="str-fav" role="button" tabindex="0" data-fav="' + s[SF.id] + '" aria-pressed="' + (fav ? "true" : "false") + '" aria-label="Favorite ' + strEsc(s[SF.name]) + '"><svg class="ic-star" aria-hidden="true"><use href="#i-star"/></svg></span>' +
+              strOwnSpan(s[SF.id], s[SF.name]) +
               '</button>';
           });
           var catSec = strCatalogSectionHTML();
           html += catSec.html;
           var emptyMsg = '<p class="str-empty">No strains match — try a shorter search, or clear the type filter above.</p>';
           if (strFilter.type === "fav" && !strFav.length) emptyMsg = '<p class="str-empty">No favorites yet — tap the ★ on any strain and it will wait for you here, on the Fire Up wheel, and in the island.</p>';
+          if (strFilter.type === "owned" && !strOwned.length) emptyMsg = '<p class="str-empty">Nothing tagged Owned yet — tap the Owned tag on any strain you currently have, and it will show up here (and feed the Vibe tool above).</p>';
           list.innerHTML = (shown || catSec.count) ? html : emptyMsg;
           var smBtn = strEl("strShowMore");
           if (smBtn) smBtn.hidden = shown <= strChunkLimit;
@@ -8498,10 +8704,19 @@ var STRAIN_SRC_LINKS = {
             if (showWheel && typeof wheelRefreshAll === "function") wheelRefreshAll();
           }
           strEl("strainCount").textContent = "151 full guides · 608 catalog entries · showing " + shown + " guide" + (shown === 1 ? "" : "s") +
-            (strCatalogActive() ? " + " + catSec.count + " catalog" : "") + (strFav.length ? " · " + strFav.length + " favorited" : "");
+            (strCatalogActive() ? " + " + catSec.count + " catalog" : "") + (strFav.length ? " · " + strFav.length + " favorited" : "") + (strOwned.length ? " · " + strOwned.length + " owned" : "");
+          strOwnedCountUpdate();
           var cards = list.querySelectorAll(".str-card[data-sid]");
           Array.prototype.forEach.call(cards, function (c) {
             c.addEventListener("click", function (ev) {
+              var ownEl = ev.target.closest ? ev.target.closest("[data-own]") : null;
+              if (ownEl) {
+                ev.stopPropagation();
+                strToggleOwned(parseInt(ownEl.getAttribute("data-own"), 10));
+                haptics.tick();
+                strRenderList();
+                return;
+              }
               var favEl = ev.target.closest ? ev.target.closest("[data-fav]") : null;
               if (favEl) {
                 ev.stopPropagation();
@@ -8522,8 +8737,16 @@ var STRAIN_SRC_LINKS = {
           var catCards = list.querySelectorAll(".str-card[data-cat]");
           Array.prototype.forEach.call(catCards, function (c) {
             c.addEventListener("click", function (ev) {
-              var favEl = ev.target.closest ? ev.target.closest("[data-cfav]") : null;
+              var ownEl = ev.target.closest ? ev.target.closest("[data-cown]") : null;
               var idx = parseInt(c.getAttribute("data-cat"), 10);
+              if (ownEl) {
+                ev.stopPropagation();
+                strToggleOwned(strCatKey(idx));
+                haptics.tick();
+                strRenderList();
+                return;
+              }
+              var favEl = ev.target.closest ? ev.target.closest("[data-cfav]") : null;
               if (favEl) {
                 ev.stopPropagation();
                 strToggleFav(strCatKey(idx));
@@ -8536,6 +8759,12 @@ var STRAIN_SRC_LINKS = {
           });
           var cfavs = list.querySelectorAll("[data-cfav]");
           Array.prototype.forEach.call(cfavs, function (f) {
+            f.addEventListener("keydown", function (ev) {
+              if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); f.click(); }
+            });
+          });
+          var owns = list.querySelectorAll("[data-own], [data-cown]");
+          Array.prototype.forEach.call(owns, function (f) {
             f.addEventListener("keydown", function (ev) {
               if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); f.click(); }
             });
@@ -8584,6 +8813,7 @@ var STRAIN_SRC_LINKS = {
             (s[SF.aliases] ? '<div class="alias">' + strEsc(s[SF.aliases]) + '</div>' : "") +
             '<div class="alias" style="margin-top:4px;">' + strEsc(s[SF.typeLabel]) + '</div></div></div>';
           h += '<button type="button" class="btn ' + (fav ? "btn-ghost" : "btn-primary") + '" id="gdFav" style="margin:0 0 14px;">' + (fav ? "★ Favorited — tap to remove" : "☆ Favorite this strain") + '</button>';
+          h += '<button type="button" class="btn ' + (strIsOwned(id) ? "btn-primary" : "btn-ghost") + '" id="gdOwn" style="margin:0 0 14px;">' + (strIsOwned(id) ? "Owned ✓ — in your stash (tap to untag)" : "Tag as Owned — I have this strain") + '</button>';
           h += '<button type="button" class="btn btn-primary" id="gdFireUp" style="margin:0 0 14px;">Vape this strain — one-tap Fire Up setup</button>';
           h += '<div class="q-block" id="gdPhotoBox" style="margin:0 0 14px;"></div>';
           h += '<div id="gdHistory"></div>';
@@ -8620,6 +8850,11 @@ var STRAIN_SRC_LINKS = {
           openSheet(s[SF.name]);
           strEl("gdFav").addEventListener("click", function () {
             strToggleFav(id);
+            haptics.tick();
+            openGuide(id);
+          });
+          strEl("gdOwn").addEventListener("click", function () {
+            strToggleOwned(id);
             haptics.tick();
             openGuide(id);
           });
@@ -10558,6 +10793,190 @@ var STRAIN_SRC_LINKS = {
           if (fu.strainId) openGuide(fu.strainId);
           else if (fu.catIdx !== null) openCatalog(fu.catIdx);
         });
+
+        /* ================= Vibe — owned-only recommendation =================
+           Vibe asks what he wants right now and recommends ONE strain
+           from his OWNED stash plus a starting temperature. Owned-only
+           is absolute: the survey's effect chips (wanted + avoid) and
+           the mood mappings are built from the union of effects that
+           actually appear among his owned full-guide strains, and the
+           recommendation pool is those strains alone — no "not in your
+           stash" fallback exists. NOTHING derived is cached: the owned
+           set is the single source of truth, and vibeRender() recomputes
+           the chips, the counts and (once asked) the recommendation on
+           every call — strToggleOwned calls it the moment a tag flips,
+           so an open survey refreshes in place and a recommendation
+           whose strain gets untagged is replaced at once. Only his
+           ANSWERS are stored (ff2alt.vibe.v1); answers that no longer
+           exist in the owned set are pruned on read. Scoring: matched
+           desired effects add their evidence-grade weight (A=3, B=2,
+           C=1, F=0.5 from EFF_INFO), avoided effects subtract 3.
+           Temperature: the strain's own graded range (strVapeRange) —
+           Light starts low, Medium mid, Deep high — capped by the Burn
+           Guard ceiling. Temperature steers flavour and extraction; it
+           cannot select an effect. */
+        var VIBE_KEY = "ff2alt.vibe.v1";
+        var vibeAns = strLoad(VIBE_KEY, null);
+        if (!vibeAns || typeof vibeAns !== "object") vibeAns = { effects: [], mood: "", intensity: "Medium", avoid: [] };
+        if (!Array.isArray(vibeAns.effects)) vibeAns.effects = [];
+        if (!Array.isArray(vibeAns.avoid)) vibeAns.avoid = [];
+        if (["Light", "Medium", "Deep"].indexOf(vibeAns.intensity) === -1) vibeAns.intensity = "Medium";
+        var vibeAsked = false;
+        var VIBE_MOODS = {
+          "Chill": ["Relaxed", "Calm", "Happy"],
+          "Creative": ["Creative", "Euphoric", "Uplifted"],
+          "Social": ["Talkative", "Giggly", "Happy", "Euphoric"],
+          "Focused": ["Focused", "Clear-headed", "Energetic"],
+          "Sleepy": ["Sleepy", "Relaxed", "Calm"],
+          "Uplifted": ["Uplifted", "Euphoric", "Happy", "Energetic"]
+        };
+        var VIBE_AVOID = [
+          ["Sleepy", "Sleepy / couch-lock"],
+          ["Energetic", "Racy / energetic"],
+          ["Hungry", "Hungry / munchies"],
+          ["Tingly", "Tingly"],
+          ["Dreamy", "Dreamy / spaced out"]
+        ];
+        function vibeOwnedGuides() { return STRAINS.filter(function (s) { return strIsOwned(s[SF.id]); }); }
+        function vibeEffectUnion(pool) {
+          var seen = {}, out = [];
+          pool.forEach(function (s) { s[SF.effects].forEach(function (e) { if (!seen[e]) { seen[e] = 1; out.push(e); } }); });
+          return out;
+        }
+        function vibeGradeW(g) { var c = String(g).charAt(0); return c === "A" ? 3 : c === "B" ? 2 : c === "C" ? 1 : 0.5; }
+        function vibeDesired(pool) {
+          var union = vibeEffectUnion(pool);
+          var set = {};
+          vibeAns.effects.forEach(function (e) { if (union.indexOf(e) !== -1) set[e] = 1; });
+          if (vibeAns.mood && VIBE_MOODS[vibeAns.mood]) VIBE_MOODS[vibeAns.mood].forEach(function (e) { if (union.indexOf(e) !== -1) set[e] = 1; });
+          return Object.keys(set);
+        }
+        function vibeCompute(pool) {
+          if (!pool.length) return null;
+          var desired = vibeDesired(pool);
+          var best = null;
+          pool.forEach(function (s) {
+            var sc = 0, matched = [];
+            desired.forEach(function (e) {
+              if (s[SF.effects].indexOf(e) !== -1) { sc += vibeGradeW((EFF_INFO[e] || { g: "F" }).g); matched.push(e); }
+            });
+            vibeAns.avoid.forEach(function (e) { if (s[SF.effects].indexOf(e) !== -1) sc -= 3; });
+            if (!best || sc > best.score) best = { id: s[SF.id], score: sc, matched: matched };
+          });
+          if (!best) return null;
+          best.weak = !(best.score > 0 && best.matched.length);
+          var s = strainById(best.id);
+          var r = strVapeRange(s);
+          var t = vibeAns.intensity === "Light" ? r.loF : vibeAns.intensity === "Deep" ? r.hiF : Math.round((r.loF + r.hiF) / 20) * 10;
+          best.tempF = Math.min(t, settings.ceilingF);
+          best.capped = t > settings.ceilingF;
+          best.range = r;
+          return best;
+        }
+        function vibeChip(label, attr, val, on, grade) {
+          return '<button type="button" class="chip" ' + attr + '="' + strEsc(val) + '" aria-pressed="' + (on ? "true" : "false") + '">' +
+            (grade ? '<span class="grade ' + strGradeClass(grade) + '">' + strEsc(grade) + "</span>" : "") + strEsc(label) + "</button>";
+        }
+        function vibeRender() {
+          var body = strEl("vibeBody");
+          if (!body) return;
+          var pool = vibeOwnedGuides();
+          var union = vibeEffectUnion(pool);
+          /* Prune remembered answers to what the CURRENT stash offers. */
+          vibeAns.effects = vibeAns.effects.filter(function (e) { return union.indexOf(e) !== -1; });
+          vibeAns.avoid = vibeAns.avoid.filter(function (e) { return union.indexOf(e) !== -1; });
+          if (vibeAns.mood && !(VIBE_MOODS[vibeAns.mood] || []).some(function (e) { return union.indexOf(e) !== -1; })) vibeAns.mood = "";
+          if (!pool.length) {
+            body.innerHTML = strOwned.length
+              ? '<p class="str-empty" style="margin:0;">Your tagged strains are catalog entries — they carry no graded effects or temperature guide, so Vibe has nothing to score yet. Tag a full-guide strain as Owned in the library below and Vibe builds its survey from it.</p>'
+              : '<p class="str-empty" style="margin:0 0 12px;">No stash yet — Vibe only recommends strains you actually have. Tag the strains you own first, then come back and tell it your vibe.</p>' +
+                '<button type="button" class="btn btn-primary" id="vibeGoTag" style="margin:0;">Tag what I own in Strains</button>';
+            var gt = strEl("vibeGoTag");
+            if (gt) gt.addEventListener("click", function () {
+              haptics.tick();
+              if (window.__segShow) window.__segShow("strains", "browse");
+              var lib = strEl("strains-h");
+              if (lib) lib.scrollIntoView({ block: "start" });
+              var srch = strEl("strainSearch");
+              if (srch) srch.focus({ preventScroll: true });
+            });
+            return;
+          }
+          var h = "";
+          h += '<p class="muted" style="margin:0 0 4px;">Your stash: <strong style="color:var(--ink);">' + pool.length + " owned strain" + (pool.length === 1 ? "" : "s") + '</strong> · every option below comes from those strains only, and this survey rebuilds itself whenever your stash changes.</p>';
+          h += '<p class="vibe-q">Effects you want</p><div class="chip-row">' +
+            union.map(function (e) { return vibeChip(e, "data-vibe-fx", e, vibeAns.effects.indexOf(e) !== -1, (EFF_INFO[e] || { g: "F/B" }).g); }).join("") + "</div>";
+          var moods = Object.keys(VIBE_MOODS).filter(function (m) { return VIBE_MOODS[m].some(function (e) { return union.indexOf(e) !== -1; }); });
+          if (moods.length) h += '<p class="vibe-q">The vibe</p><div class="chip-row">' +
+            moods.map(function (m) { return vibeChip(m, "data-vibe-mood", m, vibeAns.mood === m, null); }).join("") + "</div>";
+          h += '<p class="vibe-q">Intensity</p><div class="chip-row">' +
+            ["Light", "Medium", "Deep"].map(function (m) { return vibeChip(m, "data-vibe-int", m, vibeAns.intensity === m, null); }).join("") + "</div>";
+          var avoids = VIBE_AVOID.filter(function (a) { return union.indexOf(a[0]) !== -1; });
+          if (avoids.length) h += '<p class="vibe-q">Avoid</p><div class="chip-row">' +
+            avoids.map(function (a) { return vibeChip(a[1], "data-vibe-avoid", a[0], vibeAns.avoid.indexOf(a[0]) !== -1, null); }).join("") + "</div>";
+          h += '<p class="muted" style="margin:10px 0 0;">Grades: <strong style="color:var(--ink);">A</strong> human trials · <strong style="color:var(--ink);">B</strong> user reports only · <strong style="color:var(--ink);">C</strong> animal/in-vitro · <strong style="color:var(--ink);">F</strong> folklore — matches are weighted by grade.</p>';
+          h += '<button type="button" class="btn btn-primary" id="vibeGo" style="margin-top:12px;">Find my strain</button>';
+          h += '<div id="vibeOut"></div>';
+          body.innerHTML = h;
+          function wire(attr, fn) {
+            Array.prototype.forEach.call(body.querySelectorAll("[" + attr + "]"), function (c) {
+              c.addEventListener("click", function () { haptics.tick(); fn(c.getAttribute(attr)); strSave(VIBE_KEY, vibeAns); vibeRender(); });
+            });
+          }
+          wire("data-vibe-fx", function (e) { var i = vibeAns.effects.indexOf(e); if (i === -1) vibeAns.effects.push(e); else vibeAns.effects.splice(i, 1); });
+          wire("data-vibe-mood", function (m) { vibeAns.mood = vibeAns.mood === m ? "" : m; });
+          wire("data-vibe-int", function (m) { vibeAns.intensity = m; });
+          wire("data-vibe-avoid", function (e) { var i = vibeAns.avoid.indexOf(e); if (i === -1) vibeAns.avoid.push(e); else vibeAns.avoid.splice(i, 1); });
+          strEl("vibeGo").addEventListener("click", function () { haptics.tick(); vibeAsked = true; vibeRenderResult(pool); });
+          if (vibeAsked) vibeRenderResult(pool);
+        }
+        function vibeRenderResult(pool) {
+          var out = strEl("vibeOut");
+          if (!out) return;
+          var res = vibeCompute(pool || vibeOwnedGuides());
+          if (!res) { out.innerHTML = ""; return; }
+          var s = strainById(res.id);
+          var h = '<div class="vibe-result">';
+          h += '<div class="muted" style="font-weight:700;">' + (res.weak ? "Closest in your stash — a weak match for those answers, shown honestly rather than reaching outside your stash" : "Your Vibe pick — from your stash") + "</div>";
+          h += '<button type="button" class="vibe-strain" id="vibeOpenGuide" style="background:none;border:0;padding:0;color:var(--ink);cursor:pointer;font:inherit;text-align:left;">' + strEsc(s[SF.name]) + ' <span style="font-size:14px;color:var(--ember);">open guide ›</span></button>';
+          h += '<div class="muted">' + strEsc(strTypeName(s[SF.type])) + " · THC " + strEsc(s[SF.thc]) + "</div>";
+          if (res.matched.length) h += '<p style="margin:10px 0 0;">Why: matches <strong>' + res.matched.map(function (e) { return strEsc(e) + ' <span class="grade ' + strGradeClass((EFF_INFO[e] || { g: "F" }).g) + '">' + strEsc((EFF_INFO[e] || { g: "F" }).g) + "</span>"; }).join(", ") + '</strong> from its commonly reported effects.</p>';
+          else h += '<p style="margin:10px 0 0;">Why: none of your owned strains lists those exact effects — this is simply the closest one you have. Its reported effects: ' + s[SF.effects].map(strEsc).join(", ") + ".</p>";
+          h += '<p style="margin:6px 0 0;">Dominant terpenes: <strong>' + s[SF.terps].map(strEsc).join(" · ") + "</strong></p>";
+          h += '<div class="vibe-temp">' + res.tempF + '°F <small>recommended start · its graded range is ' + res.range.loF + "–" + res.range.hiF + "°F</small></div>";
+          if (res.capped) h += '<p class="muted" style="margin:4px 0 0;">Capped by your Burn Guard ceiling of ' + settings.ceilingF + "°F.</p>";
+          h += '<p style="margin:6px 0 0;">Step up 10°F at a time toward ' + Math.min(res.range.hiF, settings.ceilingF) + '°F as the flavour fades, if you want fuller extraction.</p>';
+          h += '<p class="muted" style="margin:8px 0 0;">Honest framing: temperature steers flavour and how completely the material is extracted — it cannot select an effect. Per-strain temperatures are graded guidance (a heuristic from its reported profile), not a promise of how it will feel.</p>';
+          h += '<button type="button" class="btn btn-primary" id="vibeFire" style="margin-top:12px;">Fire it up — ' + strEsc(s[SF.name]) + " at " + res.tempF + "°F</button>";
+          h += "</div>";
+          out.innerHTML = h;
+          strEl("vibeOpenGuide").addEventListener("click", function () { haptics.tick(); openGuide(res.id); });
+          strEl("vibeFire").addEventListener("click", function () {
+            haptics.tick();
+            var r2 = vibeCompute(vibeOwnedGuides()); /* recompute at fire time — the stash may have changed */
+            if (!r2) return;
+            fuSelectStrain(r2.id, false);
+            fu.picks = r2.matched.slice();
+            strPicks[r2.id] = fu.picks.slice();
+            fu.fxFor = null;
+            fuRecompute(true);
+            var w = fuWindow();
+            fu.setF = Math.max(w.lo, Math.min(w.hi, clampStep(r2.tempF)));
+            fuRender();
+            if (window.__segShow) window.__segShow("strains", "browse");
+            fuGo(); /* the existing pipeline: ceiling guard, connect/auth flow, read-back confirmation */
+          });
+        }
+        vibeRender();
+        var fuVibeBtn = strEl("fuVibeBtn");
+        if (fuVibeBtn) fuVibeBtn.addEventListener("click", function () {
+          haptics.tick();
+          vibeRender(); /* recompute from the current stash on every open */
+          if (window.__segShow) window.__segShow("strains", "browse");
+          var vc = strEl("vibeCard");
+          if (vc) vc.scrollIntoView({ block: "start" });
+        });
+        window.__vibe = { render: vibeRender, compute: function () { return vibeCompute(vibeOwnedGuides()); } };
         strEl("fuSearch").addEventListener("input", function () {
           var q = this.value.trim().toLowerCase();
           var box = strEl("fuResults");
@@ -10713,6 +11132,17 @@ var STRAIN_SRC_LINKS = {
           { key: "oceancity",   name: "Ocean City",               place: "Boardwalk & surf · New Jersey",         tz: "America/New_York",  id: "1l-nqyyhzro", poster: "data:image/jpeg;base64,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", zone: [30, 85, 44, 27, 0],   credit: "Cams by the SeeTheView network — streamed as “Ocean City NJ Live” on YouTube." },
           { key: "bali",        name: "Nyang Nyang Beach",        place: "Bukit Peninsula, near Uluwatu · Bali",  tz: "Asia/Makassar",     id: "NYCpE9Bx6m8", poster: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABALDBoYFhsaGRoeHRsfIiUlIiIiIiclJycoLicxMC0nLS01PVBCNzhLOS0tRWFFS1NWW1xbMkFlbWRYbVBZW1cBERISGRYXLRsbLVc9LTZXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV//AABEIAWgB4AMBIgACEQEDEQH/xAAbAAEAAgMBAQAAAAAAAAAAAAAAAQIDBAUGB//EAEIQAAICAAIHBAkBBQgCAgMAAAABAhEDIQQSMUFRcZEFYYHRExQVIjJSobHwwRZCktLhBiMzQ2JygvFjwqKyU4OT/8QAGQEBAQEBAQEAAAAAAAAAAAAAAAECAwQF/8QAIBEBAAICAgMBAQEAAAAAAAAAAAERAhITUQMhMUFhFP/aAAwDAQACEQMRAD8A+fgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3/ZOJxh1fkPZGJxh1fkb48umdoaAN/wBkYnGHV+RPsjE4w6vyHHl0bQ54Oh7HxPmh1fkPY+J80Or8i8efRtDng6HsfE+aHV+RPsbE+aHV+Q48+jaHOB0fY2L80Or8h7Fxfmh1fkOPPo2hzgdL2Li/NDq/IexMX5odX5Djz6Noc0HS9iYvzQ6vyHsTF+aHV+Q48+jaHNB0vYeL80Or8ifYeL80Or8hx59G0OYDp+w8X5odX5D2Hi/NDq/IcefRtDmA6fsLF+aHV+Q9hYvzQ6vyHHn0bQ5gOn7Cxfmh1fkT7Cxfmh1fkOPPo2hywdT2Di/NDq/IewcX5sPq/IcefRtDlg6nsHF+bD6vyHsHF+bD6vyHHn0bQ5YOp7Bxfmw+r8h7Bxfmw+r8hx59G0OWDqewcX5sPq/IewcX5sPq/IcefRtDlg6vsDG+bD6y8h7Axvmw+r8hx59G0OUDq+wMb5sPrLyH7P43zYfWXkOPLo2hygdb9n8b5sPrLyI/Z/G+bD6y8iceXRtDlA637P43zYfWXkR+z+N82H1l5Djy6NocoHV/Z/G+bD6y8h+z+N82H1l5Djy6NocoHV/Z/G+bD6y8h+z+N82H1l5Djy6NocoHV/Z/G+bD6y8if2fxvmw+svIceXRtDkg637P43zYfWXkR+z+N82H1l5Djy6NocoHV9gY3zYfWXkPYGN82H1l5Djy6NocoHV9gY3zYfWXkPYGN82H1l5Djy6NocoHV9gY3zYfWXkPYGN82H1fkOPLo2hygdT2Di/Nh9X5E+wMb5sPq/IceXRtDlA6nsHF+bD6vyJ9gY3zYfWXkOPLo2hygdX2BjfNh9X5EewcX5odX5DTLo2hywdP2Hi/NDq/Iew8X5odX5DTLo2h1SSaJo+hTgiiaJomgK0TRaiaCK0TRaiUgKk0TRNAVomi1CgIoUWomiitCi1E0BWhRaiaArQotRNAVoFqJogrQotQArRNFqAFaFFhQEUKJomgK0KLUKAgE0KAihRaiaIqlCjIkKAx0KL0KApQL0RQFaFFqNrBjGWrGUYq3HVSSUnvty2tS2bd+VGcstViLadA2lnGM1GGs1K/cjqJJr33GtXe1dbuJlw8CMteSUWnGdJuK1aj8VN2m3s4K+6sci6tAUbEYasJS9xtatXqzSTu207V5JZ8eRnxcCKahFRuXpMpQ1qpP3da7jVbs9lifJEGrQoUZ4Qab+DYnrNRnGKvO1mr2br4bTPq4bi6UU5eklFONtpOk9fbGtWWSydZ7ROdGrQoUbGjpNYlxTeo2m91BqPok9XPXpve1Rdkpr0KNiFOElKMV7tr3Unk7ctfbsTVbO4Y7SVOMYzt+7GKi4qslLLN3W23V2Tb2urXohnShgwc5RajqwktWkk5ZOk2s5a1X9qWRrOFvCfutS4QULqbTuK93xXjsJGdmrWKtG9OEZ4monFLWfw4OHGqvekm+pr42GkoNbJJtWlfxNZtbdhYysprtEF2imXEsowJE0WSJo6soomiaJoCEiaJomgitE0WomgK0TRahRRWiS1E0BWhRehQFaJomiaCq0KLUTQFaFFqFEFaJotQoCtE0SKAihRNE0BWhRahQEUKLUKAqC1CgKgvQoCqRNE0SQRQomhQVFCiaFEEURRfVIoCtFniSapzk1wcpNZbMrFEChb0s7vXnb2vWlbXBuyrbu7dva7dvmwCVBaIycXcW4vim0+qGs6at09qt0+a3lgKFYzlG9WUo3t1ZNXzoa8qa1pU9q1nn3viSQ0KgtW+Da5C3xfV7ePMtROoBXWdVrOuFur40TPElL4pzlt2yk9uT2sgglQtylyk0k5SajsVuly4CTbdttvi22+pBIqAV3du+N59RPFwoL+8mlWxW2/CKzNDTtOcXqQyra+L4I5kpbW9rd7d5xzzr43GLf07S0/dw2mms3T6ZnPcq2lXfEhrecpymfrdU7VE0WUSUj3vMrRKRZImgK0TRaiaArRNFqJoCtCi9CgK0TRaidUClE0WomgKE0WomgKUKL0KApRNF6FAUomi1DVArQovqjVApQovqigK0KL0KCqCi9CgKE0WoUBWhRahRBWhRahQBE0KBA1RRNgKihqgkgq4kapkonIWMOqNUy0Q4ixj1RRlUQoWLGPVLRwbMrwO9FE2t5m+lJ4dFfR8CW2yYtkFMTDox6pONp2HXxJ8szSxu1K+CP8XkTeI+rTZnNRVyaSOdpen2tWGS3vezUxtIlLa2/wA4GJ3tOWXkmfjcYobXEq5d3LLMs4rb92Viu+zjbQ3luXeUsyU6zzIyRFd9RLUSkTR9O3lRROqWSJ1RYrRNFtUmhYpROqXolRFilE0XSFCxWhRehRLFaFF9UULFaFF6FCxSiaLUTQsUoUXoULFKFF6FCxSidUtQoWK6o1S1E0SxTVGqXoULFNUUXoUBSiaLUKCq0KLaooCtCi9ChYpQovQolihNFtUJAFEyQwktuZQupmZtqKWnBSa3GRaNEw2ZoSy2mJtqKY5YFFHhPgbTY9KkTaVqGPD0VNZsmWh8GW9KaOmdsalxhHWksrfwp/qTaVqGaejyXea2kzWHFyll+vcjTn2zjb3Fco+ZoY2kSnLWnJt8X+hORNW1LtXZqR52a2Npk52rye1K6MJDkjnOcy1EBSckiJu+RR33GFF39CHXMtTp3kuRDkqyJYp9X9OgtbS0W95VhSGtK8t18EY5vcZYy8a3df6lVGyK9KkWoskTR9G3kVomiyRKQsVomi9E0BSidUskTQFaJoskTQFKJ1S9ChYpqk6pehQsV1RRaiaCqUKL0KApRNFqAFaFF6AsUoUXoUSxShRehQsUoUXoULFKFF6FCxShRegLVShRcCxShRcCxSiUiwJYnLgHXAgEUpEapIogihQAFku8w6TpUIJpy95furby7jS7Q0p/BB1xaf0OVNOu7qc8svbpEN/F7Sk8lUeW3qaLnwRi5LqRLEyOWUzLVLtlXKl3E4GmSw5Jp13rb/U2dIwo4sdfDymouU406a2uUfyq71TyrRniGHXzt5l1hXvS5mSMIpXt5iZiBRa0s9xNLdmTJsZ8DIpKT4bCuvwRkUHJ95Pq/GSXHO2FUIUc6Vt9xdKEdzfN+RnwdHxZv3Y6q/hX9RQ1pYM3shP+F+RXUnecZLbtTR2NH7Hd608R33eb29Do4WiYcdkbffmajCZS4CyQRY9tvPSKJoFkSykUSkSiRZSCaJJFrSKJLJZWQiWUAlogWUAEiygAWLKCSLFiyk0KIsWLKTQoixYspNCiLFiyk0KIsWLKSCLFhaSCLAKSCCLIUkUACihQFgoBFiwUkEWUxceMFcnXDvFlLg11psGnnX6mvi9o/Kq73mZnOF1lvTmo7WkcvTNLc1Syj9+ZgxMbWdu2+LMUsQ55eS/jcY0xubKTmJ4hiq95lpWU2zYjhKtjZGHo/F/Qyzi6y8vEzMrDXngrikZtGxJYTVSzWa3V0zopCFycc3tql+iNn1VqnOsO9msm7/4pN/QnuUsksLFeVYU3v2wb8Ph8LX3MGkaDjQm1qS1ltpX4prcZnHR4J/4k5VSeSjdbUtv1NvRu0FgxrEWtFUlWbzzrN7MjWs3UrblaPouLiK4RclvaX67Do4XYE2lrSUHv/e+mz6nQXbEHX93i57/cy/8AlZjl29hJ04YvSH8xuMIYuWaHZUKaSgrrPUvPvt5o0tN7CpOcZwSSzTTiu93b6FsXt2LT9GpxluclGvuzm6RpM8SVzm3wT2c6NVBEyxrSfR2sNVKKTbdO8lsytVZVdqYq/e+hqyl/fc6XWCX6mMmKy6C7XxeK6Isu2sa1muhzQVHsdeL3MX3M1vWY8foyPWlxZ0pi4bVvgXWJ/pRpetLv+nmT613MUW6Cn3Is8d9xzfW/9P1/oPWXw+o1NnQ9I+7oT6V8V0Od6xLgvqT6eXd0Y1LdD0r4/Qa/ec9Y0u4vFYr2JvlH+gotvelfErrI1lo+O9kJvlFmRdn6S/8ALn0onotmWKHiGH2ZpO9SXOSX6ll2Zi75RXPFj5j0WtrCykuzZ/PH+Nv7IpLQa2y+kn+iLcDNZXWML0KPzL+FhaNDi/BC4Rm9IuKIeKuKIhokXsjjPlGP9SZ6HFf5eL4uMf8A0YuBHpV8y6oemj80eqIWiwdZpc8WH8pPqcN8or/9ut9oC4U9MvmQ9OuKEcDCzuUUuNzd/RGBrPLDg1zxP0khYz+njxQ9YjxRjtrZgx8fSP7sp6x/48PpPzFjY9OuJHrEeP0fkYFpFf5eH4xv9SfW/wDx4X8CAzesR4/R+Q9PHj9H5GGekNrKGGv+GH5WU9PLhD/+cPIDZ9Yjx+jHrC4mv6zLu/hj5FXjS49Egra9YXEj1iPE1447vOT8EkTLG4OXNtfagjP6zHiPWEa3pZfPPq/MlYj+ab/5PzA2fWET6ZfiNXWlxl1ZEcm2rTe1rJslqx43aLb9z4eO9mDE0pz+Nqk8klkbMsJN21b4kPRovd9DnLTUliR5+JjxJO6qjpLs1O/dqtt5V1ZOF2Xr7LS5P9cjFU1DmUzFI78ex4rbKS/ha5mKXZ2Aq1pNPPYtv3ozcQtOEoNvJGWGFWbdMy6RSfuRpXkm7f8A2aeLjMzOUyM6m9t91PLwLvFp5xUst+t+jNFYrvzJc8tqvbyMxdo6eH2q4Koxwo90Y7fqa+Pp08WVyduKy93ZfI5tvbe/MyxlBU875I67yasri5Sznsd0kvHPb9yMfFdJWlvfwvdkqfNl8GpuK3N97+5XHjCTbuneWTeRJy/Vpili4m1uL5ryIksRrW1YtbPiz2fLd/SjZhhQyjrKTv8A0q+peejKbtSiu5r6ZXnd9SchTTwNaTqs6yUc7fXhZsTyjnUf93u58CNJ0CMaevFq0ms3tazdov6oniQglGnrbKptRvlvQjypTl40vetPZWfet5muM81KMeKbqn3dxvy7Fnuhle5xtfUw4vZE0m6eXFx2dSx5IXVrai+eH8SIUO+L/wCcfMpLR3Wsmqz25bK80YdVr/tGt0p7p/2fkvix8Ff8n5Fn2LhRXvaTHlGLf6lI4sLpelk/9Ef+jY9V1s3g4v8Ay1Y/eR2uXOmnoOiYMo3jTnB3s1W3XhZsy0bQ1+/ivlqL7kYmFCCbeA3W5Y0JS6JMrDGhu0Ob5tv7JC7SmWK0NbMPElzkl9jL6bRY7NHXjOT+6MDliNvV0OCXB4bk/HMiU9JrJYeGu5Qw/wBUFbkNLwn8Gj4b8NYt67JbMCK5YbS+pwtLnNOsSbk6v4niLPvzRrWlkk/4V5ikeln2rix2uEO5yw4/RmD202/8VeDl94o4kJyWz7peZs4WlSu8S5VkvevwzTJUK6D0+T/zm+fpf1RLnGSuWKv4JPx2GLD0zATywXfdJfyh9pwXw4TX+6T/AEoDJOcVVSxGuKhl90T6aFfDit98or6tGlPtGT2KK5K//sU9dxN0nH/aq+xRv+lyv0CdbfebXjVELTGs/RYarjDLq5Z9DmzxpS+JuXN39yt9wG7LtOf7rS5QgvrqlH2liv8AzMRcpV9jWFMehknpM5XrSm+cr+5S62V0oJCiiNZjWf5ROqEuQtEwx5Ruqz2+7F/dFMuBNClwFqjwJsgMWFk2Qovw5DU7/uSxOsLCi+P6FtR8/FksVvuBfUrgFyFrSmZKTM8MJvYvoZo6HN7VS4vYTYppJMsoM3oaBJ7jah2Wq2u+aSXhvMznC6y5Op3MyQw1/RbTs4eh5e9nXfs+xmjgpbMvziYnyw3GEuRDRG3mnHK0t7W/ntXU21gQTUUne23k649TcajHbSZhliR1lKraVLcZ2yy+LrEfWLSnqQv3qVZRdbXWb2mPBwZptSdVN1m23Gt995mn721tLuyJw6Xmy8eU/TeI+LSSVK89y35dx5ztPFaxJJ5Vs3Uj0WJhxbTaTa2Os1ye1dTS0/QITTkozeJuqSl/92jPHMG0S8niybz8cuHH84FMHRp4jyX5yOhpHZmNFZweXD8/M8zc7O0DF9F6RPJtvVrak+PHIl0tOXLsyUVb1qus0lnnlWs+DMWNo81G/epbXfQ7umYanNwliLDVSbtWm9eTX0ZzcfsuKTccfBd99PoWyIcdzrIRnZvy7N/82Cuc0Y3ok46zSw5xjm2sTCnlxpOxcLTb7IlHXTkso/Fxq1mjn4+G8OcsN/uNrZV57eRs6LNw/vFhpRaav3mnzTf59q6Xeo5uKp1Fb6pcVvRUa0cSk00mqeTSaHrk+7lWXLkY5u9ka8W/uUslDZelyeWW579zIlps9aMk6cbqs9u3bZrohsVBboQ7Yx1tlfNGwtPxJJ609t5KNKuDpXs7zjl1OiTjCxk6EIR924vVTbaT40nV90UU7Q0LDbi8By1Ws1Osn3Vu8jVWktbf0MkdJ1uGfh+ckZ9w16dmGl6qqKjHkl+pZ6a3w8IxX2RiFnup5bX9ak98+rKyx5va5vnIAIhSfBr/AJMyJy7iuZbVCoz7hb4kPoNb8yRAa72K7/qHLkTnw6ItolUWpdxXwZNEtVsgVXh9Cyi33ksTRCRbUZKwuMkhaqCjKsFb2SopE2KYkhT4sy0u8lRRNimLV5/QKD4mVRvJZ9xnwdFcvi1l4f1JstNVQ70Tqd5vLs6fB1udGSPZy3yXVfoTZdXNUUkTSOvg9npO4uV8Y397RsR0FN246ze9u78Vf3MznC6OCo3sVmfB0e9usuUU/wD2R2/VHwivB/qZFo3Ft9UZnytRg4nqMn8Kpd8lf6GTD7J4u+Vv9DtrBityLfnExyyukOZh9lxW22+n2szR0CK2LzN2yJO/zaZ5Ja1hgjosV3mSOFFbvoWryJcfrx/ORnaVpGRW+/LiUxcaMd7fLz2GvPS29mX1ZrHDKUnKIbbyzdLmauPpLuKhmv3nvXerNeeI3tZZKl3nfHxRH1znydKwUn8Va1557e9F54T/AHUm/wDVJxX0TKNmSGLufgdac2vPExk/8C1xWIn/AOpjni421aO62f4iW+uBvkOTQm1uGvhvH1E1hrWbeUndLdbXiFg6TLbLChyTl9GbCxX3krFvYm64bupxznPF0xjGWnpOthYLTnrzl7qySzfLu+xr43amFhpQjBy1Pdu1u4bTW7W03XkoweUfv+fc5c0c4i/rczTbUljYmtL3FJ55rLLe/BF8bs3AezSYrnqv9UaUJe7REo95aS2WXZKfwY2FL/l5WVfYWI/3octZ+RrywnxMbwnsyFT2emTG7Klh1JuDbdKnbzT7ie1dX3IuTThH4a453fKiNEwv7xJmDSoTniSklabdZrZu/QsI1HXeVoyvBl8rKeD6FKQFGO9teBMnqtJppvZaoj0i35cyWUs8O/htlGqM0dJpUpRXJRX6GxLsvGlHWUbvPbbJs1TmvMz6PiOKpJfqVxdGnB1OLT7yMNVnvtU878NxfqRNO6gWpFkj0W86iRZIlR7yyXIbFISJr8zLKNltTd+pLWlNQKHP6IyLCb3My4eivgTYpraiLJd5uR0NmVaETZaaCittlqT3nQjoL3X4LyMkezXvvqTZdXP1fz8ZGr3M60ezVtdfUyx0Bc+SMznC6ONCNt5F1hSf7qXgd2OhJbm/EyR0aK4ff7mJ8kNRg4UdElxXgjLDs9vbb+h3NRIso57GZ5F0cmHZi3pdPMzYfZ2H8t9PJnRS7g5PkTeWtYamHokY/DGKrgnf3M3oO9rlS+yMq8SPAm8rUKegjwvveZdRrcHLv+hD2EspZrusW+7xI1aJSIpb/wCkRzrmyziSo8Aioom9m4J7K37MwKuF/n2JpFda3S25r83lXFytqrWWea27AJlJbTn9p9ovBcVq0pp+8nnlV/dHQVb6WexP6sYuFGSSlGMt+eddS4zUlOFDTcOWdy8VddLLrHg9k4+Lr7m9pGgYeq9TAw9bdS1Psjj4vZON8rarapJ+GeZ6Y8sS5zg2o48FtnBPhrIl6Zh/PHwz+xzZ9mY05O8OTe9vZ12D2TjxusNrLPNbOprkhNG+9Nw/mbfBRlf2MMu0MLi34Gjpeh4mFBTxPdTySybb1W0suRtYHY7klJYsXBpNNXbT7nWe3eTkNGfA7Ug/dz4LWyvuvMzPGxJbFGK73n4ZFsDsnCjm05Vt1q/QnE07Aw71abyyh3d+wzzdNcbBi6PjNJtyna2Rpfql9TlabCcHqyi482nfRs38TtqWdQiuF2zl6bpUpycpVfdsM7ZT9Woj4xRlmUmyYSyKTZUWw1aIrUd0n3NOi0Mo20nzKylGm7p8KszMqviNZtau7LVyMfu7O69kk7LSdVezeo/9lHJ3fTdXcS1X0SSjOX+110ME0o5N9DLhxbU5Ll1/GYpNbE6W9bdhbRTWrY+hkWnY0Xli4i5Tl5mNRzyWe6uPfZDXxXF5dwG9h9r41/4lx4TSf3N/Re2MOqlhLDX+nZ0VHBhd5Z8izeUUuS++RKgenWkYOJnDFjyfu/dFpYTf7trjkeQuTbTdc8i6m4t6r8YmdFt3O08KCh70HlsqOzlwPN4ip5LLi0bkdPxFsxZ8tZmObnivW1ZNOk5ZvPfmaiKSfbtx0ST3dTPh6DJ7n4Kzrwg9zl1LrCfA1yMaOVHs577+xmj2d3fVHTjhNF1gknyLq5sNA7l4mWGhJcOhvrBMiw1wM7y1rDTjoke8yQ0WPCzaUe4skZ2lahgjo6r4euRdYJkiiUiXK0p6Nb/Iuor/ALskIgjZu+xYgbv6hTmN20IlMIJBlWvxAKtsI695DX5ZKAPw37Cr/P8Asvq1tYjw3/mRBFbOW0lLqTJVyIvdnQBR/MidiKSv/Us+6+SDy2LPh+ZIos5cNmxkOeyiMLZd5vdtXg9o1Wt9ATWXk9mW8hJ7aq/zmXfDoRs8duYFW8/67vAmW3nx2GHH0zDw/jkr52+hp4nbeGtilJ9P1LUjp/m0hyzPP4/b038MIx5ttrlsNXE7axmq1640l9y6SlvTyfekg9tb/qePxO0sZ/5k/CTX2NfE07Ee2c2++Tfhma0Noe2xcWMVc5JJb20l1eRoy7WwLr08P4r+p47SMec/ik5V32ka+ZuPD2zu7vbnaUcWUcODuEXetxlsy7km+dvuMPZXaksB6rt4bdtb0+K8jmwiZ4YDbyXhefJHTjiqZnJ7B6mLhtqpRksqe3+pztI7HzbhNVuT+1mTQHqp06VK01Udm57tmwyYnaeDG1rX/ttrrsPPMTjNQ6RNw4mmaLLCrWat7lb/AEObiJuV7jf03SXizcnyXLdZqJZm4ZlkWHSRSeGZprPJ9DHKxsUxSb4fQ3sLsnEnCMk4VLYm5WueVGtFW6u3t3V9Gd/QsaSw4qOE5KlncFffmySObPsHErJ4SfOf8pr6R2RiYUXOcoasc3m78Mjv4mky34OJ4OD/APY1dK0rBcXDF1oayy1ou8uDVraS1cTCi5QnGPxUpKtrrbW+6s08ROD1ZJxb2ayabNv0sYYnuYinW9Jx+j/qdr2hGWBrYus4S92SzrhmWynmFN3ezxKqW1vbfDPqekwuytExItwjffHEm66tmrj/ANnV/l4nhNLP/kvIXCOJGVbd+788SZyrO7N32JpDxIxaX+7WTjlxZTT+zp4Mkp1nscXf9S3AwYWjYuJB4kYykk9W0r2dyz4FdGhJY0eKkutnqexVFaPGNrWuVq1tt/ocrTNB9Bi61r0d2ndvlW9k2sp1NIxZVXo/SRatVk/DN59DjT03FhUJaqa2ppN8c62ctp1eyNJc1PWexqlwVZfb6ded2/gNYuuvhmln3rJ/oZx+0r2KLIxqRa/zeZKXRZGOyyf5kFpe/wChNlKLWQpNst9zHZZOwq1FitkbuDAskTHYRZHV+CAuQxW6n9ES0t4ELfuEV3tlqRKYFVHl+d4UPzzLcissRU7f1AvHuKykkm26rbZgxdIX7u1b9hp6Wp4le+4f7dtZfXLgzUYzLM5Qxy7Y1cSacstZxikrbd5Ljs/EZMXtfCi1GUnGSq04uWXfzORo/Y+LGSaxNRb9Vtut6zy6m2uxMLW1paze+3t778qNzjDMZOng9o4OI1GE1J1eSk/zmzPqSu4ta3h+f9Gro2i4cM4QinyVmzZNF3ZKTyeS4cSzz2bDFZOs+JNDdkTrP/pDV63tKa7DnxJpK7wtHPbu8TX0yWIl7ijbyzay7zKpZ3RWcrryyoayu0PN6Xo+LF3iJq3tydvmjVatHsHiLd0MfoFJtOMXFpbduX4jW1JVvHuJV4Z6/C0fCg3UY1xaV8rZaWi4etlhwv8A2RG5q8XKBE9Fm1rar1eOddT27gktV0r7icKGVPNbmOQ1eFw+zsWecYNxvbFSkvsdDRv7P40lcvdi9razrkepcc6y7ir9z3dbPvveJ8uUmkOXo/YeDFX70nz/AEVUa/aMVhyj6JKDaduKp8u47tU9v2o1NK7NjiycnJp+H0M7TM+1p5rEbfxNvm7MTR2sXsh7pJ81q9Npp43ZuLHbhyz4Z/Y3cJTnSEVtz4c/BGaejtNppprank0UeD38yoxu088vBkNtvLajO4XxXJkR0OUvhjN8k39jFNKQhm7W49Fosv7uHJHAlhuD95STW3WTT+p0vaeFCKWbdZqKe3ftqxMek/XQlIxY+FHESUoqXNWjmYvbcf3YPxdfRGFdty/ehFx/02mvMmsrcNyfZ+G84ww/4UzLh4CUXHVST3JKn4bDQl21C71H1Qfbcd0JfQzWS3Db9WipWkk+60ullsNTjXvSaW1Ws147DUj2xhvapR8PJ/oH2tgu85K96WwVkXDfWPxTWfPLiRi4eHi5SUZNXWea8VmjUhpuE1fpI+Pu/RlfXMJ2nOL5j2em/omFHCjKMbqUtbjnSX6HM7c0ZylCcIt5NSpXVZr7vojN61CCX94q3a0rvk9/Oy607Dyucc/9SRYmYKaPYeL/AHjTrOPPNNf1Ol2po7xMGUV8Sppd63eKso8aEpKTSbWx5NrxK4namFHbiRfHNNrmkL92lPQJk31KKKeTzMiigIUlxT8UXQTJUfEipRKYLICEr3kklgK0+4skQibAksjGp5eRMsRJazyXfkBcbe41ZaZFbFrfQxS0iT4JdxqMZScohvayWdrmYZ6SryzNNyt5u33km4wY3ZpaQ33GOggaiIhiZlNlbDJisyjItgIBALRmyqFgZU7JMNllicQMliyLFgWKsCwICk0LK2RbZfSeHHePh2bDE2ZYYfH88TGURDpjMySkpJP6k4jaXEib1cknXUYfh9TDarafF89ottqvq3s8S0277uhGbyppAG2pN1a5Z7CsJKT253vVdCyVO862GPFjbVAWnJJpN1b2lcaCfxJ806f3JlLOt+3PPxDWS1UuTyAxTwIv4oqTeSlk3ybOdHS9G15ZQiti934q3tJZGXT9M1ITi4OLkmk92zbzR5yTN4xaS9I9N0fa5Rvk7+1mHF7U0aq1/wD4y8jzspGvOWZrWGbb2lY3pJuTum8k+CukaE5GxKXHKlWW9mtiGoZljlIq5EtkUVEaxGsUuiGwrJrEWY2RYRlcyrmYmyGwJ9Iw5PiYrLWBYiyLFlH1FMmzG5pbS9nnbWT77LIpZKYVkRKZTWKwlazi0++iKzKQTKFkv+gLJkJUt/UkJUgJRraY7aWx7X+dTY1bNDFxNaTfHZy3fneawj2zlPpBNlUWs7OSyBUkCbIbBVkFrLw2GIyJgXsWVskCbDKiwJFkACb4F1icTGAM2sLMKbWwssRcn3gZCEvxiKvPcZY92zhu5mJybxxVSWxZ95kjw2GPW22mun6E4UXbt39Uc5l0XUqyTvmUT2usnwGKlv8AoiUre3PciKjElf8AVCCeTddweIr3p95FtLPfsAObzaqysXLa3kHJpZ5X4nF03tZxk44SSSbzedvivqWIsduWxlHNJNuSUYq3e5cTymJ2jjP/ADZrlJr6IxYml4klUpzmuDk39zejOzY7R0x4stbNL91cEaDYlK+JSTOkRTMkmY8P475/YSZOC83fcgjI71W9xqykbOPKopLZWXHvNOTKkhDZDICKsqyWVChDRJDYFWVbLMowiGEwyIgSAwB9OLJlEyyZxdF93EiDlnratbqvYRZYgvEsilkphV7JTKKyUyKyIaxVMbQJnmmk6bVXV0aktHmtylydP6m2mSnTLE0zMW5zy2prmqJs6EjXxIYS+LVj46puM2Zwa9iyMXFwUrWPHlal9jTfaeHxb5Jm4m2alu2LNeGm4ctk145fczKaexlReO0uY8N7eZWekQjtnFc2iDMmWs0/aGEn8a+pnwsWM03CUWltzf6IFSu2LNbtLSno/o3KKcZSqUrrV2XlWeV9DeWFFPN/ZIztDWkqWLMjjT+DLvz+5kTrYv06E3XRr6r4Ml4UqTyz7zO5K7f22ERbbyeVZWjO8taQiOjPe65GPH0NTTUZSTri0vE2pVW0xrESVbybStQ5mE8XR8T34ymmstXPpw5G3i6Y0taWDNR4+62u+rM6d7bfjvMu1cGxatOHaGDPY0pf6sn4E+0cLYpNut0ZeRbBS1m1GK4tRzfn+eOeavvJ6VqYGk7W1PV4uLeXcvi+hlhjRl70c03tT4cSzdZZZ9fzM5+N2dqQTw8WUG2rtupW6WzmX0OlVp7H3mnpWlJRcpJrVzW63nS6ojAljQi1JxmlvvVkvpT8aPP9pac8WSpVGNpbHzf0XQRjcozY3a+NKOq2udU+RzMTFbebsq5FU0dIhmZWCm6e7dRUS5GmVWyspBlGwKzkZdH2c/NGDEz2GfB2ZcVtAyaVLYlkacjLitvbtMTRUlRigAjHLaVZaW0qFRYBAAoyxARUqXKyAmwyqJA+mJlrMNl7ylnVxrrOFrpZybZFJPY0Wsw23WaXfuXNeDEJ8XWeWbvb8Lzq67u/k1LZi2skYNbg8s97eW7a/tW3xJbtUn8UXvfzvLNtrKKFFtiM+9EuRrJvLPd+r2rkm/DvIUqTzzzrO99Vtp1yv6jVbbUXvJTNecqbSeVyrNvJN1v/AFV7qeZo6f2jPCajBRpq7dve1ln3bxrJbqTxVBa0pKK4t0jm43b0Y3qRc3xeS8/scLGx5TlrSbk+Jh12ajCE2buk9pY2Jtm0uEcl/XxNVSZTWZVyNxCWyN95FmO1xDYRewpmJzZGv39AjYlit7W3zK6xh1yk8dL+hYi/g2bLRxKNL1jmYnjN8epuPH2mzq6Rpkp4Xo3PWjHNJ062+Oxs9B2NpyxsGOvKOusqzTyVW+LfdkeNWMqWTf2+gjOjOXiifTcZvoym3lWwmfNngsDtHGhWpiyiuGs0umw6EO1tIr+8xZJKnWora329W6/MjH+fL8leSP16rWvJZ+BeDa27Dy3tPGbynkuHvfodbRO0fSSUJe5LOmm6lW2uH1Jl4MsYsjyRLfUtuV1+UXitZXsMbz2P6GWDq6yRwdENxyWVlVrXZX97b9C8ryqgJUnsrmU1qlkTJruMbvcBmcqd7mY8eFtU3waRDmmlF7c+9bfuc/tHT1gKvim09VbV493kIGp2t2k/ewoPLZN5fwnDnInExG22223m2Ym8ztEUxMra5FkawTNMrPdnvKOQk2mY0wLspINmLElkUWjK8lmZZOlyRi0ONys2W1lS3fSlX1oDFNmNsmbKFZKIaLBSIMEtpBfFeZQKhEMMAVIZZlWEQVZYhoCgsmiKA+j6xkizwy/tbpHyYX8Mv5i37X6T8mD/AAy/mOestW9w8yyPDftjpPyYP8Mv5h+2Wk/Jg/wy/mGslw921xJWR4T9stJ+TB/hl/MSv7Z6T8mD/DP+YayXD3e1rdROseD/AG00n5MH+Gf8wX9tNJ//AB4P8M/5hrK3D3jVnmNOx3iYkpXatqOz4VsOVL+2mlNNamCr4Rl/Mc59t4r/AHYdH5lxikmXcbKuRw32xicIdH5kLtfE4Q6PzNsu22UZx/a2Jwh0fmPa2J8sOj8wOxkHI43tTE4R6PzHtTE4R6PzA61ka6OS+08ThHo/Mq+0Z8I9H5lj+jpTkm85PuSKWaHtGdVl9fMr67LgvqdIziEp0U8zLONHKjp007qP18yz7Rm90ej8y7wlOk9nf+f0GHBydJW+BzPaE+Eej8zaXb2IlFRw8KOrmqUtvHN7dmf9ROUSOhGKSykm8uPTP8z8DJHF3OdbaV925HF9rYny4f8ADdcrM+D/AGhxofu4b5xa+zRvlxiPTM4y7MZblFyXHV1b8X5nR9Zm4t6idNNvWeV277t+xnl8T+0mPJ6zjh29rqWfftIwv7R40Xajh3yln9RyY1/TWX0nAcvRQlLOUoQb5tKyyna4HgYf210qKSUMGkkllPd/yIn/AG10pprUwc+EZfzHhnCbejaHvp48NanOMXwbSb8DHiaVhQ2zivFfofNcTt3Gk7koN8n5lfbOLwh0fmXQ3h9Afa2DVNt8o5fWimJ25hL4dd8kkvueB9s4vCHR+Y9sYnCHR+ZdIN3tZ9u8MNvnI5Wk6TLEk5Sdyf5SPPPtfE4R6PzHtbE4R6PzLGMQk5OxKRWzke1cThHo/Mh9pz4R6PzLSW66ZMZ1b7jj+058I9H5krtXE+WHR+ZUdbEe4x6xzJdqYj3R6PzK+0Z8I9H5gdSys5JI5vtCfCPR+ZWWnSe1R6PzA7WFHUhfH6FozpPKzj+1MThH6+YfaeJwj0fmB0WRZzfaM+Eej8yPX58I9H5hHSbFnN9fnwj9fMevz4R6PzA3sTaVRpPTpcI9H5keuS4L6hW6yGafrkuC+o9blwX1A22QzU9blwX1HrUuCCNog1vWpcER6zLggNothYes+40/WZcEZI6dJKko9H5gaoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/Z", zone: [19, 41, 32, 17, -2],        credit: "Cam by BaliForum — live Bukit Peninsula beach cam, on YouTube." }
         ];
+        /* Break coordinates + offshore wind direction (the direction wind
+           blows FROM to be offshore at that coast) — used only by the
+           Wave Forecast fetch/score in this same script. */
+        var SPOT_GEO = {
+          pipeline:    { lat: 21.665,  lon: -158.053, off: 135 },
+          waimea:      { lat: 21.642,  lon: -158.066, off: 135 },
+          huntington:  { lat: 33.655,  lon: -118.003, off: 45 },
+          santamonica: { lat: 34.010,  lon: -118.496, off: 60 },
+          oceancity:   { lat: 39.277,  lon: -74.575,  off: 270 },
+          bali:        { lat: -8.815,  lon: 115.086,  off: 70 }
+        };
         var DAY_START = 6 * 60, DAY_END = 19 * 60, DAY_CENTER = 12.5 * 60;
         var DWELL_MS = 20 * 60 * 1000;
         var LS_KEY = "ff2alt.surfAutoplay";
@@ -10800,6 +11230,14 @@ var STRAIN_SRC_LINKS = {
 
         /* --- state --- */
         var autoOn = lsGet(LS_KEY) !== "0";
+        /* Auto choice: "best" (live forecast score) | "sun" (Follow the
+           Sun) | "off". Stored mode wins; otherwise it follows the
+           existing auto-play switch state. setAutoMode keeps the two
+           in sync (autoOn === autoMode !== "off"). */
+        var AUTO_MODE_KEY = "ff2alt.surfAutoMode.v1";
+        var autoMode = lsGet(AUTO_MODE_KEY);
+        if (["best", "sun", "off"].indexOf(autoMode) === -1) autoMode = autoOn ? "best" : "off";
+        var lastAutoMode = autoMode === "off" ? "best" : autoMode;
         var zonesOn = lsGet(ZONE_LS_KEY) !== "0"; /* lineup zones: default ON, remembered on this device */
         var currentKey = bestKey(new Date()) || "pipeline";
         var mode = "idle"; /* idle | loading | playing | waiting | fallback */
@@ -11024,6 +11462,30 @@ var STRAIN_SRC_LINKS = {
            a new feed never opens pre-zoomed on a corner. */
         var zPointers = {}, zDrag = null, zPinch = null;
         var zMoved = false, zPinched = false, zTapTimer = 0, zLastTapAt = 0;
+        /* --- Swipe-to-cycle + hold-to-move state ---
+           At 1× only: a horizontal swipe released on the player cycles
+           to the next (left) / previous (right) break in SPOTS order,
+           wrapping — through pickSpot's own path (a manual pick: Follow
+           the Sun pauses, dwell restarts when the new stream plays).
+           Zoomed past 1×, the same drag pans and never cycles. In the
+           mini stage, a ~250ms hold with little movement arms window
+           move: the drag then moves the mini frame itself (clamped
+           fully on screen, persisted) and suppresses tap, pan and
+           cycle for that gesture. Hold takes precedence over swipe. */
+        var zHoldTimer = 0, zHoldArmed = false, zHoldOrigin = null;
+        function clearZHold() { if (zHoldTimer) { clearTimeout(zHoldTimer); zHoldTimer = 0; } }
+        function cycleSurf(dir) {
+          var idx = -1;
+          for (var i = 0; i < SPOTS.length; i++) if (SPOTS[i].key === currentKey) idx = i;
+          if (idx === -1) idx = 0;
+          var next = SPOTS[(idx + dir + SPOTS.length) % SPOTS.length];
+          if (streamActive() || mode === "fallback") {
+            manualHold = true; stoppedByUser = false; bgPaused = false;
+            startStream(next);
+          } else {
+            pickSpot(next.key);
+          }
+        }
         function cancelPendingTap() { if (zTapTimer) { clearTimeout(zTapTimer); zTapTimer = 0; } }
         function tapTogglePlay() {
           if (!ytPlayer) return;
@@ -11043,6 +11505,29 @@ var STRAIN_SRC_LINKS = {
               zDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, px: zoomX, py: zoomY };
               zMoved = false;
               zPinch = null;
+              /* Hold-to-move arming (mini stage, 1×, not fullscreen):
+                 ~250ms nearly still arms the window drag. Any real
+                 movement before the timer fires cancels it (that
+                 gesture is a pan, a swipe or a tap instead). */
+              clearZHold(); zHoldArmed = false; zHoldOrigin = null;
+              if (surfStage === "mini" && zoomScale <= 1 && !surfFsOn()) {
+                var hr = overlayEl ? overlayEl.getBoundingClientRect() : null;
+                if (hr) {
+                  zHoldOrigin = { left: hr.left, top: hr.top };
+                  zHoldTimer = setTimeout(function () {
+                    zHoldTimer = 0;
+                    if (!zDrag || zPinched) return;
+                    var p0 = zPointers[zDrag.id];
+                    if (!p0) return;
+                    if (Math.hypot(p0.x - zDrag.sx, p0.y - zDrag.sy) > 10) return;
+                    if (zoomScale > 1 || surfStage !== "mini") return;
+                    zHoldArmed = true;
+                    cancelPendingTap();
+                    if (overlayEl) overlayEl.classList.add("is-moving");
+                    try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ }
+                  }, 250);
+                }
+              }
             } else if (ids.length === 2) {
               cancelPendingTap();
               zPinched = true;
@@ -11057,7 +11542,10 @@ var STRAIN_SRC_LINKS = {
             if (zDrag && e.pointerId === zDrag.id) {
               var dx = e.clientX - zDrag.sx, dy = e.clientY - zDrag.sy;
               if (Math.abs(dx) + Math.abs(dy) > 6) zMoved = true;
-              if (zoomScale > 1) {
+              if (!zHoldArmed && Math.hypot(dx, dy) > 10) clearZHold(); /* moved too soon: no hold-move for this gesture */
+              if (zHoldArmed && zHoldOrigin) {
+                miniPlace(zHoldOrigin.left + dx, zHoldOrigin.top + dy);
+              } else if (zoomScale > 1) {
                 zoomX = zDrag.px + dx;
                 zoomY = zDrag.py + dy;
                 applyZoom();
@@ -11075,6 +11563,7 @@ var STRAIN_SRC_LINKS = {
           });
           var zEnd = function (e) {
             var wasDrag = !!(zDrag && e.pointerId === zDrag.id);
+            var endDrag = wasDrag ? zDrag : null;
             delete zPointers[e.pointerId];
             var ids = Object.keys(zPointers);
             if (ids.length === 1) {
@@ -11082,6 +11571,35 @@ var STRAIN_SRC_LINKS = {
               zDrag = { id: Number(ids[0]), sx: p.x, sy: p.y, px: zoomX, py: zoomY };
               zPinch = null;
             } else if (ids.length === 0) {
+              clearZHold();
+              if (zHoldArmed) {
+                /* Hold-drag release: set the mini window down where it
+                   is and remember the spot across sessions. No tap, no
+                   cycle, no pan comes out of this gesture. */
+                zHoldArmed = false; zHoldOrigin = null;
+                if (overlayEl) {
+                  overlayEl.classList.remove("is-moving");
+                  var rr = overlayEl.getBoundingClientRect();
+                  miniPos = { left: Math.round(rr.left), top: Math.round(rr.top) };
+                  lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+                }
+                cancelPendingTap();
+                zDrag = null; zPinch = null; zMoved = false; zPinched = false;
+                return;
+              }
+              if (wasDrag && endDrag && !zPinched && zoomScale <= 1) {
+                /* Swipe-to-cycle, judged at release, 1× only (zoomed
+                   drags panned above and never reach this). Horizontal
+                   travel that clearly beats the vertical drift. */
+                var sdx = e.clientX - endDrag.sx, sdy = e.clientY - endDrag.sy;
+                if (Math.abs(sdx) >= 48 && Math.abs(sdx) >= Math.abs(sdy) * 1.4) {
+                  cancelPendingTap();
+                  zLastTapAt = 0;
+                  cycleSurf(sdx < 0 ? 1 : -1);
+                  zDrag = null; zPinch = null; zMoved = false; zPinched = false;
+                  return;
+                }
+              }
               if (wasDrag && !zPinched && !zMoved) {
                 /* A clean single tap. A second one inside 300ms makes
                    it a double-tap: straight back to the 1× full frame,
@@ -11429,12 +11947,13 @@ var STRAIN_SRC_LINKS = {
           stoppedByUser = false;
           bgPaused = false;
           if (!manualHold) {
-            var b = bestKey(new Date());
+            var b = bestPickKey();
             if (b) currentKey = b;
             renderChips();
           }
           showDock("expanded");
           startStream(spotByKey(currentKey));
+          if (fcStale()) fetchForecast(); /* keep the Best-conditions pick fresh while he watches */
         }
         /* --- Surf Break overlay + floating wave button: TWO STAGES ---
            The wave button (#surfFab) rides on every screen. Tapping it
@@ -11485,8 +12004,29 @@ var STRAIN_SRC_LINKS = {
           w = Math.max(180, Math.min(w, vw - 16));
           return { w: w, h: Math.round(w * 9 / 16), vw: vw, vh: vh };
         }
+        /* The mini window's own dragged position (hold-to-move on the
+           player): once set it takes precedence over the wave-button
+           anchor in positionMini, and it persists across sessions. */
+        var MINI_POS_KEY = "ff2alt.surfMiniPos.v1";
+        var miniPos = null;
+        try {
+          var mpSaved = JSON.parse(lsGet(MINI_POS_KEY) || "null");
+          if (mpSaved && isFinite(mpSaved.left) && isFinite(mpSaved.top)) miniPos = { left: mpSaved.left, top: mpSaved.top };
+        } catch (e) { /* ignore: anchor to the wave button */ }
+        function miniPlace(left, top) {
+          if (!overlayEl) return null;
+          var g = miniGeom();
+          var l = Math.min(Math.max(8, Math.round(left)), Math.max(8, g.vw - g.w - 8));
+          var t = Math.min(Math.max(8, Math.round(top)), Math.max(8, g.vh - g.h - 8));
+          overlayEl.style.left = l + "px";
+          overlayEl.style.top = t + "px";
+          overlayEl.style.width = g.w + "px";
+          return { left: l, top: t };
+        }
         function positionMini() {
           if (!overlayEl || surfStage !== "mini" || !fabBtn) return;
+          if (surfFsOn()) return; /* fullscreen owns the frame right now */
+          if (miniPos) { miniPlace(miniPos.left, miniPos.top); return; }
           var g = miniGeom();
           var fr = fabBtn.getBoundingClientRect();
           var minTop = fabMinTop();
@@ -11502,8 +12042,70 @@ var STRAIN_SRC_LINKS = {
           overlayEl.style.top = top + "px";
           overlayEl.style.width = g.w + "px";
         }
+        /* ---- Stream fullscreen, in place ----
+           The enlarge control takes #surfDock ITSELF fullscreen (the
+           Fullscreen API on the existing node — never moved, never
+           recreated, so the stream never reloads), over whatever tab
+           and scroll position sit underneath. Where element fullscreen
+           is unavailable (iPhone web views), the same node fills the
+           viewport via .surf-fs-fake instead. surfStage is never
+           changed by fullscreen: exiting returns to the exact stage
+           (mini or full) the enlarge was tapped in. ---- */
+        var surfFs = false, surfFsFake = false;
+        var fsBtn = document.getElementById("surfFsBtn");
+        var dockFsBtn = document.getElementById("surfDockFsBtn");
+        function surfFsOn() { return surfFs; }
+        function fsElementNow() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+        function syncFsBtns() {
+          var lbl = surfFs ? "Exit fullscreen" : "Fullscreen";
+          if (dockFsBtn) dockFsBtn.textContent = lbl;
+          if (miniExpandBtn) miniExpandBtn.setAttribute("aria-label", surfFs ? "Exit fullscreen" : "Watch the stream fullscreen");
+        }
+        function fakeFsEnter() {
+          surfFs = true; surfFsFake = true;
+          dock.classList.add("surf-fs-fake");
+          document.body.classList.add("surf-fs-lock");
+          syncFsBtns(); applyZoom();
+        }
+        function fakeFsExit() {
+          surfFs = false; surfFsFake = false;
+          dock.classList.remove("surf-fs-fake");
+          document.body.classList.remove("surf-fs-lock");
+          syncFsBtns();
+          if (surfStage === "mini") positionMini();
+          applyZoom();
+        }
+        function enterSurfFullscreen() {
+          if (surfFs) return;
+          var req = dock.requestFullscreen || dock.webkitRequestFullscreen;
+          if (req) {
+            try {
+              var rp = req.call(dock);
+              if (rp && rp.catch) rp.catch(function () { if (!fsElementNow()) fakeFsEnter(); });
+            } catch (e) { fakeFsEnter(); }
+          } else fakeFsEnter();
+        }
+        function exitSurfFullscreen() {
+          if (surfFsFake) { fakeFsExit(); return; }
+          if (fsElementNow()) {
+            var ex = document.exitFullscreen || document.webkitExitFullscreen;
+            if (ex) { try { ex.call(document); } catch (e) { /* ignore */ } }
+          }
+        }
+        function toggleSurfFullscreen() { if (surfFs || fsElementNow()) exitSurfFullscreen(); else enterSurfFullscreen(); }
+        function onFsChange() {
+          if (fsElementNow() === dock) { surfFs = true; surfFsFake = false; }
+          else if (surfFs && !surfFsFake) {
+            surfFs = false;
+            if (surfStage === "mini") positionMini();
+          }
+          syncFsBtns(); applyZoom();
+        }
+        document.addEventListener("fullscreenchange", onFsChange);
+        document.addEventListener("webkitfullscreenchange", onFsChange);
         function setSurfStage(next) {
           if (!overlayEl) return;
+          if (surfFsFake && next !== surfStage) fakeFsExit(); /* a stage change always leaves the fallback fullscreen first */
           var prev = surfStage;
           surfStage = next;
           overlayOpen = next !== "closed";
@@ -11543,6 +12145,7 @@ var STRAIN_SRC_LINKS = {
         }
         function closeSurf() {
           if (!overlayEl || surfStage === "closed") return;
+          if (surfFs) { exitSurfFullscreen(); return; } /* first close in fullscreen just exits fullscreen */
           if (surfStage === "full" && streamActive()) { setSurfStage("mini"); return; }
           if (surfStage === "mini") exitZoom(); /* folding the mini view away resets its zoom to the 1× full frame */
           setSurfStage("closed");
@@ -11636,11 +12239,12 @@ var STRAIN_SRC_LINKS = {
             if (fabBtn.style.left) { var r = fabBtn.getBoundingClientRect(); fabPlace(r.left, r.top); }
           });
         }
+        var miniFullBtn = document.getElementById("surfMiniFull");
         /* A press that starts on a mini control and slides before it
            lifts is a drag, not a tap: swallow that click so a pan
            across the frame can never land on close/expand by accident.
            (Registered before the buttons' own click handlers below.) */
-        [miniCloseBtn, miniExpandBtn].forEach(function (b) {
+        [miniCloseBtn, miniExpandBtn, miniFullBtn].forEach(function (b) {
           if (!b) return;
           var dn = null;
           b.addEventListener("pointerdown", function (e) { dn = { x: e.clientX, y: e.clientY }; });
@@ -11654,10 +12258,66 @@ var STRAIN_SRC_LINKS = {
         var overlayScrimEl = document.getElementById("surfOverlayScrim");
         if (overlayScrimEl) overlayScrimEl.addEventListener("click", closeSurf);
         if (miniCloseBtn) miniCloseBtn.addEventListener("click", closeSurf);
-        if (miniExpandBtn) miniExpandBtn.addEventListener("click", openSurfFull);
+        /* The enlarge control is fullscreen now (in place, same node);
+           the full Surf Break sheet keeps its own control beside it. */
+        if (miniExpandBtn) miniExpandBtn.addEventListener("click", toggleSurfFullscreen);
+        if (miniFullBtn) miniFullBtn.addEventListener("click", openSurfFull);
+        if (fsBtn) fsBtn.addEventListener("click", toggleSurfFullscreen);
+        if (dockFsBtn) dockFsBtn.addEventListener("click", toggleSurfFullscreen);
         document.addEventListener("keydown", function (e) {
-          if (surfStage !== "closed" && (e.key === "Escape" || e.key === "Esc")) closeSurf();
+          if (e.key !== "Escape" && e.key !== "Esc") return;
+          if (surfFsFake) { fakeFsExit(); return; } /* native fullscreen: the browser exits it itself */
+          if (surfStage !== "closed") closeSurf();
         });
+        /* Poster facade gestures: the same swipe-to-cycle and (in the
+           mini stage) hold-to-move as the live player, for the moments
+           the poster — not the stream — is what fills the frame. Taps
+           keep their meaning (Play stays a button; the poster itself
+           does nothing on tap). */
+        if (facade) {
+          var fDown = null, fHoldTimer = 0, fHoldArmed = false, fHoldOrigin = null;
+          facade.addEventListener("pointerdown", function (e) {
+            if (e.target.closest && e.target.closest("button, a")) return;
+            var r = overlayEl ? overlayEl.getBoundingClientRect() : null;
+            fDown = { x: e.clientX, y: e.clientY };
+            fHoldArmed = false;
+            if (surfStage === "mini" && !surfFs && r) {
+              fHoldOrigin = { left: r.left, top: r.top };
+              fHoldTimer = setTimeout(function () {
+                fHoldTimer = 0;
+                if (!fDown) return;
+                fHoldArmed = true;
+                if (overlayEl) overlayEl.classList.add("is-moving");
+                try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ }
+              }, 250);
+            }
+          });
+          facade.addEventListener("pointermove", function (e) {
+            if (!fDown) return;
+            var dx = e.clientX - fDown.x, dy = e.clientY - fDown.y;
+            if (!fHoldArmed && Math.hypot(dx, dy) > 10 && fHoldTimer) { clearTimeout(fHoldTimer); fHoldTimer = 0; }
+            if (fHoldArmed && fHoldOrigin) miniPlace(fHoldOrigin.left + dx, fHoldOrigin.top + dy);
+          });
+          var fEnd = function (e) {
+            if (fHoldTimer) { clearTimeout(fHoldTimer); fHoldTimer = 0; }
+            if (!fDown) { fHoldArmed = false; return; }
+            var dx = e.clientX - fDown.x, dy = e.clientY - fDown.y;
+            fDown = null;
+            if (fHoldArmed) {
+              fHoldArmed = false; fHoldOrigin = null;
+              if (overlayEl) {
+                overlayEl.classList.remove("is-moving");
+                var rr = overlayEl.getBoundingClientRect();
+                miniPos = { left: Math.round(rr.left), top: Math.round(rr.top) };
+                lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+              }
+              return;
+            }
+            if (Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.4) cycleSurf(dx < 0 ? 1 : -1);
+          };
+          facade.addEventListener("pointerup", fEnd);
+          facade.addEventListener("pointercancel", fEnd);
+        }
         window.__surfOverlay = {
           open: openSurfMini,
           openMini: openSurfMini,
@@ -11712,7 +12372,7 @@ var STRAIN_SRC_LINKS = {
             stoppedByUser = false;
             bgPaused = false;
             if (!manualHold) {
-              var b = bestKey(new Date());
+              var b = bestPickKey();
               if (b) currentKey = b;
               renderChips();
             }
@@ -11723,26 +12383,20 @@ var STRAIN_SRC_LINKS = {
         retryBtn.addEventListener("click", function () { stoppedByUser = false; startStream(spotByKey(currentKey)); });
         backBtn.addEventListener("click", function () { unload(); setNow(nowText("Showing:")); });
         autoSwitch.addEventListener("click", function () {
-          autoOn = !autoOn;
-          lsSet(LS_KEY, autoOn ? "1" : "0");
-          autoSwitch.setAttribute("aria-checked", autoOn ? "true" : "false");
-          if (!autoOn) {
-            manualHold = true;
-            stoppedByUser = false;
-            bgSuspended = false;
-            bgPaused = false;
-            unload();
-            hideDock();
-            setNow("Auto-play is off — the player is hidden and Follow the Sun won't cycle. The player still loads whenever you ask for it: open Surf Break from the wave button, tap Show player here, or tap Play in the player.");
-          } else {
-            manualHold = false;
-            stoppedByUser = false;
-            var b = bestKey(new Date());
-            if (b) currentKey = b;
-            renderChips();
-            showDock("expanded");
-            startStream(spotByKey(currentKey));
-          }
+          /* The switch is the on/off face of the Auto choice below it:
+             off → setAutoMode("off"); on → back to the last auto mode. */
+          if (autoOn) setAutoMode("off");
+          else setAutoMode(lastAutoMode);
+        });
+        var autoModeSeg = document.getElementById("surfAutoModeSeg");
+        if (autoModeSeg) Array.prototype.forEach.call(autoModeSeg.querySelectorAll("button[data-am]"), function (b) {
+          b.addEventListener("click", function () { setAutoMode(b.getAttribute("data-am")); });
+        });
+        var surfForecastBtn = document.getElementById("surfForecastBtn");
+        if (surfForecastBtn) surfForecastBtn.addEventListener("click", function () {
+          setSurfStage("closed");
+          var fb = document.getElementById("tab-forecast");
+          if (fb) fb.click();
         });
 
         /* --- first-gesture primer: any first touch/scroll/key arms playback --- */
@@ -11767,6 +12421,17 @@ var STRAIN_SRC_LINKS = {
           var date = new Date();
           var cur = spotInfo(spotByKey(currentKey), date);
           var dwell = dwellStart ? Date.now() - dwellStart : 0;
+          if (autoMode === "best") {
+            var bkI = bestForecastKey();
+            if (bkI) {
+              if (dwell >= DWELL_MS && bkI !== currentKey) {
+                startStream(spotByKey(bkI));
+                setNow(nowText("Best conditions moved on — now showing:"));
+              }
+              return;
+            }
+            /* no forecast data: fall through to Follow the Sun */
+          }
           if (!cur.day || dwell >= DWELL_MS) {
             var nxt = nextDaylightKey(date, currentKey);
             if (nxt && nxt !== currentKey) {
@@ -11830,8 +12495,245 @@ var STRAIN_SRC_LINKS = {
           else setNow("Surf Break is closed — nothing is streaming. No break is in daylight right now — every spot still plays if you pick it; the ☀/☾ badges show each break's local time. Open Surf Break from the wave button and it starts by itself, or tap Show player here, or Open Surf Break on the Session tab, to watch.");
         }
         syncDockChrome();
+
+        /* ================= Wave Forecast (Open-Meteo, no key) =================
+           Live conditions per camera break: wave height/period/direction
+           from the Open-Meteo Marine API, wind from the Open-Meteo
+           forecast API, fetched at runtime and cached (with timestamp)
+           under ff2alt.forecastCache.v1. On failure the last good fetch
+           is shown, labeled with its age; with no cache the rows say
+           "forecast unavailable" — numbers are never invented. The
+           score is transparent: swell height (42) + period (33) carry
+           the most weight, then light wind (up to 15) and an offshore
+           bonus (+10) / onshore penalty (−8), with a daylight factor
+           (×0.65 at night at the break). */
+        var FC_KEY = "ff2alt.forecastCache.v1";
+        var fcData = null, fcAt = 0, fcFetching = false;
+        try {
+          var fcSaved = JSON.parse(lsGet(FC_KEY) || "null");
+          if (fcSaved && fcSaved.spots) { fcData = fcSaved.spots; fcAt = fcSaved.at || 0; }
+        } catch (e) { /* no cache yet */ }
+        function fcStale() { return !fcAt || (Date.now() - fcAt > 30 * 60 * 1000); }
+        function compass8(deg) {
+          if (deg == null || !isFinite(deg)) return "";
+          var dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+          return dirs[Math.round(((deg % 360) + 360) % 360 / 45) % 8];
+        }
+        function angDiff(a, b) { var d = Math.abs(((a - b) % 360) + 360) % 360; return d > 180 ? 360 - d : d; }
+        function forecastScore(spot) {
+          var d = fcData && fcData[spot.key];
+          if (!d || d.wh == null) return null;
+          var s = Math.min(d.wh, 3.5) / 3.5 * 42 + Math.min(d.wp || 0, 18) / 18 * 33;
+          s += Math.max(0, 15 - (d.ws || 0) * 0.45);
+          var g = SPOT_GEO[spot.key];
+          if (g && d.wdir != null) {
+            var diff = angDiff(d.wdir, g.off);
+            if (diff <= 60) s += 10; else if (diff >= 120) s -= 8;
+          }
+          var info = spotInfo(spot, new Date());
+          if (!info.day) s *= 0.65;
+          return Math.round(Math.max(0, s));
+        }
+        function bestForecastKey() {
+          if (!fcData) return null;
+          var bk = null, bs = -1;
+          SPOTS.forEach(function (spot) {
+            var sc = forecastScore(spot);
+            if (sc != null && sc > bs) { bs = sc; bk = spot.key; }
+          });
+          return bk;
+        }
+        function bestPickKey() {
+          if (autoMode === "best") { var bk = bestForecastKey(); if (bk) return bk; }
+          return bestKey(new Date());
+        }
+        function maybeAutoBest() {
+          if (autoMode !== "best" || manualHold || stoppedByUser) return;
+          if (!streamActive() || !dockVisible()) return;
+          var bk = bestForecastKey();
+          if (bk && bk !== currentKey) startStream(spotByKey(bk));
+        }
+        function renderForecast() {
+          var rows = document.getElementById("forecastRows");
+          var upd = document.getElementById("forecastUpdated");
+          if (!rows) return;
+          var bk = bestForecastKey();
+          if (upd) {
+            if (fcFetching) upd.textContent = fcAt ? "Refreshing — showing the last good forecast from " + new Date(fcAt).toLocaleTimeString() + "…" : "Loading the live forecast…";
+            else if (fcAt) {
+              var ageMin = Math.max(0, Math.round((Date.now() - fcAt) / 60000));
+              upd.textContent = "Updated " + new Date(fcAt).toLocaleString() + " · Source: Open-Meteo" + (ageMin >= 30 ? " · cached " + (ageMin >= 60 ? Math.round(ageMin / 60) + "h" : ageMin + "m") + " ago — refresh for the latest" : "");
+            } else upd.textContent = "Forecast unavailable — no data yet. Check your connection and tap Refresh forecast.";
+          }
+          rows.innerHTML = "";
+          SPOTS.forEach(function (spot) {
+            var d = fcData && fcData[spot.key];
+            var sc = forecastScore(spot);
+            var info = spotInfo(spot, new Date());
+            var row = document.createElement("div");
+            row.className = "fc-row";
+            var main = document.createElement("div");
+            main.className = "fc-main";
+            var nm = document.createElement("div");
+            nm.className = "fc-name";
+            nm.appendChild(document.createTextNode(spot.name));
+            if (bk === spot.key && sc != null) {
+              var badge = document.createElement("span");
+              badge.className = "fc-best";
+              badge.textContent = "BEST NOW";
+              nm.appendChild(badge);
+            }
+            main.appendChild(nm);
+            var cond = document.createElement("div");
+            cond.className = "fc-cond";
+            if (d && d.wh != null) {
+              cond.textContent = d.wh.toFixed(1) + " m waves" +
+                (d.wp != null ? " · " + Math.round(d.wp) + " s swell period" : "") +
+                (d.wd != null ? " · swell " + compass8(d.wd) : "") +
+                (d.ws != null ? " · wind " + Math.round(d.ws) + " km/h " + compass8(d.wdir) : "") +
+                (info.label ? " · " + info.label + " local · " + (info.day ? "daylight" : "night") : "") +
+                (fcAt ? " · data " + new Date(fcAt).toLocaleTimeString() + " · Open-Meteo" : "");
+            } else {
+              cond.textContent = "Forecast unavailable for this break right now" + (fcAt ? " — last good fetch " + new Date(fcAt).toLocaleString() : "") + ".";
+            }
+            main.appendChild(cond);
+            row.appendChild(main);
+            if (sc != null) {
+              var score = document.createElement("span");
+              score.className = "fc-score";
+              score.textContent = "Score " + sc;
+              score.title = "Swell height + period weighted most; light/offshore wind scores above strong onshore; daylight at the break counts.";
+              row.appendChild(score);
+            }
+            var acts = document.createElement("span");
+            acts.className = "fc-actions";
+            var watch = document.createElement("button");
+            watch.type = "button";
+            watch.className = "btn-small";
+            watch.textContent = "Watch";
+            watch.setAttribute("aria-label", "Watch " + spot.name + " live");
+            watch.addEventListener("click", function () { watchSpot(spot.key); });
+            acts.appendChild(watch);
+            var sl = document.createElement("a");
+            sl.className = "btn-small";
+            sl.textContent = "Surfline report";
+            sl.href = "https://www.surfline.com/search?q=" + encodeURIComponent(spot.name + " surf report");
+            sl.target = "_blank";
+            sl.rel = "noopener";
+            sl.setAttribute("aria-label", "Open the Surfline surf report search for " + spot.name);
+            acts.appendChild(sl);
+            row.appendChild(acts);
+            rows.appendChild(row);
+          });
+        }
+        function fetchForecast() {
+          if (fcFetching || typeof fetch !== "function") { renderForecast(); return; }
+          fcFetching = true;
+          renderForecast();
+          var jobs = SPOTS.map(function (spot) {
+            var g = SPOT_GEO[spot.key];
+            if (!g) return Promise.resolve();
+            var mUrl = "https://marine-api.open-meteo.com/v1/marine?latitude=" + g.lat + "&longitude=" + g.lon + "&current=wave_height,wave_period,wave_direction&timezone=UTC";
+            var wUrl = "https://api.open-meteo.com/v1/forecast?latitude=" + g.lat + "&longitude=" + g.lon + "&current=wind_speed_10m,wind_direction_10m&timezone=UTC";
+            return Promise.all([
+              fetch(mUrl).then(function (r) { return r.json(); }),
+              fetch(wUrl).then(function (r) { return r.json(); })
+            ]).then(function (res) {
+              var mc = res[0] && res[0].current, wc = res[1] && res[1].current;
+              if (!mc && !wc) return;
+              if (!fcData) fcData = {};
+              fcData[spot.key] = {
+                wh: mc ? mc.wave_height : null,
+                wp: mc ? mc.wave_period : null,
+                wd: mc ? mc.wave_direction : null,
+                ws: wc ? wc.wind_speed_10m : null,
+                wdir: wc ? wc.wind_direction_10m : null
+              };
+            }).catch(function () { /* keep the cached values for this break */ });
+          });
+          Promise.all(jobs).then(function () {
+            fcFetching = false;
+            if (fcData && Object.keys(fcData).length) {
+              fcAt = Date.now();
+              lsSet(FC_KEY, JSON.stringify({ at: fcAt, spots: fcData }));
+            }
+            renderForecast();
+            maybeAutoBest();
+          });
+        }
+        var fcRefreshBtn = document.getElementById("forecastRefresh");
+        if (fcRefreshBtn) fcRefreshBtn.addEventListener("click", function () { fetchForecast(); });
+        function watchSpot(key) {
+          manualHold = true; stoppedByUser = false; bgPaused = false;
+          currentKey = key;
+          if (surfStage === "closed") openSurfMini();
+          else {
+            if (surfStage !== "mini") setSurfStage("mini");
+            startStream(spotByKey(key));
+          }
+        }
+        function syncAutoModeUI() {
+          if (autoSwitch) autoSwitch.setAttribute("aria-checked", autoOn ? "true" : "false");
+          var seg = document.getElementById("surfAutoModeSeg");
+          if (seg) Array.prototype.forEach.call(seg.querySelectorAll("button[data-am]"), function (b) {
+            b.setAttribute("aria-pressed", b.getAttribute("data-am") === autoMode ? "true" : "false");
+          });
+        }
+        function setAutoMode(m) {
+          if (["best", "sun", "off"].indexOf(m) === -1) return;
+          autoMode = m;
+          if (m !== "off") lastAutoMode = m;
+          lsSet(AUTO_MODE_KEY, m);
+          autoOn = m !== "off";
+          lsSet(LS_KEY, autoOn ? "1" : "0");
+          syncAutoModeUI();
+          if (!autoOn) {
+            manualHold = true;
+            stoppedByUser = false;
+            bgSuspended = false;
+            bgPaused = false;
+            unload();
+            hideDock();
+            setNow("Auto is off — the player is hidden and nothing auto-picks a break. The player still loads whenever you ask for it: open Surf Break from the wave button, tap Show player here, or tap Play in the player. A break you pick yourself always wins while auto is off.");
+          } else {
+            manualHold = false;
+            stoppedByUser = false;
+            var b = bestPickKey();
+            if (b) currentKey = b;
+            renderChips();
+            showDock("expanded");
+            startStream(spotByKey(currentKey));
+            if (fcStale()) fetchForecast();
+          }
+        }
+        /* Cached forecast counts from the first paint: if a cached best
+           break exists and nothing was manually picked, it is the
+           preselected break (Follow the Sun stays the fallback). */
+        if (autoMode === "best" && !manualHold) {
+          var bk0 = bestForecastKey();
+          if (bk0 && bk0 !== currentKey) {
+            currentKey = bk0;
+            setFacade(spotByKey(currentKey));
+            renderChips();
+          }
+        }
+        syncAutoModeUI();
+        renderForecast();
+        window.__surfForecast = {
+          refresh: function () { renderForecast(); if (fcStale()) fetchForecast(); },
+          fetch: fetchForecast,
+          bestKey: bestForecastKey,
+          score: function (key) { return forecastScore(spotByKey(key)); },
+          at: function () { return fcAt; }
+        };
         window.__surfDock = {
           openFromTab: openSurfFromTab,
+          watch: watchSpot,
+          toggleFullscreen: toggleSurfFullscreen,
+          cycle: cycleSurf,
+          fs: function () { return { on: surfFs, fake: surfFsFake }; },
+          autoMode: function () { return autoMode; },
+          setAutoMode: setAutoMode,
           state: function () {
             return {
               mode: mode,
@@ -11884,31 +12786,58 @@ var STRAIN_SRC_LINKS = {
       (function () {
         "use strict";
         var moreBtn = document.getElementById("altMoreBtn");
-        var morePanel = document.getElementById("altMorePanel");
-        var moreOpen = false;
-        function setMore(o) {
-          moreOpen = !!o;
-          if (morePanel) morePanel.hidden = !moreOpen;
-          if (moreBtn) moreBtn.setAttribute("aria-expanded", moreOpen ? "true" : "false");
+        var forecastBtn = document.getElementById("tab-forecast");
+        var morePanel = document.getElementById("panel-more");
+        var forecastPanel = document.getElementById("panel-forecast");
+        var moreOpen = false; /* the More SCREEN is the visible screen */
+        /* More and Forecast are first-class screens that live outside
+           the BLE tab map: showing one hides every tab panel, clears
+           every bar selection, and lights only its own bar button.
+           More is a screen, never a floating sheet — its three entries
+           are the real Burn Guard / Device / Info tab buttons, and
+           tapping one runs the normal tab switch into that section's
+           own full screen. */
+        function hidePseudo() {
+          if (morePanel) morePanel.hidden = true;
+          if (forecastPanel) forecastPanel.hidden = true;
+          moreOpen = false;
+        }
+        function showPseudo(which) {
+          Array.prototype.forEach.call(document.querySelectorAll("#app [role='tabpanel']"), function (p) { p.hidden = true; p.classList.remove("panel-enter"); });
+          ["tab-connect", "tab-temperature", "tab-session", "tab-strains", "tab-terpene", "tab-forecast", "tab-burnguard", "tab-device", "tab-info"].forEach(function (id) {
+            var b = document.getElementById(id);
+            if (b) b.setAttribute("aria-selected", "false");
+          });
+          var panel = which === "more" ? morePanel : forecastPanel;
+          if (panel) { panel.hidden = false; panel.classList.add("panel-enter"); }
+          moreOpen = which === "more";
+          if (which === "forecast" && forecastBtn) forecastBtn.setAttribute("aria-selected", "true");
+          window.scrollTo(0, 0);
           syncMoreActive();
+          swipeSync();
+          if (which === "forecast" && window.__surfForecast) window.__surfForecast.refresh();
+        }
+        function setMore(o) {
+          if (o) showPseudo("more");
+          else { hidePseudo(); syncMoreActive(); }
         }
         function syncMoreActive() {
           if (!moreBtn) return;
-          var on = ["tab-burnguard", "tab-device", "tab-info"].some(function (id) {
+          var on = moreOpen || ["tab-burnguard", "tab-device", "tab-info"].some(function (id) {
             var b = document.getElementById(id);
             return b && b.getAttribute("aria-selected") === "true";
           });
           moreBtn.classList.toggle("alt-more-on", on);
+          moreBtn.setAttribute("aria-selected", on ? "true" : "false");
         }
-        if (moreBtn) moreBtn.addEventListener("click", function () { setMore(!moreOpen); });
+        if (moreBtn) moreBtn.addEventListener("click", function () { showPseudo("more"); });
+        if (forecastBtn) forecastBtn.addEventListener("click", function () { showPseudo("forecast"); });
         ["tab-connect", "tab-terpene", "tab-burnguard", "tab-device", "tab-info", "tab-session", "tab-temperature", "tab-strains"].forEach(function (id) {
           var b = document.getElementById(id);
-          if (b) b.addEventListener("click", function () { setMore(false); window.setTimeout(syncMoreActive, 0); });
-        });
-        document.addEventListener("keydown", function (e) {
-          if (moreOpen && (e.key === "Escape" || e.key === "Esc")) setMore(false);
+          if (b) b.addEventListener("click", function () { hidePseudo(); window.setTimeout(syncMoreActive, 0); });
         });
         window.__altMore = { isOpen: function () { return moreOpen; }, set: setMore };
+        window.__showPseudo = showPseudo;
         /* ---- Segmented sub-views: one purpose per view, per tab ----
            Each segmented tab carries a .seg-control switcher (same visual
            language as the app's other segmented controls) and one
@@ -11983,10 +12912,10 @@ var STRAIN_SRC_LINKS = {
            the same touch would otherwise deliver to whatever it started
            on, so swiping off a card never activates it. There is no
            wraparound at either end of the five-stop ring. */
-        var SWIPE_ORDER = ["connect", "temperature", "session", "strains", "terpene"];
+        var SWIPE_ORDER = ["connect", "temperature", "session", "strains", "terpene", "forecast"];
         var MORE_ORDER = ["burnguard", "device", "info"];
         var ALL_TABS = SWIPE_ORDER.concat(MORE_ORDER);
-        var SWIPE_TITLES = { connect: "Connect", temperature: "Temperature", session: "Session", strains: "Strains", terpene: "Terpenes", burnguard: "Burn Guard", device: "Device", info: "Info" };
+        var SWIPE_TITLES = { connect: "Connect", temperature: "Temperature", session: "Session", strains: "Strains", terpene: "Terpenes", forecast: "Forecast", burnguard: "Burn Guard", device: "Device", info: "Info", more: "More" };
         var swipeLabel = document.getElementById("swipeLabel");
         var swipeDots = document.getElementById("swipeDots");
         var swipePrev = document.getElementById("swipePrev");
@@ -11996,13 +12925,15 @@ var STRAIN_SRC_LINKS = {
           SWIPE_ORDER.forEach(function () { swipeDots.appendChild(document.createElement("span")); });
         }
         function swipeCurrent() {
+          var mp = document.getElementById("panel-more");
+          if (mp && !mp.hidden) return "more";
           for (var i = 0; i < ALL_TABS.length; i++) {
             var b = document.getElementById("tab-" + ALL_TABS[i]);
             if (b && b.getAttribute("aria-selected") === "true") return ALL_TABS[i];
           }
           return "connect";
         }
-        function swipeOnMore() { return MORE_ORDER.indexOf(swipeCurrent()) !== -1; }
+        function swipeOnMore() { var c = swipeCurrent(); return c === "more" || MORE_ORDER.indexOf(c) !== -1; }
         function swipeSync() {
           /* The bar highlight is re-derived on every sync, so it always
              matches the visible screen — including the More button's
@@ -12023,8 +12954,7 @@ var STRAIN_SRC_LINKS = {
         }
         function swipeGo(name) {
           var b = document.getElementById("tab-" + name);
-          if (b) b.click();
-          setMore(false);
+          if (b) b.click(); /* the click itself shows/hides the right screen (real tab, Forecast, or a More entry) */
           swipeSync();
         }
         function swipeStep(dir) {
@@ -12047,7 +12977,7 @@ var STRAIN_SRC_LINKS = {
             if (b) swipeObs.observe(b, { attributes: true, attributeFilter: ["aria-selected"] });
           });
         }
-        var SWIPE_EXCLUDE = 'input[type="range"], .stepper-row, .wheel, .surf-dock, .surf-stage, .surf-overlay, .surf-fab, .alt-tabbar, .alt-more, .tray, .island, .isl-hint, .swipe-arrow, .sheet, .photo-zoom';
+        var SWIPE_EXCLUDE = 'input[type="range"], .stepper-row, .wheel, .surf-dock, .surf-stage, .surf-overlay, .surf-fab, .alt-tabbar, #panel-more, .tray, .island, .isl-hint, .swipe-arrow, .sheet, .photo-zoom';
         var swX = 0, swY = 0, swT = 0, swOk = false;
         var swSuppressClickUntil = 0;
         document.addEventListener("click", function (e) {
