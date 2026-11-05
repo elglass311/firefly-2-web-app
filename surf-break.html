@@ -697,7 +697,7 @@ function renderSpots(spots, prefix, isBig){
     }
     if(isBig){
       if(sp.cam){
-        head += '<details class="cam-slot"><summary>'+sp.cam.label+'</summary><div class="vidbox" style="margin-top:8px;"><iframe title="'+sp.name+' live cam" loading="lazy" data-camsrc="https://www.youtube.com/embed/'+sp.cam.id+'?autoplay=1&mute=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div></details>';
+        head += '<details class="cam-slot"><summary>'+sp.cam.label+'</summary><div class="vidbox" style="margin-top:8px;"><iframe title="'+sp.name+' live cam" loading="lazy" data-camsrc="https://www.youtube-nocookie.com/embed/'+sp.cam.id+'?autoplay=1&mute=1&playsinline=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div></details>';
       } else {
         head += '<p class="tiny" style="margin-top:9px;">No public live cam — no verified public stream exists for this spot, so none is embedded.</p>';
       }
@@ -899,10 +899,18 @@ var BRANDS = [
    adapted to this app's content. Mechanisms ported:
    · facade-first posters — nothing streams until activation
    · lazy YouTube IFrame API loader (ensureApi) with a plain
-     youtube.com embed fallback if the API can't load
+     embed fallback if the API can't load
+   · EVERY player frame sits on the youtube-nocookie host,
+     exactly like the proven reference: the YT.Player
+     constructor gets host:"https://www.youtube-nocookie.com"
+     and every hand-built iframe src (plain fallback, feed
+     live_stream, Big Wave cams) is a youtube-nocookie.com
+     embed — the standard youtube.com embed host is never
+     used for a player (only the API loader script itself
+     and the outbound "Watch on YouTube" links use it)
    · YT.Player built on a fresh node inside the SAME frame wrap,
      playerVars {autoplay:1, mute:<sound intent>, playsinline:1,
-     rel:0, modestbranding:1} — standard youtube.com host
+     rel:0, modestbranding:1}
    · muted autoplay attempt + explicit Play control (facade)
    · page-owned sound intent + ~2s watchdog restoring
      unMute/setVolume (and resuming pauses) while playing
@@ -1516,7 +1524,7 @@ function handleStreamFailure(kind){
 function buildCamPlainFrame(spot){
   camPlain = true;
   var f = document.createElement("iframe");
-  f.src = "https://www.youtube.com/embed/" + spot.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
+  f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
   f.title = spot.name + " live surf cam";
   f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
   f.setAttribute("allowfullscreen", "");
@@ -1546,6 +1554,7 @@ function startStream(spot, keepChain){
     try{
       camPlayer = new YT.Player(target, {
         videoId: spot.id,
+        host: "https://www.youtube-nocookie.com",
         playerVars: { autoplay:1, mute: soundWanted ? 0 : 1, playsinline:1, rel:0, modestbranding:1 },
         events: {
           onReady: function(e){ try{ applySoundTo(e.target, soundWanted, soundVolume); e.target.playVideo(); }catch(err){} },
@@ -1940,8 +1949,8 @@ function makeFeed(f){
     plain = true;
     var fr = document.createElement("iframe");
     fr.src = kind === "live"
-      ? "https://www.youtube.com/embed/live_stream?channel=" + f.channel + "&autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1"
-      : "https://www.youtube.com/embed/" + f.replay.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
+      ? "https://www.youtube-nocookie.com/embed/live_stream?channel=" + f.channel + "&autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1"
+      : "https://www.youtube-nocookie.com/embed/" + f.replay.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
     fr.title = f.org + (kind === "live" ? " live stream" : " replay footage");
     fr.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
     fr.setAttribute("allowfullscreen", "");
@@ -1969,7 +1978,7 @@ function makeFeed(f){
       try{
         if(kind === "live"){
           var fr = document.createElement("iframe");
-          fr.src = "https://www.youtube.com/embed/live_stream?channel=" + f.channel + "&enablejsapi=1&autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
+          fr.src = "https://www.youtube-nocookie.com/embed/live_stream?channel=" + f.channel + "&enablejsapi=1&autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
           fr.title = f.org + " live stream";
           fr.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
           fr.setAttribute("allowfullscreen", "");
@@ -1980,6 +1989,7 @@ function makeFeed(f){
           el.frameWrap.appendChild(target);
           player = new YT.Player(target, {
             videoId: f.replay.id,
+            host: "https://www.youtube-nocookie.com",
             playerVars: { autoplay:1, mute: soundWanted ? 0 : 1, playsinline:1, rel:0, modestbranding:1 },
             events: events
           });
