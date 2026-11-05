@@ -2522,7 +2522,9 @@
 
       /* ================= CONNECT-FIRST + SWIPE + TERPENES TAB (2026-11-05) =================
          Connect is the landing menu; Terpenes is a first-class bottom tab
-         (out of More); every menu is reachable by swiping left/right.
+         (out of More). Swiping left/right cycles only the five bar menus;
+         Burn Guard, Device and Info sit outside the swipe cycle and are
+         reached by tapping More (owner decision, 2026-11-05).
          The bar now carries six tabs + More, so its labels run compact. */
       .alt-tabbar button { font-size: 10.5px; letter-spacing: 0.03em; padding: 6px 1px; min-height: 58px; gap: 3px; }
       .alt-tabbar button .tab-ic { width: 21px; height: 21px; }
@@ -2643,18 +2645,17 @@
         color: var(--ember);
         box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
         cursor: pointer; font: inherit; padding: 0;
-        touch-action: manipulation;
+        touch-action: none; /* the button drags itself (see its script); the browser must not take the touch over for scrolling */
+        user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
       }
       .surf-fab:active { transform: scale(0.93); }
+      .surf-fab.is-dragging { transform: none; cursor: grabbing; }
       .surf-fab svg { width: 26px; height: 26px; }
-      .surf-fab .surf-fab-close-ic { display: none; }
       .surf-fab.is-open {
         background: linear-gradient(180deg, var(--btn-a) 0%, var(--btn-b) 45%, var(--btn-c) 100%);
         color: var(--btn-ink);
         border-color: rgba(255, 255, 255, 0.35);
       }
-      .surf-fab.is-open .surf-fab-wave-ic { display: none; }
-      .surf-fab.is-open .surf-fab-close-ic { display: block; }
       .surf-fab-dot {
         position: absolute; top: 2px; right: 2px;
         width: 12px; height: 12px; border-radius: 50%;
@@ -2858,7 +2859,6 @@
          button (its red dot shows a stream is playing). ============ -->
     <button class="surf-fab" id="surfFab" type="button" aria-expanded="false" aria-controls="surfOverlay" aria-label="Open Surf Break">
       <svg class="surf-fab-wave-ic" aria-hidden="true"><use href="#i-wave"/></svg>
-      <svg class="surf-fab-close-ic" aria-hidden="true"><use href="#i-close"/></svg>
       <span class="surf-fab-dot" id="surfFabDot" hidden></span>
     </button>
     <div class="surf-overlay" id="surfOverlay" hidden role="dialog" aria-label="Surf Break">
@@ -3048,7 +3048,7 @@
       <div class="swipe-nav" id="swipeNav" aria-label="Menu navigation">
         <button type="button" class="swipe-arrow prev" id="swipePrev" aria-label="Previous menu"><svg aria-hidden="true"><use href="#i-chev-r"/></svg></button>
         <div class="swipe-mid">
-          <span class="swipe-label" id="swipeLabel">Connect · 1 of 8</span>
+          <span class="swipe-label" id="swipeLabel">Connect · 1 of 5</span>
           <span class="swipe-dots" id="swipeDots" aria-hidden="true"></span>
           <span class="swipe-hint">Swipe left or right to change menu</span>
         </div>
@@ -11332,6 +11332,90 @@ var STRAIN_SRC_LINKS = {
           syncFab();
         }
         if (fabBtn) fabBtn.addEventListener("click", function () { setOverlay(!overlayOpen); });
+        /* --- Draggable wave button ---
+           A press that stays within ~8px is a tap and falls through to
+           the click above, unchanged. Past that it becomes a drag: the
+           button follows the finger, clamped inside the viewport with a
+           small margin and always below the status island, and the
+           release's click is swallowed so a drag never toggles the
+           sheet. Touches starting on the button never reach the swipe
+           pager (.surf-fab is in its SWIPE_EXCLUDE list). The resting
+           spot is saved under ff2alt.surfFabPos.v1 and restored on
+           load; the inline left/top then rides through menu switches
+           untouched, in both overlay states. --- */
+        var FAB_POS_KEY = "ff2alt.surfFabPos.v1";
+        var fabDrag = null, fabDragMoved = false, fabSuppressClickUntil = 0;
+        document.addEventListener("click", function (e) {
+          if (fabBtn && Date.now() < fabSuppressClickUntil && e.target && fabBtn.contains(e.target)) {
+            e.preventDefault();
+            e.stopPropagation();
+            fabSuppressClickUntil = 0;
+          }
+        }, true);
+        function fabMinTop() {
+          var minTop = 76;
+          var isl = document.querySelector(".island");
+          if (isl) {
+            var ir = isl.getBoundingClientRect();
+            if (ir.height) minTop = Math.max(minTop, Math.ceil(ir.bottom) + 8);
+          }
+          return minTop;
+        }
+        function fabPlace(left, top) {
+          var w = fabBtn.offsetWidth || 52, h = fabBtn.offsetHeight || 52;
+          var minTop = fabMinTop();
+          var maxL = Math.max(8, window.innerWidth - w - 8);
+          var maxT = Math.max(minTop, window.innerHeight - h - 8);
+          var p = {
+            left: Math.min(Math.max(8, left), maxL),
+            top: Math.min(Math.max(minTop, top), maxT)
+          };
+          fabBtn.style.left = p.left + "px";
+          fabBtn.style.top = p.top + "px";
+          fabBtn.style.right = "auto";
+          fabBtn.style.bottom = "auto";
+          return p;
+        }
+        if (fabBtn) {
+          try {
+            var fabSaved = JSON.parse(lsGet(FAB_POS_KEY) || "null");
+            if (fabSaved && isFinite(fabSaved.left) && isFinite(fabSaved.top)) fabPlace(fabSaved.left, fabSaved.top);
+          } catch (e) { /* ignore: stay at the default corner */ }
+          fabBtn.addEventListener("pointerdown", function (e) {
+            if (e.button != null && e.button > 0) return;
+            var r = fabBtn.getBoundingClientRect();
+            fabDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, left: r.left, top: r.top };
+            fabDragMoved = false;
+          });
+          fabBtn.addEventListener("pointermove", function (e) {
+            if (!fabDrag || e.pointerId !== fabDrag.id) return;
+            var dx = e.clientX - fabDrag.sx, dy = e.clientY - fabDrag.sy;
+            if (!fabDragMoved) {
+              if (Math.sqrt(dx * dx + dy * dy) < 8) return; /* still a tap */
+              fabDragMoved = true;
+              fabBtn.classList.add("is-dragging");
+              try { fabBtn.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+            }
+            if (e.cancelable) e.preventDefault();
+            fabPlace(fabDrag.left + dx, fabDrag.top + dy);
+          });
+          function fabDragEnd(e) {
+            if (!fabDrag || (e && e.pointerId !== fabDrag.id)) return;
+            var wasDrag = fabDragMoved;
+            fabDrag = null; fabDragMoved = false;
+            fabBtn.classList.remove("is-dragging");
+            if (wasDrag) {
+              var r = fabBtn.getBoundingClientRect();
+              fabSuppressClickUntil = Date.now() + 400;
+              lsSet(FAB_POS_KEY, JSON.stringify({ left: Math.round(r.left), top: Math.round(r.top) }));
+            }
+          }
+          fabBtn.addEventListener("pointerup", fabDragEnd);
+          fabBtn.addEventListener("pointercancel", fabDragEnd);
+          window.addEventListener("resize", function () {
+            if (fabBtn.style.left) { var r = fabBtn.getBoundingClientRect(); fabPlace(r.left, r.top); }
+          });
+        }
         var overlayCloseEl = document.getElementById("surfOverlayClose");
         if (overlayCloseEl) overlayCloseEl.addEventListener("click", function () { setOverlay(false); });
         var overlayScrimEl = document.getElementById("surfOverlayScrim");
@@ -11619,12 +11703,25 @@ var STRAIN_SRC_LINKS = {
           if (first) segShow(tab, first.getAttribute("data-seg"));
         });
         /* ---- Swipe through the menus (left / right) + swipe-nav chrome ----
-           Menu order is exactly the bottom-bar order, then the More menus:
-           Connect, Temperature, Session, Strains, Terpenes, then
-           Burn Guard, Device, Info. (Surf Break is not a menu anymore —
-           it lives behind the floating wave button, over every menu.) A menu change is a plain click on that
-           menu's real tab button, so every existing tab behavior (panel
-           refresh, More closing, sheet closing) rides along unchanged.
+           COHESION MODEL (owner decision, 2026-11-05): the swipe pager
+           covers ONLY the five primary bottom-bar menus, in bar order —
+           Connect, Temperature, Session, Strains, Terpenes. The pager's
+           label, its "N of 5" count and its five dots describe exactly
+           those five stops, so the pager, the dots and the bar always
+           agree and there are no phantom stops. Burn Guard, Device and
+           Info are NOT in the swipe cycle: they are reached only by
+           tapping the More button (bottom right of the bar) and choosing
+           from its menu. While a More destination is on screen,
+           horizontal swipes, the pager arrows and the arrow keys are all
+           inert — they never cycle among the More options or anywhere
+           else; the pager's label names the screen as "in More", no dot
+           is lit, both arrows are disabled, and the bar's More button
+           carries the active state. The user leaves a More screen by
+           tapping a bar destination. (Surf Break is not a menu either —
+           it lives behind the floating wave button, over every menu.)
+           A menu change is a plain click on that menu's real tab button,
+           so every existing tab behavior (panel refresh, More closing,
+           sheet closing) rides along unchanged.
            Swipes are TRUE swipes (owner correction, 2026-11-05): a finger
            that travels horizontally across the menu content — starting on
            ordinary content and cards, not just blank background — moves
@@ -11643,30 +11740,44 @@ var STRAIN_SRC_LINKS = {
            content. A recognized swipe also swallows the synthetic click
            the same touch would otherwise deliver to whatever it started
            on, so swiping off a card never activates it. There is no
-           wraparound at either end. */
-        var SWIPE_ORDER = ["connect", "temperature", "session", "strains", "terpene", "burnguard", "device", "info"];
+           wraparound at either end of the five-stop ring. */
+        var SWIPE_ORDER = ["connect", "temperature", "session", "strains", "terpene"];
+        var MORE_ORDER = ["burnguard", "device", "info"];
+        var ALL_TABS = SWIPE_ORDER.concat(MORE_ORDER);
         var SWIPE_TITLES = { connect: "Connect", temperature: "Temperature", session: "Session", strains: "Strains", terpene: "Terpenes", burnguard: "Burn Guard", device: "Device", info: "Info" };
         var swipeLabel = document.getElementById("swipeLabel");
         var swipeDots = document.getElementById("swipeDots");
         var swipePrev = document.getElementById("swipePrev");
         var swipeNext = document.getElementById("swipeNext");
+        var swipeHint = document.querySelector("#swipeNav .swipe-hint");
         if (swipeDots && !swipeDots.children.length) {
           SWIPE_ORDER.forEach(function () { swipeDots.appendChild(document.createElement("span")); });
         }
         function swipeCurrent() {
-          for (var i = 0; i < SWIPE_ORDER.length; i++) {
-            var b = document.getElementById("tab-" + SWIPE_ORDER[i]);
-            if (b && b.getAttribute("aria-selected") === "true") return SWIPE_ORDER[i];
+          for (var i = 0; i < ALL_TABS.length; i++) {
+            var b = document.getElementById("tab-" + ALL_TABS[i]);
+            if (b && b.getAttribute("aria-selected") === "true") return ALL_TABS[i];
           }
           return "connect";
         }
+        function swipeOnMore() { return MORE_ORDER.indexOf(swipeCurrent()) !== -1; }
         function swipeSync() {
+          /* The bar highlight is re-derived on every sync, so it always
+             matches the visible screen — including the More button's
+             active state while a More destination is showing. */
+          syncMoreActive();
           var cur = swipeCurrent();
           var i = SWIPE_ORDER.indexOf(cur);
-          if (swipeLabel) swipeLabel.textContent = SWIPE_TITLES[cur] + " \u00b7 " + (i + 1) + " of " + SWIPE_ORDER.length;
+          var onMore = i === -1;
+          if (swipeLabel) swipeLabel.textContent = onMore
+            ? SWIPE_TITLES[cur] + " \u00b7 in More"
+            : SWIPE_TITLES[cur] + " \u00b7 " + (i + 1) + " of " + SWIPE_ORDER.length;
           if (swipeDots) Array.prototype.forEach.call(swipeDots.children, function (d, di) { d.className = di === i ? "on" : ""; });
-          if (swipePrev) swipePrev.disabled = i <= 0;
-          if (swipeNext) swipeNext.disabled = i >= SWIPE_ORDER.length - 1;
+          if (swipePrev) swipePrev.disabled = onMore || i <= 0;
+          if (swipeNext) swipeNext.disabled = onMore || i >= SWIPE_ORDER.length - 1;
+          if (swipeHint) swipeHint.textContent = onMore
+            ? "In More \u2014 tap a menu on the bar below to switch"
+            : "Swipe left or right to change menu";
         }
         function swipeGo(name) {
           var b = document.getElementById("tab-" + name);
@@ -11676,19 +11787,20 @@ var STRAIN_SRC_LINKS = {
         }
         function swipeStep(dir) {
           var i = SWIPE_ORDER.indexOf(swipeCurrent());
+          if (i === -1) return; /* on a More destination: the pager is inert — leave by tapping the bar */
           var n = i + dir;
           if (n < 0 || n >= SWIPE_ORDER.length) return;
           swipeGo(SWIPE_ORDER[n]);
         }
         if (swipePrev) swipePrev.addEventListener("click", function () { swipeStep(-1); });
         if (swipeNext) swipeNext.addEventListener("click", function () { swipeStep(1); });
-        SWIPE_ORDER.forEach(function (name) {
+        ALL_TABS.forEach(function (name) {
           var b = document.getElementById("tab-" + name);
           if (b) b.addEventListener("click", function () { window.setTimeout(swipeSync, 0); });
         });
         if ("MutationObserver" in window) {
           var swipeObs = new MutationObserver(function () { swipeSync(); });
-          SWIPE_ORDER.forEach(function (name) {
+          ALL_TABS.forEach(function (name) {
             var b = document.getElementById("tab-" + name);
             if (b) swipeObs.observe(b, { attributes: true, attributeFilter: ["aria-selected"] });
           });
@@ -11804,7 +11916,7 @@ var STRAIN_SRC_LINKS = {
         window.setInterval(stateTick, 700);
         stateTick();
         window.__ffStateAware = { tick: stateTick, authenticated: ffAuthenticated, connected: ffConnected };
-        window.__ffSwipe = { order: SWIPE_ORDER.slice(), current: swipeCurrent, step: swipeStep, go: swipeGo, sync: swipeSync };
+        window.__ffSwipe = { order: SWIPE_ORDER.slice(), more: MORE_ORDER.slice(), onMore: swipeOnMore, current: swipeCurrent, step: swipeStep, go: swipeGo, sync: swipeSync };
         window.__navTray = { isOpen: function () { return window.__altMore ? window.__altMore.isOpen() : false; }, set: function (o) { if (window.__altMore) window.__altMore.set(o); } };
       })();
     </script>
