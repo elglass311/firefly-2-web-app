@@ -1937,45 +1937,47 @@
       .surf-chip .sc-badge { font-size: 12px; line-height: 1; }
       .surf-chip.is-night { opacity: 0.78; }
 
-      /* ---------- Surf Break overlay — the ONE Surf Break player plus its
-         full control center, floated over the current tab. The tab
-         underneath is never unloaded, scrolled or re-laid-out: the
-         overlay is a fixed panel that simply covers it, summoned and
-         dismissed by the floating wave button (#surfFab). ---------- */
+      /* ---------- Surf Break floating player — the ONE Surf Break
+         player, a small floating window that lives over whichever
+         screen is showing, summoned and dismissed by the floating
+         wave button (#surfFab). It is a PLAYER only: the stream plus
+         the small round controls riding its frame. Surf Break's menu
+         (break chips, auto modes, switches) lives on its own tray
+         page (#panel-surf) like every other section's screen — there
+         is no full-view overlay stage and no collapsible menu form
+         of Surf Break anywhere in this app. ---------- */
       .surf-dock {
         position: fixed; z-index: 70;
-        left: 50%; transform: translateX(-50%);
-        width: min(560px, calc(100vw - 16px));
-        /* Top clears the status island; bottom clears the floating wave
-           button, so neither is ever covered while the overlay is up. */
-        top: calc(64px + env(safe-area-inset-top));
-        bottom: calc(78px + env(safe-area-inset-bottom));
         display: flex; flex-direction: column;
         background: linear-gradient(165deg, var(--card-a) 0%, var(--card-b) 55%, var(--card-c) 100%);
         -webkit-backdrop-filter: blur(14px) saturate(1.25);
         backdrop-filter: blur(14px) saturate(1.25);
         border: 1px solid var(--card-line);
-        border-radius: 16px;
+        border-radius: 14px;
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 18px 44px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.4);
-        padding: 10px;
+        padding: 6px;
         overscroll-behavior: none;
+        /* The WHOLE floating player is a move-drag surface (owner's
+           order): no touch that starts on it — facade, fallback, or
+           any of its buttons — may be claimed by the browser for
+           scrolling or pull-to-refresh; the surf script's pointer
+           handlers decide tap vs. drag. Its width/left/top are set
+           inline by the surf script (about 62% of the screen width,
+           capped, anchored just above the wave button and clamped
+           inside the viewport). */
+        touch-action: none;
       }
-      .surf-dock:not([hidden]) { animation: surfOverlayIn var(--dur-2) var(--ease-out); }
+      .surf-dock * { -webkit-user-drag: none; }
+      .surf-dock:not([hidden]) { animation: surfMiniIn var(--dur-2) var(--ease-out); }
+      @keyframes surfMiniIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) { .surf-dock:not([hidden]) { animation: none; } }
       @keyframes surfOverlayIn { from { opacity: 0; transform: translateX(-50%) translateY(14px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
       .surf-dock[hidden] { display: none !important; }
-      .surf-dock .surf-stage { margin-top: 8px; }
-      .surf-dock-body { flex: none; }
-      /* The control center scrolls inside the overlay, under the player:
-         the head, stage and status line stay put while the break chips,
-         switches and credits move beneath them. */
-      .surf-controls {
-        flex: 1 1 auto; min-height: 0; overflow-y: auto;
-        margin-top: 10px; padding-top: 12px;
-        border-top: 1px solid var(--line);
-        -webkit-overflow-scrolling: touch; overscroll-behavior: none;
-      }
-      .surf-controls .surf-card { padding: 0 2px 2px; }
-      .surf-controls .surf-card h2 { margin: 0 0 6px; font-size: 19px; letter-spacing: 0.02em; }
+      .surf-dock .surf-stage { margin-top: 0; }
+      /* The Surf Break PAGE's control-center card: ordinary page
+         flow on the tray screen — head row, zoom bar and status line
+         above the break menu, exactly where the page puts them. */
+      #panel-surf .surf-card > h2 { margin: 14px 0 6px; font-size: 19px; letter-spacing: 0.02em; }
       .surf-dock-head {
         display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
         font-size: 13px;
@@ -1994,21 +1996,21 @@
       .surf-dock-status { margin: 8px 2px 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
       .surf-dock-status[hidden] { display: none !important; }
       /* ---------- Surf Break floating button — follows every screen ----------
-         A small glass wave button that is ONE unit with the mini stream
-         window: they share a single anchor spot, remembered on this
-         device (ff2.surfMiniPos). Closed, the button renders at the
-         anchor's corner spot; with the mini player open it overlaps
-         the window's bottom-right corner, attached. Dragging
-         EITHER part — the button itself, or the window by its frame —
-         moves the whole unit, and the unit clamp keeps it fully inside
-         the viewport and clear of the status island (top center), the
+         A small glass wave button that is ONE unit with the floating
+         stream window: they share a single anchor spot, remembered on
+         this device (ff2.surfMiniPos). Closed, the button renders at
+         the anchor's corner spot; with the player open it overlaps the
+         window's bottom-right corner, attached. Dragging EITHER part —
+         the button itself, or the window by its frame — moves the
+         whole unit, and the unit clamp keeps it fully inside the
+         viewport and clear of the status island (top center), the
          tray handle (left edge), the docked Forecast button
-         (bottom-left) and any tab's primary controls. A tap on the
-         button opens the Surf Break overlay over the current tab and
-         closes it again; its dot shows at a glance whether a stream is
-         playing behind it (pulsing red) or loading / waiting for a
-         first tap (steady amber). On wide screens the anchor's default
-         home hugs the app column's right edge. */
+         (bottom-left) and any screen's primary controls. A tap on the
+         button opens the floating player over the current screen and
+         closes it again; its dot shows at a glance whether a stream
+         is playing behind it (pulsing red) or loading / waiting for a
+         first tap (steady amber). On wide screens the anchor's
+         default home hugs the app column's right edge. */
       .surf-fab {
         appearance: none; cursor: pointer; font: inherit;
         position: fixed; z-index: 75;
@@ -2049,37 +2051,13 @@
       @keyframes surfFabPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
       @media (prefers-reduced-motion: reduce) { .surf-fab[data-play="playing"] .surf-fab-dot { animation: none; } }
 
-      /* ---------- Surf Break MINIMIZED view (stage 1) ----------
-         The dock's compact form: the SAME dock node, wearing .mini, shows
-         ONLY the stage (the live player) — no head, no control center, no
-         status line. Its width/left/top are set inline by the surf script
-         (about 62% of the screen width, capped, anchored just above the
-         wave button and clamped inside the viewport); the base overlay's
-         centering transform and slide-in do not apply here. Its only
-         chrome is the pair of small round controls below. Because the
-         player node never moves between the stages, switching between
-         mini and full never reloads the stream. ---------- */
-      .surf-dock.mini {
-        transform: none;
-        bottom: auto;
-        padding: 6px;
-        border-radius: 14px;
-        /* The WHOLE mini window is a move-drag surface (owner's order):
-           no touch that starts on it — card body, facade, fallback, or
-           any of its buttons — may be claimed by the browser for
-           scrolling or pull-to-refresh; the surf script's pointer
-           handlers decide tap vs. drag. */
-        touch-action: none;
-      }
-      .surf-dock.mini * { -webkit-user-drag: none; }
-      .surf-dock.mini:not([hidden]) { animation: surfMiniIn var(--dur-2) var(--ease-out); }
-      @keyframes surfMiniIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-      @media (prefers-reduced-motion: reduce) { .surf-dock.mini:not([hidden]) { animation: none; } }
-      .surf-dock.mini .surf-dock-head,
-      .surf-dock.mini .surf-zoombar,
-      .surf-dock.mini .surf-controls,
-      .surf-dock.mini .surf-dock-status { display: none !important; }
-      .surf-dock.mini .surf-stage { margin-top: 0; }
+      /* ---------- Surf Break floating player chrome ----------
+         The player's only chrome is the trio of small round controls
+         riding its frame: fullscreen (top-left), close (top-right),
+         and the window button (bottom-right) — the window button
+         loads the Surf Break PAGE in the tray (the break menu); it
+         expands nothing here. They show whenever the player does,
+         and hide while the stream itself is fullscreen. ---------- */
       .surf-mini-btn {
         appearance: none; cursor: pointer; font: inherit;
         position: absolute; z-index: 10;
@@ -2091,7 +2069,7 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
         padding: 0;
       }
-      .surf-dock.mini .surf-mini-btn { display: flex; }
+      .surf-dock .surf-mini-btn { display: flex; }
       .surf-mini-btn:active { transform: scale(0.92); }
       .surf-mini-btn svg { width: 15px; height: 15px; flex: none; }
       .surf-mini-expand { top: 8px; left: 8px; }
@@ -2118,26 +2096,26 @@
       }
       .surf-fs-btn:active { transform: scale(0.92); }
       .surf-fs-btn svg { width: 17px; height: 17px; flex: none; }
-      /* In the mini view the top-left expand control IS the fullscreen
-         control, so the in-stage button only appears there once fullscreen
-         is active (as the exit). In the full view it is always available. */
-      .surf-dock.mini:not(.fs-on) .surf-fs-btn { display: none; }
+      /* On the floating player the top-left expand control IS the
+         fullscreen control, so the in-stage button only appears once
+         fullscreen is active (as the exit). */
+      .surf-dock:not(.fs-on) .surf-fs-btn { display: none; }
       .surf-dock.fs-on .surf-mini-btn { display: none !important; }
-      /* The wave button is HIDDEN whenever the full Surf Break view or
-         fullscreen is showing (owner's order): it only ever floats over
-         menu screens beside the closed unit or the mini player. The
-         surf script's syncFab() applies the same rule inline; these
-         rules hold it even between script updates. */
-      .surf-dock[data-state="open"] ~ .surf-fab,
+      /* The wave button is HIDDEN only while the stream itself is
+         fullscreen (owner's order): it floats over menu screens
+         beside the closed unit and the open player alike. The surf
+         script's syncFab() applies the same rule inline; this rule
+         holds it even between script updates. */
       .surf-dock.fs-on ~ .surf-fab { display: none !important; }
-      /* The load-failure fallback renders WITHIN the current stage: in
-         the mini view it is a compact card that keeps the mini's
-         anchored frame — it never escalates the mini to the full view. */
-      .surf-dock.mini .surf-fallback { padding: 10px 12px; }
-      .surf-dock.mini .surf-fallback-title { font-size: 13.5px; margin-bottom: 4px; }
-      .surf-dock.mini .surf-fallback .muted { font-size: 12px; }
-      .surf-dock.mini .surf-fallback-actions { gap: 6px; }
-      .surf-dock.mini .surf-fallback-actions .btn-small { min-height: 36px; padding: 6px 10px; font-size: 12.5px; }
+      /* The load-failure fallback renders WITHIN the floating
+         player: a compact card that keeps the player's anchored
+         frame — it never changes the presentation or navigates
+         anywhere. */
+      .surf-dock .surf-fallback { padding: 10px 12px; }
+      .surf-dock .surf-fallback-title { font-size: 13.5px; margin-bottom: 4px; }
+      .surf-dock .surf-fallback .muted { font-size: 12px; }
+      .surf-dock .surf-fallback-actions { gap: 6px; }
+      .surf-dock .surf-fallback-actions .btn-small { min-height: 36px; padding: 6px 10px; font-size: 12.5px; }
       .surf-stage:fullscreen, .surf-stage:-webkit-full-screen {
         background: #000; border-radius: 0; margin-top: 0;
         display: flex; flex-direction: column; justify-content: center;
@@ -2147,9 +2125,9 @@
         background: #000; border-radius: 0; margin-top: 0;
         display: flex; flex-direction: column; justify-content: center;
       }
-      /* Hold-to-move armed on the mini player: a visible lift cue while the
+      /* Hold-to-move armed on the floating player: a visible lift cue while the
          window follows the finger. */
-      .surf-dock.mini.mini-moving {
+      .surf-dock.mini-moving {
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 26px 54px rgba(0, 0, 0, 0.65), 0 6px 18px rgba(0, 0, 0, 0.5);
         outline: 2px solid var(--ember); outline-offset: 1px;
       }
@@ -2157,7 +2135,7 @@
       /* ---------- Wave forecast button + panel ----------
          The Forecast button mirrors the wave button at bottom-left (a pill,
          so its purpose reads at a glance). The panel is a sibling overlay in
-         the full Surf Break's style: it floats over the current tab and
+         the Surf Break player's style: it floats over the current tab and
          never moves it. ---------- */
       .surf-fc-fab {
         appearance: none; cursor: pointer; font: inherit;
@@ -2977,148 +2955,83 @@
       <button type="button" role="tab" id="tab-temperature" aria-selected="false" aria-controls="panel-temperature"><svg class="tab-ic" aria-hidden="true"><use href="#i-thermo"/></svg><span class="tab-txt">Temperature<small>Set the heat</small></span></button>
       <button type="button" role="tab" id="tab-strains" aria-selected="false" aria-controls="panel-strains"><svg class="tab-ic" aria-hidden="true"><use href="#ff-leaf-sm"/></svg><span class="tab-txt">Strains<small>Guide · picker · log</small></span></button>
       <button type="button" role="tab" id="tab-terpene" aria-selected="false" aria-controls="panel-terpene"><svg class="tab-ic" aria-hidden="true"><use href="#i-drop"/></svg><span class="tab-txt">Terpenes<small>What heat releases</small></span></button>
+      <button type="button" role="tab" id="tab-surf" aria-selected="false" aria-controls="panel-surf"><svg class="tab-ic" aria-hidden="true"><use href="#i-wave"/></svg><span class="tab-txt">Surf Break<small>Live cams &amp; breaks</small></span></button>
       <button type="button" role="tab" id="tab-burnguard" aria-selected="false" aria-controls="panel-burnguard"><svg class="tab-ic" aria-hidden="true"><use href="#i-shield"/></svg><span class="tab-txt">Burn Guard<small>Ceiling &amp; calibration</small></span></button>
       <button type="button" role="tab" id="tab-device" aria-selected="false" aria-controls="panel-device"><svg class="tab-ic" aria-hidden="true"><use href="#i-device"/></svg><span class="tab-txt">Device<small>Details &amp; log</small></span></button>
       <button type="button" role="tab" id="tab-info" aria-selected="false" aria-controls="panel-info"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span class="tab-txt">Info<small>Device, app &amp; sources</small></span></button>
     </nav>
 
 
-    <!-- ============ Surf Break overlay: the ONE Surf Break player plus its
-         full control center, floated over whichever tab is showing. Surf
-         Break is not a tab anymore — the floating wave button (#surfFab)
-         summons this dock and puts it away again, and the tab underneath
-         keeps its scroll position and place throughout. The player node
-         lives here permanently and never moves, so opening, closing and
-         tab switches never reload it. The dock has TWO stages on the one
-         node: the MINIMIZED view (.mini — just the live player in a small
-         floating frame, what the wave button and Auto-play open) and this
-         FULL view (player + control center), reached only via the mini
-         view's expand control. ============ -->
-    <div class="surf-dock" id="surfDock" data-state="hidden" hidden role="region" aria-label="Surf Break">
-      <button class="surf-mini-btn surf-mini-expand" id="surfMiniExpand" type="button" aria-label="Expand to the full Surf Break — all breaks and controls">
+    <!-- ============ Surf Break floating player: the ONE Surf Break
+         player, a small floating window that lives permanently in the
+         app shell — outside every tab panel — summoned by the floating
+         wave button (#surfFab) over whichever screen is showing. The
+         screen underneath is never unloaded, scrolled or re-laid-out,
+         and the player node never moves, so opening, closing and
+         screen switches never reload it. The player is a PLAYER only:
+         the stream plus the small round controls riding its frame —
+         fullscreen (top-left), close (top-right) and the window
+         button (bottom-right), which loads the Surf Break PAGE in the
+         tray (#panel-surf, where the break menu lives) instead of
+         expanding anything here. There is no other presentation of
+         Surf Break: no full-view overlay stage, no collapsible menu
+         form, and Play on any surface plays the stream in place. ============ -->
+    <div class="surf-dock" id="surfDock" data-state="hidden" hidden role="region" aria-label="Surf Break player">
+      <button class="surf-mini-btn surf-mini-expand" id="surfMiniExpand" type="button" aria-label="Watch the stream full screen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg>
       </button>
-      <button class="surf-mini-btn surf-mini-close" id="surfMiniClose" type="button" aria-label="Close the mini player — the stream keeps playing">
+      <button class="surf-mini-btn surf-mini-close" id="surfMiniClose" type="button" aria-label="Close the player — the stream keeps playing">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
       </button>
-      <button class="surf-mini-btn surf-mini-full" id="surfMiniFull" type="button" aria-label="Open the full Surf Break — all breaks and controls">
+      <button class="surf-mini-btn surf-mini-full" id="surfMiniFull" type="button" aria-label="Open the Surf Break page — all breaks and controls">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2.2"/><path d="M4 17h4"/><path d="M12 17h8"/><circle cx="10" cy="17" r="2.2"/></svg>
       </button>
-      <div class="surf-dock-head">
-        <span class="surf-dock-title"><span class="surf-live-dot"></span>Surf Break · live</span>
-        <span class="surf-dock-spot" id="surfDockSpot">Banzai Pipeline</span>
-        <span class="surf-dock-meta" id="surfDockMeta"></span>
-        <span class="surf-dock-btns">
-          <button class="btn-small" id="surfSoundBtn" type="button" aria-pressed="false" aria-label="Turn stream sound on">Sound off</button>
-          <button class="btn-small surf-zoom-btn" id="surfZoomBtn" type="button" aria-pressed="false" aria-label="Toggle digital zoom"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Zoom</button>
-          <button class="btn-small" id="surfCloseBtn" type="button">Close</button>
-          <button class="btn-small" id="surfDockStopBtn" type="button">Stop</button>
-        </span>
-      </div>
-      <div class="surf-zoombar" id="surfZoomBar" hidden>
-        <button class="btn-small" id="surfZoomOut" type="button" aria-label="Zoom out">−</button>
-        <span class="surf-zoom-level" id="surfZoomLevel" aria-live="polite">1×</span>
-        <button class="btn-small" id="surfZoomIn" type="button" aria-label="Zoom in">+</button>
-        <button class="btn-small" id="surfZoomReset" type="button">Reset 1×</button>
-        <p class="surf-zoom-note">Digital zoom — crops into the picture. The cams stream in HD, so 2× stays fairly clear.</p>
-      </div>
-      <div class="surf-dock-body" id="surfDockBody">
-        <div class="surf-stage" id="surfStage">
-          <div class="surf-facade" id="surfFacade">
-            <img class="surf-poster" id="surfPoster" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAFoAeADASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAAIBAwQFBgf/xABEEAABAwIDBQMJBQgCAQQDAAABAAIRAyEEEjEFE0FRcSJhgQYUFjJTkZLR0hVCobHBIzNSYnKC4fBD8UQ0VKLCJGNz/8QAGAEBAQEBAQAAAAAAAAAAAAAAAAECAwT/xAAgEQEBAQEBAQEAAwADAAAAAAAAARESAiFBAzFRE3GB/9oADAMBAAIRAxEAPwD5+hCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhdf0dxftaHxH5I9HcX7Wh8R+S1zRyELsDybxZ/5cP8AEfkp9GsZ7XD/ABH5Kc0cZC7XozjPa4f4nfJSPJfGn/lw/wATvknNHEQu56LY72uH+J3yU+imO9rhvid8k5o4SF3vRPH+2w3xO+SPRPH+1w3xO+Sc0cFC73olj/bYb4nfJR6J4/22G+J3yTmjhIXd9FMd7bDfE75I9Fcd7bDfE75JzRwkLu+imO9thvid8keimO9thvid8k5o4SF3vRPH+2w3xO+SB5JY8/8ANhvid9Kc0cFC7/ojtD22G+J30o9ENoe2w3xO+lOaOAheg9ENoe2w3xO+lHoftD22F+J30pzR59C9D6HbR9thfid9KPQ7aHtsL8TvpTmjzyF6H0O2h7bC/E76VHoftD22F+J30pzR59C9D6H7Q9thfid9KPQ7aHtsL8TvpTmjzyF6H0O2h7bC/E76VHoftD22F+J30pzR59C9B6H7Q9thfid9KPQ/aHtsL8TvpTmmvPoXoPRDaHtsN8TvpUeiGP8AbYb4nfSnNTXAQu/6I4/22G+J30o9Ecf7bDfE76U5q64CF3/RHH+2w3xO+lHojj/bYb4nfSnNNcBC7/ojj/bYb4nfSj0Rx/tsN8TvpTmmuAhd70Sx/tsN8TvpR6JY/wBthvid8k5prgoXe9E8f7bDfE75I9E8f7bDfE75JzTXBQu76J4/2uG+J3yU+ieP9rhvid8k5prgoXd9E8f7XDfE75I9FMd7XDfE75JzTXCQu56K472uH+J3yR6K472uH+J3yTmmuGhdz0Wx3tcP8Tvko9Fsd7XD/E75JzRxELt+i+N9rh/id8lHoxjfa4f4nfJOaOKhdn0ZxvtcP8Tvkg+TWMH/AC0PiPyV5o4yF1z5OYsf8tD4j8lB8nsWP+Sh8R+Sc1NclC6vo/i/aUfiPyR6P4v2lH4j8k5pr0c3TNKQAp2hd0O0qwKtgur2tUVLRKcBDQnAUA0JwFACeFBHBCkpVRJKQuUlKUQSgKAJTQgkKQFATgIABMFAClAJgoGqkIJCYKAmCAUShQgJQhCAQhCCUKESiJUFEqCUEOKXipKAEAbJUxUIIlSEqcWCCFClQgFClQghCkqAqBCmFMKKWEjlYdEjkCKQFIEpoVCwoITQghQVlIVYQlKoqKQlO5IQiEJVZKci6MvNUIAgp4soIQQBKdo7lIarWMUUMbdWtCGtVgaoqAEwCkBSgAmQFJUCu0S96kqOCqFcVAuUFSEApCEwRAAmUBSipQhCCQpCgBOAiAJtAiFBKioJUSglQFUMEIAUlBBUAqDqpaEEjRQSpckQSiUKEEJxolAlSUEO1UHRSQo4oBoQTdSTAskQSpQBKaECkIhPCUoFhACsywLoAugQBTCYkBKXCYnTVBEWJ4JCJKipiGMHONYUNrsc2WmyBojwRqk3zAJJEJTWDvV0RVwHFBMBBIZSaSbkTdV50EFIUxKiUFZCUhOSlN1UVEKIVuVLEoEAQQrIhIbqi9tPuVrWKwZOanMwauCy0UNUoL2c/wAEu9p8z7kDISmo3kfcoNZo4FEWhQSkFdp4FMKjDzUEqCpzN5x1Sy0/eHvVCnVSAmyToQnbTPJEIFMJ92U2QcwgrhSAnho+8Pejs/xBAikBMMvNOAOaBQIUqbcwpgc1ApKgp4bzSOqUwYLxPIIF4pgFAfTOklWBw5FBEJXJnVALwqN9mMBoQWgJgEoeeQQahA4KgdqoIgBIyo5zuCKryGzP4IJ4oVLalTmnpl7nmSiauY1REvhMZazW5SMpOLs5v4qKmpZJI1kKaoOUSNFnngqmrswnUe9NbmqqYEg6BVV8fSp1DTnTVE1sBa1hdcpHVWNi4uudiMdVe39kJ7lna5rGCrWc55IMK4nTrb8Gct470PxIpxAEk2K4lTajKVLLTpjNHAyFzKuIxFVxc+obmYzWCvLN/kkeq85zNzFwjmsmI2tTosnMHuNgB+a87vK0QKj47iVU/MTEknrKvLP/AC38divt6rGWm0AczxWF+1cS6ZqDwssRa46+5BpO4gjqridX/VztoV3yN666anjawGXOTPD9Vma0gyCOoKIl0gkniUNdLzl5aym6oQbmCYW5+JbhMO176lN8AEAOk34n/eC864E83HokIIsVManp36W22VKjt64hrWkgOEyeACrp7ZDnSTlA4Lgm3NBFplMa2vVN2lTdIbUY5/IFA2gS8NAafFeUzEdyuw7nNdmkz/KUxb6sepGObMFjp7lazENf90jgvOZMQWZ6tRzGx2e1l14q5mHfTojEVagdTuGZbyeJ6KYT09BTe2rOUmBYmLKXOpMs6rTB5ZgvL5qtVsOrVG0WmO04gdVtwb8Lh35MJSqY2u0EuqAWZ79VManrXbJZlnM0jqoORou4CeZWBm0WVKrKYozUcO1kfZotEwLm91TicUymGuq1KQrF5GVhL9DbQouusXOJu6O5EngErRzPvTE8vejOptqT4KM8WH+UpBi3vQB4Dkhp5PfKiwgvI6KC8gHLbvUNZJlxQ0+caNEprjUi/AJQQLAR4okRJOqGnBmwCYOA1P6KqSbaRw5dU7afO5UNOKx+6E28eRc+AQGpgIQ1AnimhToq3O4BF0znABIHE80sRrcq2kyblE0zG2VkE6J2sjwSufwARQA1okmUpqGYboo1QYHBE1W8mJJVMy6Bb809RxOnRFNgaJJ96GrKTFqa3sqpgmOAV2gKgoq6cykY0an8E9TkFIsLoqMvPRK64gcVY645KCzMQBrKCGNDG31KrcC90xZW1zFpsElNtrWVQmUCYVlBstk8SpygOGkd6HVGtcMpAAQM+GxN44LPVxLiJmw17lRicWxjnTc8IK5dTGvLOzaeMKyM+vcjqVcaBAnhzSecNFyVyq9Te4jsuLaet23jogNzHMTUdTd6twCe6/5CdVcYv8jZiscd2RScM0xC5jq4LRmBLuJjih9fJUP7ENv2muJQ+uwzu6DGE3BmfzWpHL170PxdSGBgyht7qqqalSN48AcBKapXe+JdoMsARPXmqnuJjM4HqtYx1aXLeRfqoLSbkfimDhF4KglsIaQkk5WwEeq2AY9yYBo5wkOUnsmFGkB3ePwSOM3BhSRfX3pX9yNTEE98qCXd8Ii0wlso2kFw4fmlsgqZACKWOdlEJp5FKSOaKjKOKG1HMBDSR0UE96VGol1Qlt+Cdtdxm4bFwJIE9FSUqjWRprY+vWbleW5dYDRr11VlOqW64iIMhtPSenHRZA5rQRkkniSrcOAA95bYDiYkclFxaX1CLuyB9yGDKCOEwpcA0Nb2HPBMVQZB7u9KwgkuawST2abdPElTvn0Yp4d79+8w8t/IR+aGPY6zEKY935oABHcm6lGCxNzwUElxsUxE2RZo0QQGgRm14Jrkyhok6SFYGONgJBUFZIaJUAEmSL634f5Vz8M9hkm/5f5TsphoiLDmgrp041CtAupJJTNbAUVAEDvR6uikmON0AEoarPcoIiVdlhJlkzZVNKxkuk3WumyAkpM0JCtcYEAqLFdR3BVgFxlORJURAsiaieSrqHNp+aeDPdzTCmePXRE1QGS68gcFY1pdxPer20v+imyibi6KVrYEAKHzoFdHYVL7myjSsi8wp4SU7WRqExAhBW42sraDRu3OmQFS83sVkxWNZSYQAYGp5Kpufavq1GGbKvzho4hcytWgnM+9jCop1H1XFrJNwDHP/f8Apakc7/LHWr4yB2YK5r8VVrktpBxP8om3NV1w3CgVMVVzGf3c9qfksdfaha1tPBzSa25fEOJ7uQsO+2qsjN9303NwdQsc/EVQxgBPadBELFVrtc002ENEXLuWsCJ4rnmq5zi55Libkk3KJlVzxt89qty7rJTI4tbcnmSVnc973l9RznPOriZKozcFOfvVMq0uKgutcmVWXJcxReVmbvS5pKrlEouLS8iynPzVMozIcr8ySRdVzCiUXkxnmoJUSolRUk2CVBKhFgKhBKhGhKCVCDoioKVSjgSjRTYqCpOiUo1BIlOXNLpBc2BbiZSscWulpgjino0HVs75DadOC954T3cT3LNVbQqMosdVNF1V5tmceyCm7NMl7nTVqaZW6E+7vvdZXBugvwBiJVlFgquc+pULWsA7WvQa8gfcor27ZdoDC10aBc5siQe5Ls+kYl7tOBW91QNsNeiWs+fLMaTS7+WeCBhw4u4RoneSHAtsJvZX0n0wYtmPM8VNa5VtwrWsEweJIT1KlOmJHKympULWkAyOSwvcXay0fmp/Z8i0Ovnc71tLoOlhCrac/a48VY1slac6ljeJuUxtdO0QEjjJURWBJVobAQ1sa6pyESEIlDRdNlQ0IHaICh2qmYCVyNIAuoNzomNglhGaGjMeHRXBvdA6JWjxVoAbHJEg0BjikgA3TnnzSGJuo1EuJIhVSA6bGE7z2bKl7YdI8RKNUweJVdaplCRzw1uvgsdSoar8jT2lcTcS/EEkwVezAsrwarQAwQWm+Y96y+a1WsD7hpuHHT3rRWcMNR39WuynSBglsk6aRxVcfV6PQwdEUoqPpZgC3QyBz1touZtDauF2eKlLZ7S7Ekmap0bzIH6Lm7R25UxA3WHpihSHK7ndT+i5BcSbrWf6kh6lR1Wo57yS5xkkmVEpZUSquGlEpZRKGJlEqEIqUSoQglQUKEEolQjigESjijUoolEqHWKOaGAlRKCgCZ7kVBUIJQdEUKCg9mxQdJPgigeslmxQDr3o0RUGyU6pjySlGoiCZhNmJZlvlBnxSgkTHEJyGCm6Hy6QBbURf9FGiuOaIbECLcU4p1BQNS7aYOWTYE8hzSCf1lSW3mQWzAdpKg+n4QNcw99rqt37N5DiXA6WT0KYo0COJVVQ5239YXWP1VzDY8b8ljOMy1SXjpFlnq13scCKhPZix/BY69cOI4u5rU8s2u47ENLBexPaHcsWLxNIEtY4xwlYxiyQAVRVIdcLU8s3024KuXVMnDroutS0uvN4aoadYOXoaNVrmyFPUZlWPdASN5fgoc6SpBk6rLNurAU/BVtN05KNREwDdHIJSY4qReyIdKT3ptFW43RaJkp22FkgEpgboydpy2OqkGTEpE1MSSVFiyJKV1ipc7KOCzVa2UqOmJqkwYd0WF9eozNJAgJ6mIBFiC7gq20DVYd4Q0EXP+FqRj16xnqPNRmcmBMAzr0W3D4SlUyUW6w15IdeIk/JVYfBuxNGm5zstOm4SI9bmpr4rzEVHgXIs3Toq5W6baOLw+DohgzNcJhgJJjvK8pj8fXxZaKriWsENE6KMZiKlWq57nElxk3WN55rWYzPpSUKQ08NU+6dLQRqUbIo4BXPYMpMRpYm6V1Itga8UFcoUlpDRY3UNbLwO9FCkXCkMlxCcMy0mu/iMBEVcEXurnUnNYAWkQLyENpEAOeDBNhzQ1SpHPknLNCbCeKsrUjRpNDhD3SSOXd/vNNVnAup4lacPharxIpkzZttf9ke9Q5mZ+VozH1RylE1S1kNkiysw9MOJMHWegW12GizLspiD3uTmkaOCdYglsk85t8z7k1nXILS57o5piIIEGFqoUcgdUdaBYIZh5vIECSZmLWHVGtYyMzw3RNXhoDGTe5sttOk2i0VQMz6him2OHOFmqsOfM53aHfoi79ZniDl4hQ0Gel1ZUblME34pWtFydEbK0ScztEru0Z4BWG7YA6dyR2ga3SVVhBYKT6s87JgOGoGqA19RwMGBdFI0WLneCejRdXflBawG+ZxgALTUwhFEhha8t7Ty0yGNMRx1mbaqyjhn12UWvz0sO0kuc6AC0zJbIvZp466LOr+slQUpazCh9QvAu5sOab2ABjlzVmFoYY4WrXxNUtyuyta0Xdxt3/gNTNgTFNaagOHpZKXqUrjO4A+sRrJPHwWmjgKjW0cbiqYo4YuLmMeLFovYHUHQc76wVPxpaalHB0clHC//lVnZWt3Yc5hEAZXSTfWw1J0hY6+FqUmPqYwuY6Jp08wLgSZgjUcT/2t+EqmhRfjBRLajWRQNNxbDhHbIGgAjXmecjp4HY2Or4qltbaTcuUh2RzC5xjiW8NNLfopuK9HVblpCDwuubiKgZ9+Frr1w0lvKxXPxLc5JFxGqRKzve0mADmH4rM/tRe/EqX52aBZnPcXSV1kcrQTCupyYus83VlN0DXVWuencC10rsYJ+XDtmy47XAldGlUAYBwWKbjdvOWqlj7rCavaVtN88VMJfrcx15Tlyzsemz+5RurJlWMuVS1XN0UIHG8JQEON1M2QqJgJgEmqeRA4oYl5AAHFNQd614gKqo6BfVV0n9oibEEXRqGq4gi2qxV6zi2GjM6Ygc1FeqGuc0OBPP8AVZGviowtFz43VkZ9e8MWvouDqgLgDfLdaqTH4ulcZWuMz3LIczqovAbzTYjG06FHLTd2+PetOMu/201ca3Ah1Jrxb1YuuHisa6qS1zuyTMBVOqZ3HNxWWuSx9xYphb+QrpfmPAINENc0k8AofVpspZnGBy5qxtZtWmC2C0ad6afZD+blrMonM90GLwFop4Yl5eSMrLNvxWWjXqZjSc6C42ldSk1lMsMjLx7iofSVMIXwAQA9w7RGkKuvhAGVKpBAByNJvJ6+/RdJ+Ja+xG7IJgg/NRWIqUCJa6DJdyvcD8VNXHDOHJc5xDrCQYiSdEuHo5mPeBMaHv5D3ro7QO8qGnTYIaM77R3DwiFbRFPzcNzhpnK0yBAPH3lXTfxgbgX+bEgCXECxv/13rbTwAfiqdM5S3DUg944SbwteamwgE2BsOaqfjadN79yS97rFobA04/7zU0J5oatWg1xBu6q+RYn/AE9yzYvC5KrabYLxy6f733WrzveVsodJpiCQdf8Ae5ZRXFMOqNBdUcSA46HggpGHccQxhbJa6XA+8D9T1SMwzsXioEBjYBJt/pK0TDHUmk582XM02vBJ62WoPp4eadMAZXEwf4Tx59yos83FHBzTjM+5ngIJ08dFgFCnTq0wYytuTNz3K6rjS2mf2jSNbd4WQ4uQZaAEStjTSykO7Oac3C8pMTVpvAE9njHdoFz6lbO6QJnu4I3kWueQQaiTkDTw5IrVqbXQ69MGco4lZnVgGyQD3KneF7944Xm3d3osiypWcS5x/eObA/lHIJCW06LWi7zqeSVr4J01vzSPfJn/AEo0UgXnjdKe2Rwb+aHHNroEEwq0hxIBA1NksBtgDPPmm4hNTp53Wc2e8xbijUX4HAvxhAzbugKjWvqEEgSQIHM3XqK+yaNHB4fCbKeX18Uw/tyeyGfecXDRsBtguH5zh6GCwtI0c7XueagHZNQSALxOU3ETw7oWz7XrYeh50/D099WcaTMpIcxrSLAGbzb85Fji7XSZGvB4DAYFr2U3Ox+b18sgVJMNaALc5kyMs2tJV3VNzhi2Ua+Gwb3VG0aTQwAgcecTexmWyAFz6O2gwMMfsWw1rTcUbAOItckTrMXMcEY3aLRgK9BhcKVV7nlrLO7QY4TN41B526KZWtiaDmV9oYzEYoGnRFJlao8tBfRbIhjCLAlpA+7+EHZWfUqVKhcRSxoYBhqWH/aOw7P5nTcwSNOOolcahi6r3POIr1M1Z4qV3ss7s6TAtB+dyFlFcsqPytFNx7JkSBz1mD39fC4zr12FxAbgsPh8NhaRwO7qPaHkg1YgEvOXSXGYmdBax24yrisPSY/NL2tzuZUdAc3KdWj1ZIFhwkayvKVNrGrUpOzPaaQ3dMsAaWMAgBoGhM8dOHArRisTTyBzaPnMOc9uWQ2GglziNQZMkHXjFlnGtdSsTVDnnULM/EOZ2XceMLWzdvw4ImSdVz8c3trrGaSpVzNN/BY3u7SneFs8lW5110kcvScyspMfVeGMBc48Aq6dN1R4a0EuOgC7mxsDUo4o1qjbBpAJE3U9XEnjRhNlEU21K0jN90iIVtTDik0wbSt1Sq4wHWAMER+KoqlplsjmFy1u+JjmkS63BWUHQ7tLQaTQwwJnkk3ENkLTE8YcVLqxtSeKylpaEMeon63tctLD2JK5zX6LoUINCSVK35QTJlBMNsoeYckc8HU6KKmcsqveGSldUlxSE5nAAKour1gYgQYvdZalctblaZJVderDnybTMgLMawqPDRpxKsjN9YK1Ts5r5ibpaBblLqhJdyGvRJVcXdtoMCw7+SoqVDyE9y04/wBtNfEZWlrYBPJYHniTc8Uj6gzS6espDiBNp70FNbM3tahWCo2tT3ZHe136LSwUixpywXmGgqivhzh3FzCcp1gWaiyObjW7sCmRfXos1N7qbpBIKvxjnHEetJygdFD8OabqQJDs17GQuVv3Y9Xn55kq+jU3pEnJUNxNp6LdSxZDSXl2fiZusZyubleJA0PLol3xzZXDM7g6Y961/wBuNkv9N4xLnBwEgC8hWNxRktzQCIdOhEaLnZwdNe8INS0eCrONoxcvcXes+zjpwQMSaeUAdkXPI/Jc+Z0TNfABieuiLy3+en964gkeqziPH/e5ZjWc55dnLiTrMGeaoN+CZr8p5nRDGuhX3DHAtBzCCeanfNIGkm9uKxl3PgjPAmxkXBROWjfFoixJMnqkOJc6Bo0ag3VBcTrdF0XFzq5eACdDYAJTULrad3AKubHkjNbjZFxaH5RYxOt9VIfeSZPJUSI4ozWRMWZ5M/gguAsqg5EouGLiTqlJUaoJ5IqZUaqClJRcMSSJUl4DdJI4lJKHQTpYI0JkyfBOXloAm+mqrE8CjQG896KuY8CmWuc5wsQyYE6T18FDH1GtyNdU7VsoJggkWA6ge4Kq0Xt3KCe1p3QEVYXSZOvEaoBJdJuSTJN5lVgkxpCupw0y4Z3O9Uf73oGzZJeO1ULiCCJH+VY5mUtoGsDVc6ar3Ds0u6b35x0uq206tSqxlPtV3uhlJgl0nu4Lr0MG2lmwdKh5zixepTa4ZKX9bvvHuFhzJWbVjtiq2lhyA0yOK5mIxLX2geCtxuLl8NAPfOi5zu063FdPMS0tTVVjVWFpjRKGldGF+ErbjEMqCSQeC7mExgc8EnTgvPBpB710cEAKTiSM3Ac1j1NXzXVxGLa1jiBxuFzjXBdYmTzVL6zi7LNumiQtBJuszytrY7GbkWMlaKONp4lgA7LhqFxw4w7sgxxKWnUIrSbDktcprtOaXmALpBhcQSYpGwlNhK7BDyQSuhRxu8qkHLlA1KxdhzK57cPiMsmm6/cujSDmYbK9sOGqattHK9oZpxnip89pmabzMCCTzWfqzzIx1KoHFUb0l03hdFuEovYYf63GdFQzAMhzs/ZAt3q6llYzU7WuiDUJf60dVTV7DjebqkS94zHsAac1rHK3DVYdVDQ7M0GSeYS1ntsxrY7hwCQvIf2bchCrqPAsNTqtMX6HO0APVVnLCRxgSstTEABRT1CzMqy5s8Z7oCyvrEmxSZnTcqas8urRqsMS4gxEkgrZTFNzJzAg2ErgtqlvBOMZVaIAb4pq8ttfZjX1ajmUXPZl9YnKAVgOGrYctD2w1swJuZ7kvnmKY4vbU7yCJBS1tq4usb1Mvc0Qud+V2ktio1SI1UtcS4Ejgs83VtN0KyrfPxeTKDwuo1voEzWzqtOYaCTPBPeImbKCQBdQZOtu4IgJnQ2UcYAn9VOUnu/RMAGjRBDSWyTCIm58FM37XuR4oiNEEAetryU9PeoJjQQTzQQSdXe5RJ96IvrKmwRUBBRcqEEEoCkBEc0VCFKgkdUEd/BQeakyUaIpVBKkjvRZFQbwiPeiVEx1RU6awomBYeJUE8lBJKKlpJIDRJ4Bd/ZWyadZ+Z1VwIuCJANr9rTWBA71waIO8bDWuvo4wCu/hWNqU99iKjnYdt3U6FWAO57onwaCs+ldJlWnuzh9k0G72mC2o+k0BrATq533jrYW71VhsZh9lYQtePOCwHLSpw1mbm5x1/pvrosmLdUrYZuGoZcHhnGWio/LmknRvrO8deQT4PYZrblriKUiQ6sSSBxin363PuWFV1A7VwiVQTey6ePqU6ksa4HKYusAp9kjmvTKxYtwwfVLWNiAIvdXVcKQRAJC2bINOlhnvdGcmIIT1KwO8zCMo10Wevq58cp9ONdVowTqYrtFSQP1VTjmNzPJM5hIBaDGi0ynF1abqpyCB+aodV9yatSdMgFUlp4hIlMx+t1RUcS9MbFUudeQtM1spVC0AHRbKNe8TbkuRviAmZiCFL5JXcqYhr2kN9cWAlYm1zTfe8rAcQXGSTYqDW71J5W13aGNIqNawzPNRVxbmB7Q4meAK5FCq0VA6pOXjBhT5wXVCS6BJhTk6+NZqZiJPVTUeGstZZjVbzSOq5raq441aX5u4ckjnOnTxUAgJKtRrGkyJ7yoRXiK0CFz3uLnKyo8vJ+SQNgLNdJMQAiFKEXUIsphEdygR1wVmNzdbHNtcx0WV4k8lmunilaJKuYIEQq2C6va0pIvqnFuCnXjCUBMFpyqQOSIARoptCIifBSo4qUQCxU2nRRdR1QST70pJKCAiyKi5PJTACL9ApjkhqNUQphCGlQpUIIRClQigpSpUIsKoTKIRoqhMYUIqFAHepTN0jU8kVbh6JeZykt/D/bhemwuGxDnOBAptDQKbR+0fIEggkQ3xHDxXF2fSOUudSe+9mR+JJj/AHgV0Disc6jkaW0KQNj8pgX0sOB6rF+q00gcM5z8u7Y5haMls44yZkm3Nb8PjGBha2t5syJ/ZCXv68OMQZXGYKbu2+rVqFxykTIJ5k8f9haaFRpdDaYhwkOJnMfAW/wmJrlnESb+9aaE1Gkwb2Ceps7CAEzWKhpbRZlp1q7R/QF20dWhhntptAEF2olJisM67REuKyU8diAzKMTUIGk02pTjapcHGvUkadkfksfV2NmG2ZVe0EggSuj5lTosDZFrmVxTtHE1A0OxFQhugyAfkrW4qq6JqvPgl0ljdUwrajpF+4Kmrs0EWCqGKc0etWnqAq34sudd2IB7nKTU2MuLwdSn90npwXNqndzm1XWe4Vbu84I73Kk4fDPPbpVj1J+a6S1i45Dq7RxS74cCu63Z+DP/AItS/Mn5qxuzML/7Z3ir2mR54vgTKgVhm4r0n2fRDgBhxH9IP6oGzKZbO4I/sas9Ljz2/I0mOijekmwK9GzZtJtxSPi1vySu2cx0uNPwzJ0mOCKlTgPxRmqzqAu19m0zfdub1coGzmSf2Y+KVemf/HHAedXuKksAvl8SV1TgQJ7LBHNyR+DdAIDCDxBU1PrmZeiVwECASV0ThDpLQkOGIGg/FQc8i/ZBjvCiDEwtvm50DUrqBFsv4IazNbxUjRXbl0xBnuCh1NzRJbboiazVPVPBUH+m/NantJ0EJN2TxUrp59ZFbGnkrMpTNYYTBh/yievRQyNVMJssKYKMaSyhOW2ngiENKhPEahEQhpeKiE8HUoynkhpIRCaO5BEIFQma2dSAOZKMvKT4IFUJkZTyQKohOWnmERxkIukyqITEE6lBHeUUkKExAUIpSUqtyiNCfFKYn1YRpWoVhacsxZDWgxNkUrGZnQt2Bwxe+S4NaOO6zTwiI6pcNTYfWJ14RJ7gu5RpUhhYZRYawsczXAx7o5qVZVDnOo4apTBxG5Y7XeZR0jhyVLSa4AY2mxpkFzgAT1/64q/E1GMJytoiqQAZaSBroDIHC/5KMI5tOo5xAEtylrQTfoFApoFrW2ZaLOKvBZULSTvHjXKJj/ellDiLiBBvekATPfAMfNX0nF9O1Yw2wDXHTnMoEqMaQYb+sLO6Rru73uYWoNpFv3bH+FqljaYBJY38IW1YwHH+EHuRuqmks15rWW4c+tTp34wECnQmAxkDmE1GXdOm5Z4OKdmRo7b/AMVo3dIG1KkT0UNp03O/dMjvCBGvpuMtc0/3FOXg6QP7iP0TFgEAMaAeindsiN3TPOT/AIUCb2b5Wjl2ygVmaS2f/wCjlYAARlpUI5SB+iHVWz2qVCe90/oiJbWpNmXDxeSnD2OnttBHJ8KnzimLCnhw7kHgfoo3sgf+n8anyQX76nALajSP6tVLq1KCHVA0/wBarbWEQ7zbT+OVIxDBY7i3IpgtZUYRaq0z/OkqZXWc9g/uPyUNxDI7VSj0j/Ch1fDm7jRB55T8kwT96DUYe7OiDJBeyOqPOMNYTSPPszKXzmgx2aGgaTlPyRE5THYe0jrKRzHkH1ff/lBxeHfYsEcJpk/opFXBlwEMv3R+EIKyyqCXOy9f9KrdTquMgs8VsHm4EtpsPQAKBUaJygDxQxzn06wcf2jPC/uSuoYjLLnxHHdldIvpiO2R0cpNWiJMlpjhF0TlyhRqERvCeM7sylOFfqXVJ4/siF1DUoF0hz5PFQNyDll098FE5cc4ciSw1557tVGiyPXxRn+Rd4lhaYe4TrEfNKRP3Xnvt+SLmOGaTWiZrEcyIU02sM9msejo/RdgskyXvPcQNFJA+6x7ehCrPLj5KLj6lWOs/ooNNuuSoR4LqHDMJBcXx3tHyTZaTWZd7Ec2gT+CHLjmmTpSf1IQaZEDdkHouvug7So8f0g/JKaVJp7TpPNzUTlzBRJ+7HX/ALSFg0k89F1g1gdJc2/CAP0SltMRDwL2yjT8FTlzQypBhpg96XdvJMtNua6e7pk9ogjWSo3dE9nO0xoMoKJy5m7dpEdUwpGJsB1XTLabR61uQaErWUnXnTmmLy5wpOjh71BY88B4LoPayZhx7wobTYdYnkmJjBujxICg0XcwuhuwTb8Cp3TD6zRPXVDK53m74m6U0yDBldJ1JsGWhQKLYNhc89UXHOyZdQfcl3ciwK6W4pHVt+kpdxTm1pOkwmGVzhTJMGPeg0bd/Lmtxw1ImB+CPNqYHqEnvTF+ufujzEo3Y5rduKM3ZHgEvm9Ix2B77pi6ybqCL+8q+nhTF57rK9uHo8WTGt1qDmsaWt3kH7oIhRYKOGaA2HVA8cA3RWjOxhDSA0GQ11Mkj8QgV2taZrYgki8vsP8A5JK9em5sF+Je0GwJBH5qY0zy+rUBqXcbQBotVOk8UxlpAHUiSPz8Fl3oabB7u4nT8VbvWPbDvOOmaf0TEjczD1i2dz2eTmzfibJmU673fvGZjeDTP5ysbMZRYIIrDqQf0U+dUzfNXveQR81Ma1WKGJkhoHWf8KRRxQ1YD/ckO1rkNpuj+pH2s8G1IHqt4mxaaOIn93PVyjd4ga05H9ar+1MQfVptHgUDaOJP8A8CmGrG06l5pOJ7n/5TQ+YGHq/H/lV/aOIBvk+Eo+0cRFg092UqYatyvNhh6w93zUhjwP3NUeEqk7QrmJa3wBH6pvPa+oYz8fmriaY0nOPqvHUFNunxGV0f0qvz7EAyW0z7/mmG0MREZWfj81MNAovaD2Kl/wCVSKR4MffkxO3aOJizafiD81J2nix92n/vin0+EFF8funn+yFAoO40X+IMq37Wr8WM9/8AlH2riP4W+9Pp8ViiQI3Twf6SpgssGGOf+hONrYn+ADxKn7UxI1YT4p9Pio1Wg6Do7/pTvyD2d23uyn5J/tXEfwD3o+0qziJptJ6D5IiPO3zJNIj+kwo86cDmHm4PPKg44R2sNTJ8Ap89ZEeasJ6pgPPn8X0z0EI8/cDZ1MHnlUHGMI/9KwHulKcVT4YcJhqTjajrOLDHNiU19ZLPBguo3rXT+xA6OKUl4HqR0BVw02/qEAZjHINCjevBgF6VocIJe6BzCYut649xsiDfVOLiO5MKzwJzeFkrYj94PcmzNBs6e9FK6q50T+MJS4ySR+SextmTNYIsZQUZzM3BhDqhBHZJ71eQSeE9P8IiXGWjxaiM29g6wg1hm7RnqtBblAgAX0hIS4usD1AVFG+bOjJ6Kd6w37I6ghaGtP8AEB3CVBpiDJP4oM5ewkwGSVG9byb7logAi5jqUZHG507iiYp84A0AjojekiQQFeacgjK021lLu5cAGtt3ofVYquGgHip3zgYgJzSjQNg9FO7gmGW5ygr3x0sD3C6jeO7vcU+VotAA8FGQA9nL70FYq8j4cFO8J4D3KzdZrCPepOHP8IQxU59/V9wSF41LSf7VeMMOLR7kbgtFx+CLlUGoOAPuUW1yx4K/cE8D4BQMOSJAd7kMUDdk38OyVOVugNuiu3Eaz7lBpTJkx0TTFIY2Z4/0pjPB8BNuRrJjog07xKBMsi2U9Ql3U6mOhT5QNXA90qMpLbORSFoFg+I7lEHNIq9bFPkJtmt1lQWOb94e5EIczTOcTzUkVDo49QdEOa+Jhp/tSQ48IPIwg1jAv4QesqDgqo4NPUlZjisSPWL0vnVcH7/uXPt15avNnngCOqcYRw4HpKxjFV9Zf7k7cTinaF6dnLYMK7hTPWVIwrdchlYRXxTjALj7kOrYkGCT+CnZy3ebgSMrh1UeagGQxYPOMUNM/vXX2Ds3F7YdiA7FPoCiGmcuaZnpyV7OWfzck+oZTDDvIjLZZcUcVh8VWoCuXbqo5km0wYlVecYwEDeEeKdpy6Awhg2t1R5q8aW/uWAYrF8KjypGIxf8b/wTs5bTh3xfwhTuahF3OHULB53iRpVeeiBjcUD+9d7gnZy37upYZnHwUhlUfe/BLg8bv3buq0B50I0K3COcdys9amMp338Qt/Kkh+mdhPeIW2Wm4d+KWRftOHgrqYxkvmC6kUQ+btpELX2P43DwTBk6OnqmmMMVAbU2+BUuFQj9ytppE/dYfAKPNv8A9Y8E0xgAeCZYjtCMzHLd5qRfKfBxRuHfzBXUxhl8nKx0ckB9UCIPitpoOIs4+5T5u8aOnqmmMZfUOjSecBAdWIjIfctZoVdBASHD1tOz4ppjOHVRJy/gpL6ogyfcmNCq25aw9FBL4vTHiETBva3P8FGerqXjxalD6kwG2PcrN5WAvTQLvKp1II/pTBz/AOEAdwRvHk/uhPKVOd0T5uZQG8eJBye5NvHRe/T/ALSE1D/w/wDyUsZUDid2TPJ0Iqc5Os/74qQQZyuJCRzKhEmmL63KjdPJB3bZ6oLLEwDE6SUZXfxiPcqvN62e4ao83qBxkt9yItLHEWPUhyUteCYf1Eo3L7HO0f2qBQI1eJ6IGAcY7Qdz0URA9YRx0uqzRifkg0QIAkdUDiAPWI8AidTJvxgIbRMzHuSuY2Rmgd0opg5t+0fdCUPjVxIm3ahRu4PraqTTaSNZCBi+3aa4DmXJTV7Vs3gUtRkC5kgIFMup3kHqgsNW2pkcJRvSb7zL3SqdzBOruhSuYQLMJ8UF+8OhqE+IVe8dmMPd71WaZiQyP7pS5ahEBotrDlTWgPcCeJSuP8QPvVABgndtnnJukLHGJLR3GUNaC4ATDgeHa1UAnN949T/hZHNJgGCn/aBvqH8v1TDWokA+qY6f4SOdT4gkjgYVBdUgAUx7/wDKXNUFntme/VMLVmHpV61enRZldUqODW9SvYVsFsTYdCkNoNNetUGsEkxqQNALrzWxqrMPtjCVawysFUSToJt+q9ztnH4vZ7ab8Ns92LY6Q7JJc08LAGy81d3A23sbCu2a3amyTFKA5zCSQWzre4vqE1TYmD2tsLznZVM0sSL5N4T2hqwyfcei27T2htL7FrvxOzqNGjUpEOmt2mzbSNe5J5LUm7O2ZX2ji6ppUqjc2V2gaPvHvPy5oKNo7L2VsbYtJteiK2Oe3KDndd3EwDoPkrtn7A2TW2FSxWIpZHFmepVzGQAb8Y0Co8scK5xp7SpudUoloY6LhnIjuM/7K6GEpuxnkYyjRBL30DlGkmdFBVhsBsDbGHqUsHSNN9MesA4ObyN9Qq/I/Duw2L2nQqevScxp8C9L5H4HE0MRiMRiKFSi0s3YFRpaXGZ0PT8Vt2DWp4jbe2qlMgtNSmARxjMP0QeaqYRlbaWMqvbmb5xUa1s5Q4ySZPBoFyenNXCkCAGMaQRmAGGpXHMMJ3hHfqrMWx1GpiW1mbuatYEVOy0hz2uaSeDXBjmzolrdtgqirTpCtUdAe3eVHO9bO1zAZiQBBjs95CoynA0zicM4Bu7fVptqMaSWlrjZzSb5TBF7giCvS4zY2wsAWYjEtFKk2W5C5xzOOlrkxB0XKplvnDSQWTWb2CIyF9dr2sPeACSOErX5dOhmCb/M/wDRQJs7Ymzn0sTtPFmMGHvdSbdoyAm54+CsoYTYO3aVWngaBo1WCcwaWkd8aEf7ZbtiYjP5NUX4Vgq1aVMt3ZMS4cDyn9VXgdq7Wxhfu9kClk13z3MnpLbqjxNbPhMVUpOBp1qDyJy8QdV6ZraVcDe1KhOt2kBcbbD3V9qYqpVaxlQuhzWOzAEAA38F6NuCJDcjjEDit+azYV+Ew4a0tfbiqajMG2BvpHGy1/Z2Zsv7Te8rO7Z9NxloEDhBK18ZukzYBglpLz3mEbzDVS3KyoTxyiyup7Pbm9SBxIbC2so0qVENp0yX/wARTYSViZSouBG5DeTi26l+FBjsUyAOA1V+4dm7QJ6BO1jQ0gE5u8Jq4wuwefSllEcDKmns8OYHGmCDodCtzKr2TAMd51VgqmpoADzU1ccs4RlNsvw+bxKV9Jhb2MM1p1PaK7IqZCCWgnm5JUyvu4druTTHFGFpvfG8c0Efd4LTS2OKgtiKhGmq3BwA49AEwqGOzKaYwjYMOOevUaOeYFa6WzcFRpZQw1nfxVDKcvf95VvrkGN2T3hT7T4xv2PTqVnPe6AdGsEAI+xsORZ9QeK1CtP/ABvTtqOMzTcOqv0+OadiGRlxLgOgKu+xqQaZqVHOIsTAutVWs4GGR4lVjEvb+8cPen1PihuxGW/avHcIQ7YtMuIGIqAcoCStialaq1rH1Wt/lskc3MJbv8w1fmKuU+GGwgSZxDo4QFXU2I6P2daecrXSe5zRmpPcRxzaq9tVwBy0wzqU+mRyTsWs3XEMBPCCpGxzu5NWXdy6DXNYTmqMJOvblSa9AC7m+BRMjlv2O9jpFZumvJA2SwQamI8AF0t9SJ7JcnFVh+8fEKmRyn7JptuMQIPNKNj0wZdiAAdCP+12MwixafBAM602lTTI4/2PFziGAc/9KV2yWNIc/Egj+X/tddzWEXp/ggNpi4awHvarpkcV+yHGDScXN4Tr+Cduxpy9pzZ1JC7W8gQGA9EhrmfUcO9NpkcetsOrY0n0yDwcSCqXbGxbQSMnxruiqOTo7yg1gYieibTI80dn4kG1MGeTkj9nYqmYdh3A8pXqS6llDiLzop3lImxBPemnMeR8xxQ/4XeBSuwuLGtN/uXsczeQPgle8gaNAV6OHjzQxQH7p4HQpTSxMeo892VesLnG/wCTlBc6fVd1TU5eVbhMZUgtoP6lsKXbPxLLupwSdMwXp3VHEQZPUJAQRIDARxIV05jzD8HimAF9J1/FLuK5EZHz/SvUPcdHkX0OVGbLcBp7yE05jyZewkZ3DKuzhfKfaWAoNZvaVWiBDd6wkgdQR+K8mMa8CMlP3H5pnbQquADmUyBpY/NebY6vRY/bWL2mW+dVGuptMik0Qzx4n3ptobexuPw4w9fJuZBy02RMaT3LzIx1QaMYPA/NONpVh91nuPzTYPRU/KLaFHBDBNbSfhgwsy1GScvLVemwuJrYXyJp16ILKrKOZpib5l83+0qsepT6wfmpdtTEFuXs5eQJj802D0+J8rtpYigaUU6UiHOpsId7yTC5+zNsYnZld1TCva3MIc1wkEdFxhtGsPus9xUHH1T92n7k2GV3sXtnF43HjFvqBlQMyfsmkAtk85nVTTx9UzvWtqiZaCS3LaLZSItw0XB+0Kv8LPcUfaNb+FnuPzTYY7pxdfe0XtFNjaLg6mwCGtMg6cdLk3K07R2vi9qCmMS6l+zktyNjX/peZO0ax+6z3H5o+0a/AM9ybB6PZ21cTs17nYZ8A+u1wlrluxPlZj61I02upUZEF1Jpn3kmF48bSrjgz3KDtGueDPcmwdapWY1upJPivXtx9JjGl1VwEDQL5z9oVv5fcumzys2g0Ru8OerT81qepCyvafalF7cu9zRe4hVjbOGY2Ax5I7l41/lRi6nr4bCH+x3zSekeI/8AaYT4XfUtdeWc9PaM207EVG0zSgE8XQAuoarmQHUoMWIMhfNj5Q1z/wCLhR/a76loHlftINDQ2gALAZT81L68kl/X0DfvbMalZC2o97iH2dqZXiPSvHHWjhz1DvqTeluO4YfCj+131J1FyvaBtRguSehVgbUqAFj3A9F4dvlftBulLDD+131JvTHaIM7vDfC76k7hj2jnVmVIcyo6PvECEjcWTUiD42heOPlltImSzDnwd9SPTDaE/ucL4td9SdxMr2Jx4OjRHPmrGYzswGxK8WfLLHkQcNg/gd9SQ+V2PmRRww6Nd9SvfkyvaYktrBsOqSNRMBKzNEBpB5ySvHemG0fZYb4XfUj0vx/Gjhj/AGu+pO4c17MZ22JeT0Ug4gk3jlZeNb5ZbQbpQwvwu+pT6abR9hhPgd9SncOXsnmubMDQ7mWyFZRpVSZqmmT3BeK9NtpewwnwO+pQfLTaRP7rCjox31J3Dl7wiowdndkdEbxswQGjjfVfP6nldtCq3K+lhyOjvqVI8pMQP/Fwp6tcf/snUXK+hRcuZVBHIhQ3eFt3UyOi+fO8pMS7XDYUdGuH/wBlLPKfG0x2KdFvTN9SdRMr25wwc8nsNHTVV+bsk9hjo4gryA8rdoA3p4c9Wu+akeV2PExRwwn+V31K9w5ereW0CC7DujmDKXzynJBo1PBeX9L8fxoYU9Wu+pM3yyx7RHm2Dj+h31J3DmvVUatCoYa+o08nLU3dtGoK8S7yvx50w+Eb0Y75qtnlVj2uJNPDunm0/NO4ZXvSbQoueErw48rscP8AxsJ8DvqUHyuxxj9hhhHIO+pTuLle3MDWykUydAV4geV+OBB83wsjm1x/+yY+We0na0sN8LvqTuGPaVGGm0kuDY5lVU6oqgwA4DU6LxtTyux9T1qOF+F31JaflXj6bC0UsPDtZa75q9wx7V1LLqHNPVLuZuH/AILyDvLHaLgJpYawgHK76lWfKzHHWjhieeV31J3DHtCKoFoKrc2pMyfevIN8rtotEBlCO9rvmmPlftA60cKR3sPzTuGPVFlUi8FAZUmwd4FeUf5XY95k0MLP9LvqUelmP9jhvhd9SdxOXqi+uD2QT1VtI1Hn9oxrIHFeRHlftAaUcL8DvmlPlZjy4u3WHk/yu+adxeXsntJMNu1Y3Gpmc0UngTbvXmvS3HxG6w8f0u+aj0rx/ssP8LvmncS+XCQhC4thCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIP/9k=" alt="" />
-            <div class="surf-shade"></div>
-            <div class="surf-zone" id="surfZone" hidden aria-hidden="true"><span class="surf-zone-chip">Usual lineup zone</span></div>
-            <div class="surf-facade-top">
-              <span class="surf-live-tag"><span class="surf-live-dot"></span>Live cam</span>
-              <span class="surf-badge" id="surfFacadeBadge">☀ Daylight</span>
-            </div>
-            <button class="surf-play" id="surfPlayBtn" type="button" aria-label="Play the live stream">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor"/></svg>
-            </button>
-            <div class="surf-facade-meta">
-              <div class="surf-spot-name" id="surfSpotName">Banzai Pipeline</div>
-              <div class="surf-spot-sub"><span id="surfSpotPlace">ʻEhukai Beach · Oʻahu, Hawaiʻi</span> · <span id="surfSpotTime"></span></div>
-            </div>
+      <div class="surf-stage" id="surfStage">
+        <div class="surf-facade" id="surfFacade">
+          <img class="surf-poster" id="surfPoster" src="data:image/jpeg;base64,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" alt="" />
+          <div class="surf-shade"></div>
+          <div class="surf-zone" id="surfZone" hidden aria-hidden="true"><span class="surf-zone-chip">Usual lineup zone</span></div>
+          <div class="surf-facade-top">
+            <span class="surf-live-tag"><span class="surf-live-dot"></span>Live cam</span>
+            <span class="surf-badge" id="surfFacadeBadge">☀ Daylight</span>
           </div>
-
-          <div class="surf-zoomwrap" id="surfZoomWrap">
-            <div class="surf-player" id="surfPlayer" hidden>
-              <div class="surf-frame-wrap" id="surfFrameWrap"></div>
-              <div class="surf-loading" id="surfLoading"><span class="surf-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
-            </div>
-          </div>
-          <div class="surf-gesture" id="surfGesture" hidden aria-hidden="true"></div>
-          <button class="surf-fs-btn" id="surfFsBtn" type="button" aria-label="Watch the stream full screen">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg>
+          <button class="surf-play" id="surfPlayBtn" type="button" aria-label="Play the live stream">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor"/></svg>
           </button>
-
-          <div class="surf-fallback" id="surfFallback" hidden>
-            <p class="surf-fallback-title" id="surfFallbackTitle">This stream is taking a break</p>
-            <p class="muted" id="surfFallbackText" style="margin:0 0 12px;"></p>
-            <div class="surf-fallback-actions">
-              <a class="btn-small surf-yt-link" id="surfYtLink" href="https://www.youtube.com/watch?v=Fp7l8XASb9Y" target="_blank" rel="noopener">Watch on YouTube</a>
-              <button class="btn-small" id="surfRetryBtn" type="button">Try again</button>
-              <button class="btn-small" id="surfBackBtn" type="button">Back to poster</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p class="surf-dock-status" id="surfDockStatus" role="status" aria-live="polite" hidden></p>
-
-      <!-- ============ Surf Break control center: break chips, Follow the
-           Sun, lineup zones, switches and credits — the whole former Surf
-           tab, living inside the overlay under the player. ============ -->
-      <div class="surf-controls" id="surfControls">
-      <section class="surf-card" aria-labelledby="surf-h">
-        <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this overlay</strong>, or the speaker inside the player. Turn sound on once and the app <strong style="color:var(--ink);">remembers</strong>: phones sometimes drop a stream's sound on their own a little way in, and when that happens the app notices and puts the sound back by itself within a couple of seconds — no need to touch the volume buttons. Your sound also comes back by itself when Follow the Sun moves to the next break and when you return to the app. To turn sound off, use the overlay's Sound button (the player's own speaker is treated as a dropped signal and gets restored). Surf Break is not a screen of its own anymore: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens a <strong style="color:var(--ink);">minimized live player</strong> over whichever tab you're on — just the stream, small enough to keep an eye on while you do anything else — and its controls button (bottom-right of the mini player) opens this full view. The expand control (top-left) takes the stream itself full screen, right where it is — no screen change — and the same control brings it back. The wave button and the mini player are one piece: drag either one — hold the player for a moment, then drag, or simply drag the wave button — to move them together, and they stay where you leave them; swipe sideways on the player to flip to the next or previous break. Pinch the mini player to zoom into the feed and drag to look around the whole frame; double-tap puts the full frame back. The tab underneath keeps its place while you watch. This is its control center: pick a break, close the player, and set auto-play here.</p>
-
-        <div class="surf-nowrow">
-          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
-          <button class="btn-small" id="surfShowHideBtn" type="button">Close player</button>
-        </div>
-
-        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Auto-play streams</div>
-            <div class="sw-sub">On (the usual): the best daylight break starts by itself, muted, as soon as you open the app — the mini player opens by itself over whichever tab you're on — and Follow the Sun keeps cycling. Off: Surf Break stays closed and nothing loads until you tap the wave button and tap Play — kinder to your data plan. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
-        </div>
-
-        <div style="margin-top:16px;">
-          <div class="sw-label">Auto-pick — which break plays by itself</div>
-          <div class="sw-sub" style="margin:2px 0 8px;">Best conditions: the stream follows the live forecast — the best-scoring break with a camera (scores in the Forecast panel, bottom-left button). Follow the Sun: the original daylight-only picking. Off: no automatic picking — the break stays wherever you put it. Picking a break yourself always wins until you change this. Best by live forecast data (Open-Meteo) — every break's 72-hour swell and wind charts are drawn right in the Forecast panel.</div>
-          <div class="seg-control" id="surfAutoMode" role="group" aria-label="Auto-pick mode">
-            <button type="button" data-automode="best" aria-pressed="true">Best conditions</button>
-            <button type="button" data-automode="sun" aria-pressed="false">Follow the Sun</button>
-            <button type="button" data-automode="off" aria-pressed="false">Off</button>
+          <div class="surf-facade-meta">
+            <div class="surf-spot-name" id="surfSpotName">Banzai Pipeline</div>
+            <div class="surf-spot-sub"><span id="surfSpotPlace">ʻEhukai Beach · Oʻahu, Hawaiʻi</span> · <span id="surfSpotTime"></span></div>
           </div>
         </div>
 
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Lineup zones</div>
-            <div class="sw-sub">On: each spot's poster still in the player above carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
+        <div class="surf-zoomwrap" id="surfZoomWrap">
+          <div class="surf-player" id="surfPlayer" hidden>
+            <div class="surf-frame-wrap" id="surfFrameWrap"></div>
+            <div class="surf-loading" id="surfLoading"><span class="surf-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
           </div>
-          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
         </div>
+        <div class="surf-gesture" id="surfGesture" hidden aria-hidden="true"></div>
+        <button class="surf-fs-btn" id="surfFsBtn" type="button" aria-label="Watch the stream full screen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg>
+        </button>
 
-        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
-        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. Closing this overlay never stops the stream — the wave button's pulsing red dot shows it's still playing behind the button — and switching tabs never stops it either; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen — and when it picks back up, your sound choice comes back with it.</p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (subscription surf-cam networks and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
-      </section>
+        <div class="surf-fallback" id="surfFallback" hidden>
+          <p class="surf-fallback-title" id="surfFallbackTitle">This stream is taking a break</p>
+          <p class="muted" id="surfFallbackText" style="margin:0 0 12px;"></p>
+          <div class="surf-fallback-actions">
+            <a class="btn-small surf-yt-link" id="surfYtLink" href="https://www.youtube.com/watch?v=Fp7l8XASb9Y" target="_blank" rel="noopener">Watch on YouTube</a>
+            <button class="btn-small" id="surfRetryBtn" type="button">Try again</button>
+            <button class="btn-small" id="surfBackBtn" type="button">Back to poster</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- ============ Surf Break floating button: a small wave mark that
          follows every screen. Drag it to park it anywhere on the
          screen — where it lands is remembered on this device. Tap it to
-         open the minimized live player over the current tab (expand it
-         from there for the full Surf Break); tap it again to put the
-         player away. It wears the
+         open the floating live player over the current screen; tap it
+         again to put the player away. It wears the
          wave in both states; its dot shows at a glance whether a stream
          is playing behind it. ============ -->
     <button class="surf-fab" id="surfFab" type="button" aria-pressed="false" aria-label="Open Surf Break" data-play="off">
@@ -3132,7 +3045,7 @@
          break, and in-app 72-hour swell + wind charts drawn per break
          from the same Open-Meteo hourly data. The button mirrors the
          wave button at bottom-left; the panel floats over the current
-         tab exactly like the Surf Break overlay and never moves it. ============ -->
+         tab and never moves it. ============ -->
     <button class="surf-fc-fab" id="surfFcBtn" type="button" aria-label="Open the wave forecast">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 17c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 3-2"/><path d="M3 11c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 3-2"/><path d="M12 3v4"/><path d="M8.5 5.5 12 2l3.5 3.5"/></svg>
       <span>Forecast</span>
@@ -3917,6 +3830,70 @@
       </div>
 
       </div><!-- /panel-terpene -->
+
+    <div id="panel-surf" role="tabpanel" aria-labelledby="tab-surf" hidden>
+      <h2 class="tab-title">Surf Break</h2>
+      <section class="card surf-card" id="surfPageCard" aria-labelledby="surf-h">
+  <div class="surf-dock-head">
+          <span class="surf-dock-title"><span class="surf-live-dot"></span>Surf Break · live</span>
+          <span class="surf-dock-spot" id="surfDockSpot">Banzai Pipeline</span>
+          <span class="surf-dock-meta" id="surfDockMeta"></span>
+          <span class="surf-dock-btns">
+            <button class="btn-small" id="surfSoundBtn" type="button" aria-pressed="false" aria-label="Turn stream sound on">Sound off</button>
+            <button class="btn-small surf-zoom-btn" id="surfZoomBtn" type="button" aria-pressed="false" aria-label="Toggle digital zoom"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Zoom</button>
+            <button class="btn-small" id="surfDockStopBtn" type="button">Stop</button>
+          </span>
+        </div>
+  <div class="surf-zoombar" id="surfZoomBar" hidden>
+          <button class="btn-small" id="surfZoomOut" type="button" aria-label="Zoom out">−</button>
+          <span class="surf-zoom-level" id="surfZoomLevel" aria-live="polite">1×</span>
+          <button class="btn-small" id="surfZoomIn" type="button" aria-label="Zoom in">+</button>
+          <button class="btn-small" id="surfZoomReset" type="button">Reset 1×</button>
+          <p class="surf-zoom-note">Digital zoom — crops into the picture. The cams stream in HD, so 2× stays fairly clear.</p>
+        </div>
+  <p class="surf-dock-status" id="surfDockStatus" role="status" aria-live="polite" hidden></p>
+        <h2 id="surf-h">Surf Break — live cams</h2>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this page</strong>, or the speaker inside the player. Turn sound on once and the app <strong style="color:var(--ink);">remembers</strong>: phones sometimes drop a stream's sound on their own a little way in, and when that happens the app notices and puts the sound back by itself within a couple of seconds — no need to touch the volume buttons. Your sound also comes back by itself when Follow the Sun moves to the next break and when you return to the app. To turn sound off, use this page's Sound button (the player's own speaker is treated as a dropped signal and gets restored). The player itself is a <strong style="color:var(--ink);">floating window</strong>, not a screen: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it over whichever screen you're on — just the stream, small enough to keep an eye on while you do anything else — and it stays usable right there: flick sideways on it to flip to the next or previous break, pinch to zoom into the feed and drag to look around the whole frame, double-tap to put the full frame back. The wave button and the player are one piece: drag either one — hold the player for a moment, then drag, or simply drag the wave button — to move them together, and they stay where you leave them. The window button on the player (bottom-right of its frame) loads <strong style="color:var(--ink);">this page</strong> — Surf Break's own screen in the tray, where this break menu lives. Pressing Play anywhere always plays the stream right where it is. This page is its control center: pick a break, close or stop the player, and set auto-play here.</p>
+
+        <div class="surf-nowrow">
+          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
+          <button class="btn-small" id="surfShowHideBtn" type="button">Close player</button>
+        </div>
+
+        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Auto-play streams</div>
+            <div class="sw-sub">On (the usual): the best daylight break starts by itself, muted, as soon as you open the app — the floating player opens by itself over whichever screen you're on — and Follow the Sun keeps cycling. Off: the player stays closed and nothing loads until you tap the wave button and tap Play — kinder to your data plan. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
+        </div>
+
+        <div style="margin-top:16px;">
+          <div class="sw-label">Auto-pick — which break plays by itself</div>
+          <div class="sw-sub" style="margin:2px 0 8px;">Best conditions: the stream follows the live forecast — the best-scoring break with a camera (scores in the Forecast panel, bottom-left button). Follow the Sun: the original daylight-only picking. Off: no automatic picking — the break stays wherever you put it. Picking a break yourself always wins until you change this. Best by live forecast data (Open-Meteo) — every break's 72-hour swell and wind charts are drawn right in the Forecast panel.</div>
+          <div class="seg-control" id="surfAutoMode" role="group" aria-label="Auto-pick mode">
+            <button type="button" data-automode="best" aria-pressed="true">Best conditions</button>
+            <button type="button" data-automode="sun" aria-pressed="false">Follow the Sun</button>
+            <button type="button" data-automode="off" aria-pressed="false">Off</button>
+          </div>
+        </div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Lineup zones</div>
+            <div class="sw-sub">On: each spot's poster still in the player carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
+        </div>
+
+        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
+        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. Closing the player never stops the stream — the wave button's pulsing red dot shows it's still playing behind the button — and switching screens never stops it either; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen — and when it picks back up, your sound choice comes back with it.</p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (subscription surf-cam networks and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
+      </section>
+    </div><!-- /panel-surf -->
+
 
       <!-- ================= Tab: Device ================= -->
       <div id="panel-device" role="tabpanel" aria-labelledby="tab-device" hidden>
@@ -7285,6 +7262,7 @@
           temperature: document.getElementById("tab-temperature"),
           strains: document.getElementById("tab-strains"),
           terpene: document.getElementById("tab-terpene"),
+          surf: document.getElementById("tab-surf"),
           burnguard: document.getElementById("tab-burnguard"),
           device: document.getElementById("tab-device"),
           info: document.getElementById("tab-info")
@@ -7294,6 +7272,7 @@
           temperature: document.getElementById("panel-temperature"),
           strains: document.getElementById("panel-strains"),
           terpene: document.getElementById("panel-terpene"),
+          surf: document.getElementById("panel-surf"),
           burnguard: document.getElementById("panel-burnguard"),
           device: document.getElementById("panel-device"),
           info: document.getElementById("panel-info")
@@ -11490,43 +11469,42 @@ var STRAIN_SRC_LINKS = {
       /* ================= Surf Break — live surf cams, Follow the Sun =================
          Pure presentation layer: it never touches Bluetooth, never calls writeFrame,
          and sends nothing anywhere. Streams are public YouTube live cams loaded in
-         youtube-nocookie iframes. Surf Break is NOT a tab: the ONE player lives
-         permanently in the overlay (#surfDock) in the app shell — outside every
-         tab panel — and a small floating wave button (#surfFab) follows every
-         screen. The dock opens in TWO stages on the one node. Stage 1 —
-         the MINIMIZED view (.mini): just the live player in a small
-         floating frame anchored near the wave button; that is what the
-         button and Auto-play open. Stage 2 — the FULL overlay (player +
-         the whole Surf Break control center), reached via the mini
-         view's controls button (its expand control now takes the stream
-         itself fullscreen, in place); its Close returns to the mini view while
-         a stream is up, and folds everything away when none is. Tapping
-         the wave button again puts the dock away entirely. Closing never
-         stops the stream — the
-         button's dot shows at a glance whether a stream is playing behind
-         it. The player node never moves, so opening, closing and tab
-         switches never reload it.
+         youtube-nocookie iframes. Surf Break has exactly TWO homes:
+         (1) the floating PLAYER (#surfDock) — the ONE player, living permanently
+         in the app shell outside every tab panel, summoned by the floating wave
+         button (#surfFab) over whichever screen is showing. It is a player only
+         (the stream plus the small round controls riding its frame), with
+         exactly two states, hidden and shown; there is no full-view overlay
+         stage and no collapsible menu form of Surf Break anywhere.
+         (2) the Surf Break PAGE (#panel-surf) — a normal tray screen like every
+         other section, carrying the menu: break chips, auto modes, switches,
+         credits, and the Sound / Zoom / Stop controls for the player. The
+         player's window button (bottom-right of its frame) loads that PAGE
+         through the app's own tab wiring — it navigates; it expands nothing.
+         The player node never moves, so opening, closing and screen switches
+         never reload it, and pressing Play on any surface plays the stream in
+         place on that surface.
          With Auto-play on (default), the best daylight break starts by itself,
-         muted, as soon as the app opens — presented through the overlay,
-         opened automatically over the starting tab. Sound is a remembered choice: once
-         the viewer turns it on (the dock's Sound button, or the speaker in
-         YouTube's own controls), a 2-second watchdog adopts that choice and
-         restores it whenever the player is found muted while playing —
-         phones (iOS webviews especially) are known to drop a stream's audio
-         on their own shortly after unmute, which reads as silence until a
-         hardware volume press re-asserts it. The watchdog makes that press
-         unnecessary. The same restore covers every player reload (Follow
-         the Sun advance, background resume, recovery chain). Turning sound
-         OFF is the overlay Sound button's job; a mute seen only inside the
-         player's own UI is treated as a dropped signal, not an opt-out. The stream unloads only on Stop or
-         on the app going into the background (visibilitychange) — never on
-         a tab switch, and never on the overlay closing. On a stream error/end, an automatic start advances
-         through the untried spots in Follow the Sun daylight-rank order
-         (a manual pick retries its own spot once) and the fallback —
-         naming every spot tried — appears only after the chain is
-         exhausted; the fallback renders WITHIN the current stage
-         (compact in the mini view, full card in the full view) and
-         never escalates the stage on its own. */
+         muted, as soon as the app opens — presented through the floating
+         player, opened automatically over the starting screen. Sound is a
+         remembered choice: once the viewer turns it on (the page's Sound
+         button, or the speaker in YouTube's own controls), a 2-second watchdog
+         adopts that choice and restores it whenever the player is found muted
+         while playing — phones (iOS webviews especially) are known to drop a
+         stream's audio on their own shortly after unmute, which reads as
+         silence until a hardware volume press re-asserts it. The watchdog
+         makes that press unnecessary. The same restore covers every player
+         reload (Follow the Sun advance, background resume, recovery chain).
+         Turning sound OFF is the page Sound button's job; a mute seen only
+         inside the player's own UI is treated as a dropped signal, not an
+         opt-out. The stream unloads only on Stop or on the app going into the
+         background (visibilitychange) — never on a screen switch, and never
+         on the player closing. On a stream error/end, an automatic start
+         advances through the untried spots in Follow the Sun daylight-rank
+         order (a manual pick retries its own spot once) and the fallback —
+         naming every spot tried — appears only after the chain is exhausted;
+         the fallback renders WITHIN the floating player and never changes
+         the presentation on its own. */
       (function () {
         "use strict";
         var SPOTS = [
@@ -11543,7 +11521,6 @@ var STRAIN_SRC_LINKS = {
         var ZONE_LS_KEY = "ff2.lineupZones";
         var SOUND_LS_KEY = "ff2.surfSound";
         var VOL_LS_KEY = "ff2.surfVol";
-        var FAB_POS_KEY = "ff2.surfFabPos";
         var MINI_POS_KEY = "ff2.surfMiniPos";
         var AUTO_MODE_KEY = "ff2.surfAutoMode";
         var FC_KEY = "ff2.surfForecast.v1";
@@ -11571,7 +11548,6 @@ var STRAIN_SRC_LINKS = {
         var dockSpot = document.getElementById("surfDockSpot");
         var dockMeta = document.getElementById("surfDockMeta");
         var dockStatus = document.getElementById("surfDockStatus");
-        var closeBtn = document.getElementById("surfCloseBtn");
         var miniCloseBtn = document.getElementById("surfMiniClose");
         var miniExpandBtn = document.getElementById("surfMiniExpand");
         var miniFullBtn = document.getElementById("surfMiniFull");
@@ -11619,8 +11595,8 @@ var STRAIN_SRC_LINKS = {
         var gesture = document.getElementById("surfGesture");
 
         /* --- gesture ownership (owner bug fix, defect 1a) ---
-           Any press that STARTS inside the surf subtree — the dock at
-           ANY stage (mini, full, or fullscreen) or the wave button —
+           Any press that STARTS inside the surf subtree — the floating
+           player (or the fullscreen stage) or the wave button —
            is claimed by the surf layer permanently for that gesture.
            The claim is stamped in the capture phase, before any other
            recognizer in the app sees the gesture, and the app-level
@@ -11655,9 +11631,10 @@ var STRAIN_SRC_LINKS = {
            After a recognized flick-cycle or any window/button drag,
            the browser still synthesizes a click for the gesture. That
            click is swallowed whole in the capture phase, so no tap
-           handler anywhere can fire from a swipe or a drag — stage
-           changes come only from the explicit expand, fullscreen,
-           fold and close controls. The swallow disarms on the first
+           handler anywhere can fire from a swipe or a drag — the
+           player opens and closes only from its explicit controls
+           (the wave button, its close control, and Stop). The
+           swallow disarms on the first
            click it eats (or when its short window lapses), so a real
            tap that follows is never affected. */
         var surfSwallowUntil = 0;
@@ -12168,7 +12145,7 @@ var STRAIN_SRC_LINKS = {
         var ytPlayer = null, plainFrame = false;
         var dwellStart = 0, loadTimer = 0, slowTimer = 0;
         var manualHold = false, stoppedByUser = false, gestureArmed = false;
-        var dockState = "hidden"; /* hidden | mini | open — mini: stage 1 (player only); open: stage 2 (full Surf Break) */
+        var dockState = "hidden"; /* hidden | mini — the floating player's only two states ("mini" names its shown state, kept from the unit-anchor code); there is no full/overlay stage */
         var bgSuspended = false, bgPaused = false;
         /* Auto-recovery chain: when a stream errors or ends on its own
            (not a manual pick), the player advances through the remaining
@@ -12184,13 +12161,13 @@ var STRAIN_SRC_LINKS = {
         /* --- overlay chrome: header, status line, card button, floating button --- */
         function dockVisible() { return !dock.hidden; }
         function syncDockPad() {
-          /* The overlay floats over the current tab and never pushes it
-             around: the wrap keeps its base bottom padding in EVERY
-             state, so opening or closing Surf Break never changes the
+          /* The player floats over the current screen and never pushes
+             it around: the wrap keeps its base bottom padding in EVERY
+             state, so opening or closing the player never changes the
              page underneath — scroll position and place are preserved
              exactly. The unsupported-browser notice (the one screen
              where the app itself never opens) likewise needs no
-             clearance: the overlay floats over it the same way. */
+             clearance: the player floats over it the same way. */
           if (appWrap) appWrap.style.paddingBottom = "54px";
           if (unsupportedEl) unsupportedEl.style.paddingBottom = "";
         }
@@ -12234,9 +12211,9 @@ var STRAIN_SRC_LINKS = {
           if (!p || plainFrame) return;
           try { p.unMute(); p.setVolume(soundVol); } catch (e) { /* ignore */ }
         }
-        /* The floating wave button mirrors the overlay + stream state at
+        /* The floating wave button mirrors the player + stream state at
            a glance: it wears the wave in both states (aria-pressed is
-           what tracks the overlay); a pulsing red dot while a stream is
+           what tracks the player); a pulsing red dot while a stream is
            playing behind it; a steady amber dot while one is loading or
            waiting for its first tap. */
         function syncFab() {
@@ -12245,10 +12222,10 @@ var STRAIN_SRC_LINKS = {
           fab.setAttribute("aria-pressed", open ? "true" : "false");
           fab.setAttribute("data-play", mode === "playing" ? "playing" : (mode === "loading" || mode === "waiting" ? "busy" : "off"));
           fab.setAttribute("aria-label", open ? "Close Surf Break" : (mode === "playing" ? "Surf Break is playing — tap to open it" : "Open Surf Break"));
-          /* The wave button is HIDDEN whenever the full view or
-             fullscreen is showing — it floats only beside the closed
-             unit and the mini player, never over the full Surf Break. */
-          var hideFab = dockState === "open" || fsActive;
+          /* The wave button is HIDDEN only while the stream itself
+             is fullscreen — it floats beside the closed unit and the
+             open player alike. */
+          var hideFab = fsActive;
           fab.style.display = hideFab ? "none" : "";
           fab.setAttribute("aria-hidden", hideFab ? "true" : "false");
         }
@@ -12259,16 +12236,16 @@ var STRAIN_SRC_LINKS = {
           syncFab();
           syncDockPad();
         }
-        /* --- the dock's two stages, on the ONE dock node. The player
-           node never moves between stages, so mini <-> full never
-           reloads a stream that is loading, waiting or playing. Both
-           stages always open at full-frame 1x fit — zoom is the
-           viewer's own gesture (pinch / the Zoom button), never a
-           resting state — so every open starts from exitZoom(). --- */
+        /* --- the floating player, on the ONE dock node. The player
+           node never moves, so opening and closing it never reloads a
+           stream that is loading, waiting or playing. The player
+           always opens at full-frame 1x fit — zoom is the viewer's
+           own gesture (pinch / the Zoom button), never a resting
+           state — so every open starts from exitZoom(). --- */
         function clearDockInlinePos() {
           dock.style.left = ""; dock.style.top = ""; dock.style.width = "";
         }
-        /* THE SURF UNIT: the wave button and the mini stream window
+        /* THE SURF UNIT: the wave button and the floating stream window
            are one unit with ONE shared anchor — the window's top-left
            corner — remembered on this device (ff2.surfMiniPos) and
            restored on every load for BOTH states. Closed, the wave
@@ -12358,8 +12335,8 @@ var STRAIN_SRC_LINKS = {
         }
         placeFab(); /* a restored anchor puts the closed button at its spot right away */
         function positionMini() {
-          /* Stage 1 geometry: about 62% of the screen width (capped so
-             it stays a mini window even on a wide screen, and never
+          /* Player geometry: about 62% of the screen width (capped so
+             it stays a small window even on a wide screen, and never
              wider than the viewport), 16:9. The window renders AT the
              unit's shared anchor and the wave button is placed
              attached at its corner; with no saved anchor the window
@@ -12386,15 +12363,17 @@ var STRAIN_SRC_LINKS = {
           dock.style.top = y + "px";
           placeFab(); /* the button hangs attached at the window's corner */
         }
-        /* Stage changes are DEBOUNCED (owner bug fix, defect 1b):
-           while a stage transition is animating (~300ms — the dock's
-           own slide-in), further stage-changing inputs are ignored,
-           and a call that asks for the stage already showing is a
-           no-op. This is what stops rapid expand/fold tapping (or a
-           gesture that somehow reaches two controls) from strobing
-           between stages. openMini / openFull / closeOverlay are the
-           ONLY doors into setStage, and setStage is the only writer
-           of dockState. */
+        /* Player show/hide is DEBOUNCED (owner bug fix, defect 1b):
+           while a show/hide transition is animating (~300ms — the
+           player's own rise-in), further show/hide inputs are ignored,
+           and a call that asks for the state already showing is a
+           no-op. This is what stops rapid tapping from strobing the
+           player. openMini / closeOverlay are the ONLY doors into
+           setStage, and setStage is the only writer of dockState.
+           The player has exactly two states — hidden and shown
+           ("mini"). The old full-view overlay stage is GONE: the Surf
+           Break menu lives on its own tray page, reached by
+           navigation (goSurfPage), never by expanding this window. */
         var stageBusyUntil = 0;
         function setStage(next) {
           if (dockState === next) return false; /* already there: no-op */
@@ -12404,39 +12383,37 @@ var STRAIN_SRC_LINKS = {
             dock.hidden = false;
             dockState = "mini";
             dock.setAttribute("data-state", "mini");
-            dock.classList.add("mini");
-            exitZoom(); /* the mini view always opens at full-frame 1x fit */
+            exitZoom(); /* the player always opens at full-frame 1x fit */
             positionMini();
-          } else if (next === "open") {
-            exitStreamFs(); /* the full view is a stage change: fullscreen hands the stage back first */
-            dock.hidden = false;
-            dockState = "open";
-            dock.setAttribute("data-state", "open");
-            dock.classList.remove("mini");
-            clearDockInlinePos();
-            exitZoom(); /* the full view also rests at full-frame 1x fit */
           } else {
-            exitStreamFs(); /* never strand a fullscreen stage behind a hidden dock */
+            exitStreamFs(); /* never strand a fullscreen stage behind a hidden player */
             dock.hidden = true;
             dockState = "hidden";
             dock.setAttribute("data-state", "hidden");
-            dock.classList.remove("mini");
             clearDockInlinePos();
-            exitZoom(); /* closing the overlay resets zoom — it never survives into the next open */
+            exitZoom(); /* closing the player resets zoom — it never survives into the next open */
           }
           syncDockChrome();
           return true;
         }
         function openMini() { return setStage("mini"); }
-        function openFull() { return setStage("open"); }
         function closeOverlay() { return setStage("hidden"); }
-        /* The FULL view's Close (and the control center's Close player
-           button): fold the full view back down to the mini view while
-           a stream is up (loading, waiting or playing); when no stream
-           was ever loaded, fold everything away. */
-        function closeFullView() {
-          if (mode === "playing" || mode === "loading" || mode === "waiting") openMini();
-          else closeOverlay();
+        /* The Surf Break PAGE is the player's menu: the window button
+           on the player's frame loads it through the app's own tab
+           wiring (the same click a tray tap makes, so aria state, the
+           panel entrance and the tray's auto-close all behave as
+           usual). Already on the page, it simply brings the break
+           menu into view. The player itself stays exactly as it is —
+           floating and playing — over the page, like over any screen. */
+        function goSurfPage() {
+          var b = document.getElementById("tab-surf");
+          if (!b) return;
+          if (b.getAttribute("aria-selected") === "true") {
+            var card = document.getElementById("surfPageCard");
+            if (card && card.scrollIntoView) card.scrollIntoView({ block: "start" });
+            return;
+          }
+          b.click();
         }
         window.addEventListener("resize", function () { if (dockState === "mini") positionMini(); placeFab(); });
         function showOnly(which) {
@@ -12444,10 +12421,9 @@ var STRAIN_SRC_LINKS = {
           playerBox.hidden = which !== "player";
           fallback.hidden = which !== "fallback";
           if (fsBtn) fsBtn.hidden = which === "fallback"; /* no fullscreen control over the fallback card */
-          /* The fallback renders WITHIN the current stage (owner's
-             order, defect 2): a load failure in the mini view shows
-             the compact fallback in the mini frame, and in the full
-             view the full card — it NEVER escalates the stage. */
+          /* The fallback renders WITHIN the floating player (owner's
+             order): the compact fallback in the player's own frame —
+             it never changes the presentation or navigates anywhere. */
           syncDockChrome();
           syncZoomUI(); /* the gesture layer tracks which stage child is visible */
         }
@@ -12498,12 +12474,12 @@ var STRAIN_SRC_LINKS = {
            covers the stage. Exiting zoom mode resets to 1×; zoom also
            resets on any spot change, on Stop, on collapse to mini and
            on stream error/end (the exitZoom calls in those paths).
-           Zoom state is never persisted. In the MINIMIZED view the
+           Zoom state is never persisted. On the floating player the
            same transform is driven directly by touch — pinch (1×–3×),
            one-finger pan across the whole frame, double-tap back to
            fit — with no Zoom-mode toggle and no preset zones to lock
            onto: any position the gestures reach stays freely
-           adjustable, and both stages always rest at 1x full-frame
+           adjustable, and the player always rests at 1x full-frame
            fit. --- */
         var zoomOn = false, zoomScale = 1, zoomX = 0, zoomY = 0;
         function fmtScale(s) { var v = Math.round(s * 10) / 10; return (v % 1 === 0 ? String(v) : v.toFixed(1)) + "×"; }
@@ -12511,10 +12487,10 @@ var STRAIN_SRC_LINKS = {
           var w = zoomWrap ? zoomWrap.offsetWidth : 0, h = zoomWrap ? zoomWrap.offsetHeight : 0;
           return { x: (zoomScale - 1) / 2 * w, y: (zoomScale - 1) / 2 * h };
         }
-        /* Zoom gestures are live in the full view's Zoom mode AND in
-           the minimized view (where pinch / pan / double-tap need no
-           toggle) AND in fullscreen. Everywhere else the wrapper
-           carries no transform. */
+        /* Zoom gestures are live in the Surf Break page's Zoom mode
+           AND directly on the floating player (where pinch / pan /
+           double-tap need no toggle) AND in fullscreen. Everywhere
+           else the wrapper carries no transform. */
         function zoomLive() { return zoomOn || dockState === "mini" || fsActive; }
         function applyZoom() {
           if (!zoomWrap) return;
@@ -12536,18 +12512,17 @@ var STRAIN_SRC_LINKS = {
           if (zoomBtn) zoomBtn.setAttribute("aria-pressed", zoomOn ? "true" : "false");
           if (zoomBar) zoomBar.hidden = !zoomOn;
           /* The gesture layer exists while the player is the visible
-             stage child and the dock is up — in the minimized view, in
-             the full view, and in fullscreen alike — because the same
-             layer carries pinch / pan / double-tap AND the swipe that
-             cycles breaks at 1x and the mini view's hold-to-move. Zoom
-             transforms themselves stay gated by zoomLive(): in the full
-             view with Zoom mode off, drags pan nothing (there is
-             nothing to pan at 1x) and a clean horizontal swipe cycles
-             the break instead. */
+             stage child and the player is up — and in fullscreen —
+             because the same layer carries pinch / pan / double-tap
+             AND the swipe that cycles breaks at 1x and the player's
+             hold-to-move. Zoom transforms themselves stay gated by
+             zoomLive(): with Zoom mode off at 1x, drags pan nothing
+             (there is nothing to pan) and a clean horizontal swipe
+             cycles the break instead. */
           if (gesture) gesture.hidden = !(playerBox && !playerBox.hidden && dockState !== "hidden");
           applyZoom();
         }
-        function enterZoom() { if (dockState !== "open") return; zoomOn = true; syncZoomUI(); }
+        function enterZoom() { if (dockState === "hidden") return; zoomOn = true; syncZoomUI(); }
         function exitZoom() { zoomOn = false; zoomScale = 1; zoomX = 0; zoomY = 0; syncZoomUI(); }
         if (zoomBtn) zoomBtn.addEventListener("click", function () { if (zoomOn) exitZoom(); else enterZoom(); });
         if (zoomInBtn) zoomInBtn.addEventListener("click", function () { zoomScale = Math.min(3, Math.floor(zoomScale * 2) / 2 + 0.5); applyZoom(); });
@@ -12562,8 +12537,8 @@ var STRAIN_SRC_LINKS = {
            (.fs-fill) of that same stage. The player node is never
            moved, recreated or reloaded, the app never navigates, and
            the tab / scroll position underneath never change: exiting
-           simply hands the stage back to the mini view or the full
-           view, exactly as it was. The in-stage button (#surfFsBtn)
+           simply hands the stage back to the floating player,
+           exactly as it was. The in-stage button (#surfFsBtn)
            lives inside the stage, so it stays reachable as the exit
            control inside fullscreen; the system exit gesture lands in
            the same sync via fullscreenchange. */
@@ -12616,7 +12591,7 @@ var STRAIN_SRC_LINKS = {
            double-tap returns to full-frame 1x fit. A pan is never a
            tap: a press that travels past a small threshold, a hold,
            and any pinch all disqualify the tap verdict, so a drag can
-           never be read as a double-tap (or reach the mini view's
+           never be read as a double-tap (or reach the player's
            close / expand controls, which sit outside this layer). */
         var zPointers = {}, zDrag = null, zPinch = null;
         var gTap = null, gLastTapAt = 0, gLastTapX = 0, gLastTapY = 0;
@@ -12658,7 +12633,7 @@ var STRAIN_SRC_LINKS = {
               zPinch = null;
               gTap = { id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now(), moved: false };
               gSwipe = { id: e.pointerId, sx: e.clientX, sy: e.clientY, t: Date.now() };
-              /* Hold-to-move arms only in the mini view at full frame:
+              /* Hold-to-move arms only on the floating player at full frame:
                  a zoomed view's drag is a pan, never a window move. */
               clearHoldTimer();
               if (dockState === "mini" && !fsActive && zoomScale === 1) {
@@ -12680,7 +12655,7 @@ var STRAIN_SRC_LINKS = {
             if (gTap && e.pointerId === gTap.id && Math.hypot(e.clientX - gTap.x, e.clientY - gTap.y) > 10) gTap.moved = true;
             if (gSwipe && e.pointerId === gSwipe.id && Math.hypot(e.clientX - gSwipe.sx, e.clientY - gSwipe.sy) > 10) clearHoldTimer(); /* it travelled: a pan or a swipe, not a hold */
             zPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-            /* A sustained drag at 1x in the mini view moves the
+            /* A sustained drag at 1x on the floating player moves the
                UNIT: once the press has been down a beat and is
                still travelling, it is no longer a flick candidate,
                so arm move mode from the window's current spot (the
@@ -12699,7 +12674,7 @@ var STRAIN_SRC_LINKS = {
               fabFollow(p.x, p.y, w, miniWinH(w)); /* the button rides attached — the unit moves as one */
               return;
             }
-            if (!zoomLive()) return; /* full view, Zoom off: drags move nothing — the swipe verdict on release does the work */
+            if (!zoomLive()) return; /* Zoom off at rest: drags move nothing — the swipe verdict on release does the work */
             if (zDrag && e.pointerId === zDrag.id) {
               zoomX = zDrag.px + (e.clientX - zDrag.sx);
               zoomY = zDrag.py + (e.clientY - zDrag.sy);
@@ -12742,11 +12717,11 @@ var STRAIN_SRC_LINKS = {
             if (mode !== "playing") return; /* loading / waiting: no flick — a slide was a window move (or a plain tap), never a cycle */
             if (Date.now() - sw.t > 600) return; /* a slow drag or a hold, not a swipe */
             if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-            /* A flick cycles the stream IN PLACE at whatever stage is
-               current — mini stays mini, full stays full (owner's
-               order, defect 2). cycleSpot only restarts the stream;
-               it never touches the stage. The gesture's synthesized
-               click is swallowed so no tap handler can fire from it. */
+            /* A flick cycles the stream IN PLACE (owner's order):
+               the player stays exactly the presentation it was —
+               cycleSpot only restarts the stream; it never touches
+               the player's state. The gesture's synthesized click is
+               swallowed so no tap handler can fire from it. */
             cycleSpot(dx < 0 ? 1 : -1);
             surfSwallowClick();
           });
@@ -12945,10 +12920,10 @@ var STRAIN_SRC_LINKS = {
           if (!keepChain) resetChain();
           currentKey = spot.key;
           bgPaused = false;
-          /* Starting a stream never forces the overlay open or closed:
+          /* Starting a stream never forces the player open or closed:
              summons (app open, wave button, fallback) open it themselves,
              and a Follow the Sun advance or a background resume behind a
-             closed overlay leaves it closed — the wave button's dot
+             closed player leaves it closed — the wave button's dot
              carries the playing state. */
           setFacade(spot);
           destroyPlayer();
@@ -13035,9 +13010,9 @@ var STRAIN_SRC_LINKS = {
           var spot = spotByKey(key);
           if (autoOn) { startStream(spot); }
           else {
-            openFull();
+            openMini();
             unload();
-            setNow("Your pick: <strong>" + spot.name + "</strong> — tap Play in the player above to watch. Follow the Sun cycling is paused while this is your pick.");
+            setNow("Your pick: <strong>" + spot.name + "</strong> — tap Play in the floating player to watch. Follow the Sun cycling is paused while this is your pick.");
           }
         }
         playBtn.addEventListener("click", function () {
@@ -13045,7 +13020,7 @@ var STRAIN_SRC_LINKS = {
           startStream(spotByKey(currentKey));
         });
         dockStopBtn.addEventListener("click", stopStream);
-        /* The overlay's Sound button is THE sound control: its tap is a real
+        /* The Surf Break page's Sound button is THE sound control: its tap is a real
            gesture in this document, so the unmute it asks for is the most
            reliable kind. Off is also only here — a mute pressed inside
            YouTube's own controls is indistinguishable from the phone
@@ -13071,20 +13046,19 @@ var STRAIN_SRC_LINKS = {
             } catch (e) { /* ignore */ }
           }
         });
-        /* The full view's Close — and the control center's Close player
-           button — fold the full view back to the mini view while a
-           stream is up (or away entirely when none is), and nothing
-           more: the stream keeps playing behind the wave button (its
-           dot shows it), and Stop remains the only manual unload. */
-        if (closeBtn) closeBtn.addEventListener("click", function () { closeFullView(); });
-        if (showHideBtn) showHideBtn.addEventListener("click", function () { closeFullView(); });
-        /* The mini view's controls. Close folds the mini frame away
+        /* The Surf Break page's Close player button puts the floating
+           player window away, and nothing more: the stream keeps
+           playing behind the wave button (its dot shows it), and Stop
+           remains the only manual unload. */
+        if (showHideBtn) showHideBtn.addEventListener("click", function () { closeOverlay(); });
+        /* The player's frame controls. Close puts the player away
            WITHOUT stopping the stream (Stop is still the only manual
            unload); the enlarge control takes the stream itself into
-           fullscreen, right here (never a tab switch); the sliders
-           control opens the full Surf Break. A press that travels is a
-           drag, not a tap — the click it ends with is ignored, so
-           panning the feed can never fire any control. */
+           fullscreen, right here; the window control loads the Surf
+           Break PAGE (goSurfPage — a tray navigation, never an
+           expansion of this window). A press that travels is a drag,
+           not a tap — the click it ends with is ignored, so panning
+           the feed can never fire any control. */
         function miniBtnGuard(btn, fn) {
           if (!btn) return;
           var dn = null;
@@ -13097,7 +13071,7 @@ var STRAIN_SRC_LINKS = {
         }
         miniBtnGuard(miniCloseBtn, function () { closeOverlay(); });
         miniBtnGuard(miniExpandBtn, function () { toggleStreamFs(); });
-        miniBtnGuard(miniFullBtn, function () { openFull(); });
+        miniBtnGuard(miniFullBtn, function () { goSurfPage(); });
         /* The wave button drags the whole UNIT. The button and the
            mini window share one anchor (ff2.surfMiniPos): a press on
            the button that travels past ~8px is a drag — the anchor
@@ -13106,16 +13080,14 @@ var STRAIN_SRC_LINKS = {
            constant attached offset; the click the press ends with is
            suppressed, so a drag never opens or closes anything. A
            clean tap is untouched and still summons/folds the stream
-           (below). The drag exists only while the unit is closed or
-           in the mini view — in the full view and in fullscreen the
-           button is not separately movable. An older saved button
+           (below). In fullscreen the button is hidden, so it is not
+           separately movable there. An older saved button
            spot (ff2.surfFabPos) may still sit in storage on this
            device; the unit anchor supersedes it — it is no longer
            read, applied or updated. */
         var fabPress = null, fabDragMoved = false;
         if (fab) {
           fab.addEventListener("pointerdown", function (e) {
-            if (dockState !== "hidden" && dockState !== "mini") return; /* full view: tap only */
             if (fsActive) return; /* fullscreen: the button is not reachable/movable */
             var fr = fab.getBoundingClientRect();
             fabPress = { id: e.pointerId, sx: e.clientX, sy: e.clientY, dx: e.clientX - fr.left, dy: e.clientY - fr.top, moved: false };
@@ -13158,15 +13130,15 @@ var STRAIN_SRC_LINKS = {
           fab.addEventListener("pointerup", fabPressEnd);
           fab.addEventListener("pointercancel", fabPressEnd);
         }
-        /* --- whole-window move drag (mini, EVERY state) ---
+        /* --- whole-window move drag (the floating player, EVERY state) ---
            The owner: "This whole stream box should be tap and slide
            to move around the page." The gesture layer above covers
            only the live player's surface; this controller covers
-           EVERYTHING ELSE the mini window shows — the poster facade,
+           EVERYTHING ELSE the player window shows — the poster facade,
            the fallback card, and any button riding the window (mini
            expand / close / full, the facade Play, the fallback's
            Watch on YouTube / Try again / Back to poster) — in every
-           state the mini can be in. A press that slides past ~10px
+           state the player can be in. A press that slides past ~10px
            becomes a unit move: the window and its attached wave
            button follow the finger, clamped exactly like every other
            unit drag (in-viewport, clear of the status island and the
@@ -13178,8 +13150,7 @@ var STRAIN_SRC_LINKS = {
            left to the gesture layer, whose own disambiguation
            (flick cycles at 1x, pinch zooms, zoomed drag pans,
            sustained drag / hold moves — and, while loading, any
-           sustained slide moves) is unchanged. The full view never
-           moves. */
+           sustained slide moves) is unchanged. */
         var boxDrag = null;
         dock.addEventListener("pointerdown", function (e) {
           if (dockState !== "mini" || fsActive) return;
@@ -13221,7 +13192,7 @@ var STRAIN_SRC_LINKS = {
         window.addEventListener("pointercancel", boxDragEnd);
         dock.addEventListener("dragstart", function (e) { if (dockState === "mini") e.preventDefault(); });
         /* The floating wave button is the summon. Tapping it opens the
-           MINIMIZED stream view over the current tab — the tab
+           floating player over the current screen — the screen
            underneath keeps its scroll position and place — and tapping
            it again closes the dock back down to the button, on demand.
            Opening IS a request to watch: if no stream is loading or
@@ -13266,7 +13237,7 @@ var STRAIN_SRC_LINKS = {
             var b = autoPickKey(new Date());
             if (b) currentKey = b;
             renderChips();
-            openFull();
+            openMini();
             startStream(spotByKey(currentKey));
           }
         });
@@ -13315,11 +13286,11 @@ var STRAIN_SRC_LINKS = {
           }
         }, 2000);
 
-        /* --- Follow the Sun cycle + clock refresh (runs on EVERY tab —
-           the player lives in the overlay, not on any tab). The cycle
-           also runs while the overlay is closed: a stream playing behind
-           the wave button keeps following the sun exactly as it did
-           while watched. --- */
+        /* --- Follow the Sun cycle + clock refresh (runs on EVERY
+           screen — the player lives in the app shell, not on any
+           screen). The cycle also runs while the player is closed: a
+           stream playing behind the wave button keeps following the
+           sun exactly as it did while watched. --- */
         setInterval(function () {
           refreshChipTimes();
           syncDockHead();
@@ -13371,8 +13342,8 @@ var STRAIN_SRC_LINKS = {
           } else if (bgSuspended) {
             bgSuspended = false;
             if (!stoppedByUser && autoOn) {
-              /* Resume behind whatever state the overlay is in: if it was
-                 open it still is; if the viewer had closed it to the wave
+              /* Resume behind whatever state the player is in: if it was
+                 up it still is; if the viewer had closed it to the wave
                  button, the stream picks back up behind the button. */
               startStream(spotByKey(currentKey));
             } else {
@@ -13383,9 +13354,9 @@ var STRAIN_SRC_LINKS = {
         window.addEventListener("resize", syncDockPad);
 
         /* --- init: pre-select the best daylight break before any tap. With
-           Auto-play on, Surf Break opens AUTOMATICALLY on app open — as
-           the minimized player over the starting tab (Session), never
-           as a separate screen — and the stream starts by itself. --- */
+           Auto-play on, the floating player opens AUTOMATICALLY on app
+           open — over the starting tab (Session) — and the stream
+           starts by itself. --- */
         autoSwitch.setAttribute("aria-checked", autoOn ? "true" : "false");
         if (zoneSwitch) zoneSwitch.setAttribute("aria-checked", zonesOn ? "true" : "false");
         syncAutoModeUI();
@@ -13406,12 +13377,12 @@ var STRAIN_SRC_LINKS = {
         renderChips();
         setFacade(spotByKey(currentKey));
         var spot0 = spotByKey(currentKey), info0 = spotInfo(spot0, new Date());
-        /* The overlay's visibility is governed by Surf state alone
-           (Auto-play / the wave button / Stop), never by which tab is
-           showing — and not by the Bluetooth support gate either: the
-           streams need no Bluetooth, so the overlay and its wave button
-           ride along even on the unsupported-browser notice, the one
-           screen where the app itself never opens. */
+        /* The player's visibility is governed by Surf state alone
+           (Auto-play / the wave button / Stop), never by which screen
+           is showing — and not by the Bluetooth support gate either:
+           the streams need no Bluetooth, so the player and its wave
+           button ride along even on the unsupported-browser notice,
+           the one screen where the app itself never opens. */
         if (autoOn) {
           openMini();
           startStream(spot0);
@@ -13502,7 +13473,7 @@ var STRAIN_SRC_LINKS = {
         if (closeBtn) closeBtn.addEventListener("click", function () { setTray(false); });
         /* Picking a tab: the app's wiring switches the tab; the tray
            auto-closes behind it. */
-        ["tab-session", "tab-temperature", "tab-strains", "tab-terpene", "tab-burnguard", "tab-device", "tab-info"].forEach(function (id) {
+        ["tab-session", "tab-temperature", "tab-strains", "tab-terpene", "tab-surf", "tab-burnguard", "tab-device", "tab-info"].forEach(function (id) {
           var b = document.getElementById(id);
           if (b) b.addEventListener("click", function () { setTray(false); });
         });
@@ -13566,10 +13537,11 @@ var STRAIN_SRC_LINKS = {
       /* ================= Swipe between menus =================
          A TRUE swipe — a finger travelling horizontally across the menu
          content — moves to the neighbouring menu in tray order: Session,
-         Temperature, Strains, Terpenes, Burn Guard, Device, Info. (Surf
-         Break is not a menu anymore — it is the floating wave button's
-         overlay, and while that overlay is up, swipes leave the tab
-         underneath exactly where it is.)
+         Temperature, Strains, Terpenes, Surf Break, Burn Guard, Device,
+         Info. (Surf Break's floating player rides over the menus, but a
+         touch that starts on it is claimed by the surf layer and never
+         reaches this recognizer; swipes elsewhere on the Surf Break
+         page move between menus exactly as on any other page.)
          There is NO wraparound: a swipe past the first menu (Session)
          or the last menu (Info) stays put — the ends are clamped. The
          touch may start anywhere on the
@@ -13591,7 +13563,7 @@ var STRAIN_SRC_LINKS = {
          tray tap. */
       (function () {
         "use strict";
-        var ORDER = ["session", "temperature", "strains", "terpene", "burnguard", "device", "info"];
+        var ORDER = ["session", "temperature", "strains", "terpene", "surf", "burnguard", "device", "info"];
         var app = document.getElementById("app");
         if (!app) return;
         var sx = 0, sy = 0, tracking = false, blocked = false, claimed = false;
@@ -13603,15 +13575,13 @@ var STRAIN_SRC_LINKS = {
         }
         function overlayOpen() {
           if (window.__navTray && window.__navTray.isOpen()) return true;
-          var sd = document.getElementById("surfDock");
-          if (sd && !sd.hidden && sd.getAttribute("data-state") === "open") return true; /* the FULL Surf Break overlay is up: the tab underneath stays put. The MINIMIZED view (data-state "mini") does NOT block swipes globally — but any touch that STARTS inside the surf subtree (dock at any stage, or the wave button) is claimed by the surf layer for that whole gesture and never reaches this recognizer (see startBlocked + the __surfClaim check in the touchstart handler). */
           var fp = document.getElementById("surfFcPanel");
           if (fp && !fp.hidden) return true; /* the wave forecast panel is up, same rule */
           return document.querySelectorAll(".sheet:not([hidden]), .photo-zoom:not([hidden])").length > 0;
         }
         function startBlocked(t) {
           if (!t || !t.closest) return true;
-          if (window.__surfClaim && window.__surfClaim.ownsTarget(t)) return true; /* surf subtree at ANY stage + wave button: claimed by the surf layer */
+          if (window.__surfClaim && window.__surfClaim.ownsTarget(t)) return true; /* surf subtree (the floating player, at any state) + wave button: claimed by the surf layer */
           if (t.closest("#navTray, #trayHandle, .surf-dock, #surfStage, #surfFab, #surfFcPanel, #surfFcBtn, .sheet, .photo-zoom")) return true;
           if (t.closest(".wheel")) return true;
           if (t.closest('input[type="range"]')) return true;
