@@ -1824,8 +1824,6 @@
       .surf-zoombar[hidden] { display: none !important; }
       .surf-zoom-level { font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 42px; text-align: center; color: var(--ink); }
       .surf-zoom-note { flex: 1 1 100%; margin: 0; font-size: 12px; font-weight: 600; color: var(--ink-soft); }
-      .surf-dock[data-state="mini"] .surf-zoom-btn,
-      .surf-dock[data-state="mini"] .surf-zoombar { display: none !important; }
       /* Lineup zone: a static marker drawn on the POSTER STILL only (never
          on the live video). Positioned per spot as % of the facade box. */
       .surf-zone {
@@ -1845,7 +1843,6 @@
         padding: 3px 8px; border-radius: 999px;
         -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
       }
-      .surf-dock[data-state="mini"] .surf-zone-chip { display: none; }
       .surf-stage [hidden] { display: none !important; }
       .surf-facade, .surf-player, .surf-fallback {
         position: relative;
@@ -1959,32 +1956,6 @@
       .surf-dock-btns .btn-small { min-height: 38px; padding: 7px 12px; }
       .surf-dock-status { margin: 8px 2px 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
       .surf-dock-status[hidden] { display: none !important; }
-      /* Mini view: the SAME player node, shrunk — never moved, never reloaded. */
-      .surf-dock[data-state="mini"] {
-        display: grid;
-        grid-template-columns: 112px minmax(0, 1fr);
-        grid-template-areas: "body head" "body status";
-        column-gap: 10px; row-gap: 4px;
-        align-items: center;
-      }
-      .surf-dock[data-state="mini"] .surf-dock-body { grid-area: body; min-width: 0; }
-      .surf-dock[data-state="mini"] .surf-dock-head { grid-area: head; align-content: center; }
-      .surf-dock[data-state="mini"] .surf-dock-status { grid-area: status; margin-top: 0; }
-      .surf-dock[data-state="mini"] .surf-stage { margin-top: 0; }
-      .surf-dock[data-state="mini"] .surf-dock-title { display: none; }
-      .surf-dock[data-state="mini"] .surf-facade-top { display: none; }
-      .surf-dock[data-state="mini"] .surf-facade-meta { display: none; }
-      .surf-dock[data-state="mini"] .surf-play { width: 36px; height: 36px; }
-      .surf-dock[data-state="mini"] .surf-play svg { width: 16px; height: 16px; }
-      .surf-dock[data-state="mini"] .surf-loading { font-size: 10.5px; padding: 6px; gap: 5px; }
-      .surf-dock[data-state="mini"] .surf-loading .surf-spinner { width: 13px; height: 13px; border-width: 2px; }
-      .surf-dock[data-state="mini"] .surf-dock-btns { margin-left: 0; }
-      /* The fallback is a text panel: it can never live in the mini grid's
-         112px body column. If it is ever visible while the dock still
-         carries data-state="mini" (state desync, engine quirk, a collapse
-         racing the error), the grid is void and the dock lays out as a
-         normal full-width block until the state catches up. */
-      .surf-dock[data-state="mini"]:has(.surf-fallback:not([hidden])) { display: block; }
 
       /* ---------- Strain photo zoom — one shared tap-on / tap-off overlay ---------- */
       .photo-zoom {
@@ -2731,92 +2702,31 @@
         border: 2px solid rgba(0, 0, 0, 0.4);
       }
       .surf-fab-dot[hidden] { display: none !important; }
-      /* In the full stage and in fullscreen the wave bubble is not
-         rendered at all (the surf script sets its hidden attribute):
-         it must never float on top of the full-stage card. */
+      /* In fullscreen the wave bubble is not rendered at all (the
+         surf script sets its hidden attribute): it must never float
+         on top of the fullscreen frame. */
       .surf-fab[hidden] { display: none !important; }
       .surf-fab.is-playing .surf-fab-dot { animation: pulse 1.6s ease-in-out infinite; }
       @media (prefers-reduced-motion: reduce) {
         .surf-fab.is-playing .surf-fab-dot { animation: none; }
       }
-      .surf-overlay { position: fixed; inset: 0; z-index: 70; }
+      /* ---- The floating player window ----
+         The overlay is ONLY this: a small floating 16:9 frame holding
+         the ONE live player — no sheet, no scrim, no expanded stage.
+         The overlay box itself shrinks to the frame (JS sets its
+         left/top/width, anchored with the wave button as one unit),
+         so the frame never covers the screen and never blocks touches
+         — or swipes — anywhere outside its own bounds. Its only
+         controls are the small round buttons floating over its
+         top-right corner: fold away (the stream keeps playing behind
+         the wave button), fullscreen in place, and the window button,
+         which navigates to the Surf Break PAGE. The full Surf Break
+         menu lives on that page (#panel-surfbreak), never in here. */
+      .surf-overlay { position: fixed; inset: auto; height: auto; z-index: 70; }
       .surf-overlay[hidden] { display: none !important; }
-      .surf-overlay-scrim {
-        position: absolute; inset: 0;
-        background: rgba(2, 5, 10, 0.55);
-        -webkit-backdrop-filter: blur(3px);
-        backdrop-filter: blur(3px);
-      }
       .surf-overlay-sheet {
-        position: absolute; left: 50%; transform: translateX(-50%);
-        top: calc(74px + env(safe-area-inset-top));
-        bottom: 0;
-        width: min(600px, 100vw);
-        display: flex; flex-direction: column;
-        background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
-        border: 1px solid var(--card-line); border-bottom: 0;
-        border-radius: 20px 20px 0 0;
-        box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.55);
-        animation: surfSheetIn var(--dur-2) var(--ease-out);
-      }
-      @keyframes surfSheetIn {
-        from { transform: translate(-50%, 14px); opacity: 0.4; }
-        to { transform: translate(-50%, 0); opacity: 1; }
-      }
-      .surf-overlay-head {
-        flex: none; display: flex; align-items: center; gap: 10px;
-        padding: 12px 14px 10px;
-      }
-      .surf-overlay-title {
-        display: inline-flex; align-items: center; gap: 8px;
-        font-size: 17px; font-weight: 800; color: var(--ink);
-      }
-      .surf-overlay-title svg { width: 22px; height: 22px; color: var(--ember); }
-      .surf-overlay-close {
-        appearance: none; cursor: pointer; font: inherit;
-        margin-left: auto; flex: none;
-        width: 38px; height: 38px; border-radius: 50%;
-        display: inline-flex; align-items: center; justify-content: center;
-        background: var(--surface-2); border: 1px solid var(--card-line); color: var(--ink);
-      }
-      .surf-overlay-close svg { width: 17px; height: 17px; }
-      .surf-overlay-close:active { transform: scale(0.94); }
-      .surf-overlay-scroll {
-        flex: 1; min-height: 0;
-        overflow-y: auto; -webkit-overflow-scrolling: touch;
-        padding: 2px 12px calc(18px + env(safe-area-inset-bottom));
-      }
-      /* Inside the sheet the player is a plain full-width block — the
-         fixed bottom-dock geometry it used to carry no longer applies,
-         and there is no mini view in here: the sheet IS the full view. */
-      .surf-overlay .surf-dock {
-        position: relative; left: auto; bottom: auto; transform: none;
-        width: 100%; max-width: 100%;
-        margin: 0 0 14px; z-index: auto;
-      }
-      .surf-overlay #surfCollapseBtn, .surf-overlay #surfExpandBtn { display: none !important; }
-      .surf-overlay .surf-card { margin-bottom: 0; }
-      /* While the full sheet is up, the page underneath holds still.
-         (The minimized frame below never takes this lock.) */
-      body.surf-overlay-open { overflow: hidden; }
-      /* ---- Stage 1: the minimized stream view ----
-         The SAME overlay, sheet and ONE player node, shrunk to a small
-         floating 16:9 frame that holds ONLY the live player — no sheet
-         head, no dock head or status, no control-center card (no chips,
-         no switches, no credits). The overlay box itself shrinks to the
-         frame (JS sets its left/top/width, anchored to the wave button),
-         so the frame never covers the screen and never blocks touches —
-         or swipes — anywhere outside its own bounds. Its only controls
-         are the two small round buttons floating over its top-right
-         corner: fold away (the stream keeps playing) and expand to the
-         full Surf Break sheet. The player node is never moved between
-         stages, so the stream never reloads on a stage change. */
-      .surf-overlay.is-mini { inset: auto; height: auto; }
-      .surf-overlay.is-mini .surf-overlay-scrim { display: none !important; }
-      .surf-overlay.is-mini .surf-overlay-sheet {
-        position: relative; left: auto; top: auto; bottom: auto; transform: none;
-        width: 100%;
-        border-bottom: 1px solid var(--card-line);
+        position: relative; width: 100%;
+        border: 1px solid var(--card-line);
         border-radius: 14px; overflow: hidden;
         background: #000;
         box-shadow: 0 14px 38px rgba(0, 0, 0, 0.55);
@@ -2826,58 +2736,58 @@
         from { opacity: 0; transform: translateY(8px) scale(0.97); }
         to { opacity: 1; transform: translateY(0) scale(1); }
       }
-      .surf-overlay.is-mini .surf-overlay-head { display: none !important; }
-      .surf-overlay.is-mini .surf-overlay-scroll { flex: none; overflow: visible; padding: 0; }
-      .surf-overlay.is-mini .surf-card { display: none !important; }
-      .surf-overlay.is-mini .surf-dock {
+      .surf-overlay-scroll { flex: none; overflow: visible; padding: 0; }
+      .surf-overlay .surf-dock {
+        position: relative; left: auto; bottom: auto; transform: none;
+        width: 100%; max-width: 100%; z-index: auto;
         margin: 0; padding: 0; border: 0; border-radius: 0;
         box-shadow: none; background: #000;
       }
-      .surf-overlay.is-mini .surf-dock-head,
-      .surf-overlay.is-mini .surf-dock-status { display: none !important; }
-      .surf-overlay.is-mini .surf-dock .surf-stage { margin-top: 0; border-radius: 0; }
-      .surf-overlay.is-mini .surf-facade,
-      .surf-overlay.is-mini .surf-player,
-      .surf-overlay.is-mini .surf-fallback { border: 0; border-radius: 0; }
-      .surf-overlay.is-mini .surf-facade-top,
-      .surf-overlay.is-mini .surf-facade-meta { display: none !important; }
-      .surf-overlay.is-mini .surf-play { width: 46px; height: 46px; }
-      .surf-overlay.is-mini .surf-play svg { width: 20px; height: 20px; }
-      /* Load-failure fallback INSIDE the mini stage: a failure never
-         escalates the mini to the full sheet, so the fallback renders
-         compact within the frame — same 16:9 box, title + actions
-         only, the long explanation stays in the full-stage card. */
-      .surf-overlay.is-mini .surf-fallback {
+      .surf-overlay .surf-dock-head,
+      .surf-overlay .surf-dock-status { display: none !important; }
+      .surf-overlay .surf-dock .surf-stage { margin-top: 0; border-radius: 0; }
+      .surf-overlay .surf-facade,
+      .surf-overlay .surf-player,
+      .surf-overlay .surf-fallback { border: 0; border-radius: 0; }
+      .surf-overlay .surf-facade-top,
+      .surf-overlay .surf-facade-meta { display: none !important; }
+      .surf-overlay .surf-play { width: 46px; height: 46px; }
+      .surf-overlay .surf-play svg { width: 20px; height: 20px; }
+      /* Load-failure fallback INSIDE the floating player: a failure
+         renders in place within the frame — same 16:9 box, title +
+         actions only; the long explanation lives on the Surf Break
+         page's card. Play never changes the presentation form. */
+      .surf-overlay .surf-fallback {
         aspect-ratio: 16 / 9; padding: 10px 12px;
         display: flex; flex-direction: column; justify-content: center;
         background: var(--surface);
       }
-      .surf-overlay.is-mini .surf-fallback-title {
+      .surf-overlay .surf-fallback-title {
         font-size: 13px; margin: 0 0 7px;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
-      .surf-overlay.is-mini #surfFallbackText { display: none !important; }
-      .surf-overlay.is-mini .surf-fallback-actions { flex-wrap: nowrap; gap: 6px; }
-      .surf-overlay.is-mini .surf-fallback-actions .btn-small {
+      .surf-overlay #surfFallbackText { display: none !important; }
+      .surf-overlay .surf-fallback-actions { flex-wrap: nowrap; gap: 6px; }
+      .surf-overlay .surf-fallback-actions .btn-small {
         min-height: 30px; padding: 4px 9px; font-size: 12px; white-space: nowrap;
       }
-      /* Whole-box move (owner order, 2026-11-05): in the mini stage the
-         fallback card and the floating mini controls are move surfaces
-         too, so the browser must never claim their slides as scroll or
-         zoom — the box-drag handler in the surf script owns them. */
-      .surf-overlay.is-mini .surf-fallback,
-      .surf-overlay.is-mini .surf-fallback .btn-small,
-      .surf-overlay.is-mini .surf-fallback a,
-      .surf-overlay.is-mini .surf-mini-btn { touch-action: none; }
-      /* While the load-failure fallback is showing (either stage) the
-         fullscreen controls are hidden: there is no stream to take
-         fullscreen. The surf script toggles body.surf-fb-on with the
-         fallback state. */
+      /* Whole-box move (owner order, 2026-11-05): in the floating
+         player the fallback card and the floating controls are move
+         surfaces too, so the browser must never claim their slides as
+         scroll or zoom — the box-drag handler in the surf script owns
+         them. */
+      .surf-overlay .surf-fallback,
+      .surf-overlay .surf-fallback .btn-small,
+      .surf-overlay .surf-fallback a,
+      .surf-overlay .surf-mini-btn { touch-action: none; }
+      /* While the load-failure fallback is showing the fullscreen
+         controls are hidden: there is no stream to take fullscreen.
+         The surf script toggles body.surf-fb-on with the fallback
+         state. */
       body.surf-fb-on #surfMiniExpand,
       body.surf-fb-on #surfDockFsBtn,
       body.surf-fb-on #surfFsBtn { display: none !important; }
-      .surf-mini-controls { display: none; }
-      .surf-overlay.is-mini .surf-mini-controls {
+      .surf-mini-controls {
         display: flex; gap: 6px;
         position: absolute; top: 6px; right: 6px; z-index: 9;
       }
@@ -2886,10 +2796,9 @@
          the mini controls are NOT part of the fullscreen subtree, so
          they would sit visible-but-dead over/under the dock (taps land
          on the dock, never on them). Hide the whole row for exactly
-         that state; it returns on its own when fullscreen exits,
-         because neither selector matches anymore. (The surf script's
-         syncFsBtns does the same toggle inline for engines without
-         :has support.) */
+         that state, and restore it exactly as before when fullscreen
+         exits. (The surf script's syncFsBtns does the same toggle
+         inline for engines without :has support.) */
       .surf-overlay-sheet:has(.surf-dock:fullscreen) .surf-mini-controls,
       .surf-overlay-sheet:has(.surf-dock.surf-fs-fake) .surf-mini-controls { display: none !important; }
       .surf-mini-btn {
@@ -3203,39 +3112,37 @@
       <button type="button" role="tab" id="tab-strains" aria-selected="false" aria-controls="panel-strains"><svg class="tab-ic" aria-hidden="true"><use href="#ff-leaf-sm"/></svg><span>Strains</span></button>
       <button type="button" role="tab" id="tab-terpene" aria-selected="false" aria-controls="panel-terpene"><svg class="tab-ic" aria-hidden="true"><use href="#i-drop"/></svg><span>Terpenes</span></button>
       <button type="button" role="tab" id="tab-forecast" aria-selected="false" aria-controls="panel-forecast"><svg class="tab-ic" aria-hidden="true"><use href="#i-wave"/></svg><span>Forecast</span></button>
-      <button type="button" role="tab" id="tab-surfbreak" aria-selected="false" aria-controls="surfOverlay"><svg class="tab-ic" aria-hidden="true"><use href="#i-wave"/></svg><span>Surf Break</span></button>
+      <button type="button" role="tab" id="tab-surfbreak" aria-selected="false" aria-controls="panel-surfbreak"><svg class="tab-ic" aria-hidden="true"><use href="#i-wave"/></svg><span>Surf Break</span></button>
       <button type="button" role="tab" id="altMoreBtn" aria-selected="false" aria-controls="panel-more"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span>More</span></button>
     </nav>
 
     <div class="isl-hint" id="islHint" hidden><span>Tip: tap the island above any time to open session controls.</span><button type="button" id="islHintX">Got it</button></div>
 
-    <!-- ============ Surf Break: floating wave button + overlay ============
-         Surf Break is not a tab anymore. The small wave button rides on
-         EVERY screen; tapping it opens Surf Break as an overlay sheet on
-         top of the current tab — the tab underneath is never switched,
-         scrolled or reloaded, and closing the sheet returns to it exactly
-         as it was. The ONE player (#surfDock) lives inside the sheet and
-         never moves, so opening/closing never reloads it; closing the
-         sheet only hides it, and a live stream keeps playing behind the
-         button (its red dot shows a stream is playing). ============ -->
+    <!-- ============ Surf Break: floating wave button + floating player ============
+         Surf Break has its OWN PAGE in the navigation (the Surf Break
+         bottom-bar tab shows #panel-surfbreak, which carries the full
+         Surf Break menu: break chips, auto modes, this card). The small
+         wave button rides on EVERY screen; tapping it opens the ONE
+         player (#surfDock) as a small floating window usable on any
+         page — a PLAYER, not a menu: it has no collapsed-menu form and
+         no expanded overlay stage. The window button on the player
+         navigates to the Surf Break PAGE. The player node is never
+         moved or reloaded by opening/closing: closing the window only
+         hides it, and a live stream keeps playing behind the button
+         (its red dot shows a stream is playing). ============ -->
     <button class="surf-fab" id="surfFab" type="button" aria-expanded="false" aria-controls="surfOverlay" aria-label="Open Surf Break">
       <svg class="surf-fab-wave-ic" aria-hidden="true"><use href="#i-wave"/></svg>
       <span class="surf-fab-dot" id="surfFabDot" hidden></span>
     </button>
     <div class="surf-overlay" id="surfOverlay" hidden role="dialog" aria-label="Surf Break">
-      <div class="surf-overlay-scrim" id="surfOverlayScrim"></div>
       <div class="surf-overlay-sheet">
-        <div class="surf-overlay-head">
-          <span class="surf-overlay-title"><svg aria-hidden="true"><use href="#i-wave"/></svg>Surf Break</span>
-          <button class="surf-overlay-close" id="surfOverlayClose" type="button" aria-label="Close Surf Break"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
-        </div>
-        <!-- Stage 1 (minimized) controls: shown only while the overlay is
-             the small floating stream frame — fold away (stream keeps
-             playing) and expand to the full Surf Break sheet. -->
+        <!-- Floating player controls: fold away (the stream keeps
+             playing behind the wave button), fullscreen in place, and
+             the window button, which loads the Surf Break PAGE. -->
         <div class="surf-mini-controls" id="surfMiniControls">
           <button class="surf-mini-btn" id="surfMiniExpand" type="button" aria-label="Watch the stream fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg></button>
-          <button class="surf-mini-btn" id="surfMiniFull" type="button" aria-label="Open the full Surf Break sheet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16"/></svg></button>
-          <button class="surf-mini-btn" id="surfMiniClose" type="button" aria-label="Close the minimized stream view"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+          <button class="surf-mini-btn" id="surfMiniFull" type="button" aria-label="Open the Surf Break page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16"/></svg></button>
+          <button class="surf-mini-btn" id="surfMiniClose" type="button" aria-label="Close the floating player"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
         </div>
         <div class="surf-overlay-scroll" id="surfOverlayScroll">
     <div class="surf-dock" id="surfDock" data-state="expanded" hidden role="region" aria-label="Surf Break live player">
@@ -3247,8 +3154,6 @@
           <button class="btn-small surf-sound-btn" id="surfSoundBtn" type="button" aria-pressed="false" aria-label="Turn the stream sound on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z" fill="currentColor" stroke="none"/><path class="surf-sound-waves" d="M15.5 8.5a5 5 0 0 1 0 7"/><path class="surf-sound-waves" d="M18.5 5.5a9.4 9.4 0 0 1 0 13"/></svg><span id="surfSoundLbl">Sound off</span></button>
           <button class="btn-small surf-zoom-btn" id="surfZoomBtn" type="button" aria-pressed="false" aria-label="Toggle digital zoom"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Zoom</button>
           <button class="btn-small" id="surfDockFsBtn" type="button">Fullscreen</button>
-          <button class="btn-small" id="surfCollapseBtn" type="button">Collapse</button>
-          <button class="btn-small" id="surfExpandBtn" type="button" hidden>Expand</button>
           <button class="btn-small" id="surfDockStopBtn" type="button">Stop</button>
         </span>
       </div>
@@ -3301,52 +3206,7 @@
       <p class="surf-dock-status" id="surfDockStatus" role="status" aria-live="polite" hidden></p>
     </div>
 
-    <section class="card surf-card" aria-labelledby="surf-h">
-        <h2 id="surf-h">Surf Break — control center</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player above if you want the sound of the ocean. Once sound is on it stays on when the break changes, and if the player ever goes quiet on its own the app brings the sound back by itself within a couple of seconds — no need to touch your phone's volume buttons. This panel floats over the tab you were on — close it and that tab is exactly as you left it, scroll and all — and closing it never stops the stream: it keeps playing behind the wave button, which shows a red dot while a stream is live. This card is the player's control center: pick a break, show or hide the player, and set auto-play here.</p>
 
-        <div class="surf-nowrow">
-          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
-          <button class="btn-small" id="surfForecastBtn" type="button">Wave forecast</button>
-          <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
-        </div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Auto choice</div>
-            <div class="sw-sub">Best conditions picks the break by its live forecast score (Open-Meteo) and daylight; Follow the Sun picks by daylight alone; Off stops auto-picking. A break you pick yourself always wins until you re-enable auto here.</div>
-          </div>
-        </div>
-        <div class="seg-control" id="surfAutoModeSeg" role="group" aria-label="Auto choice" style="margin-top:10px;">
-          <button type="button" data-am="best" aria-pressed="true">Best conditions</button>
-          <button type="button" data-am="sun" aria-pressed="false">Follow the Sun</button>
-          <button type="button" data-am="off" aria-pressed="false">Off</button>
-        </div>
-
-        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Auto-play streams</div>
-            <div class="sw-sub">On: when you open Surf Break, the best daylight break starts by itself, muted, and Follow the Sun keeps cycling. Surf Break is summon-only — nothing loads until you open it. Off: Follow the Sun doesn't cycle and a picked spot waits for Play — kinder to your data plan — but opening Surf Break always loads the player, because opening it is asking to watch. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
-        </div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Lineup zones</div>
-            <div class="sw-sub">On: each spot's poster still in the player above carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
-        </div>
-
-        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">Data note:</strong> these are live video streams and they use data — on a cellular connection that can be significant. Surf Break stays closed (and uses no data) until you open it.</p>
-        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. Closing this panel never stops the stream, and switching tabs never stops it either; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen.</p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
-      </section>
-        </div>
       </div>
     </div>
 
@@ -4538,6 +4398,55 @@
         <p class="muted" style="margin:12px 0 0;"><strong style="color:var(--ink-soft);">Best by live forecast data (Open-Meteo), with the full 3-day charts right here in the app.</strong> Wave height and period come from the Open-Meteo Marine API; wind from the Open-Meteo forecast API. Tap <strong style="color:var(--ink-soft);">Charts</strong> on any break for its next 72 hours of swell and wind. The score weights swell height and period most, scores light or offshore wind above strong onshore wind, and counts daylight at the break. It is a transparent ranking of published forecast data — not a guarantee of conditions.</p>
       </section>
       </div><!-- /panel-forecast -->
+
+      <div id="panel-surfbreak" role="tabpanel" aria-labelledby="tab-surfbreak" hidden>
+      <h2 class="tab-title">Surf Break</h2>
+    <section class="card surf-card" aria-labelledby="surf-h">
+        <h2 id="surf-h">Surf Break — control center</h2>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player above if you want the sound of the ocean. Once sound is on it stays on when the break changes, and if the player ever goes quiet on its own the app brings the sound back by itself within a couple of seconds — no need to touch your phone's volume buttons. Surf Break is its own page, like every other section of this app. The player itself floats: tap the wave button on any screen and the stream opens in a small floating window you can watch while you use the rest of the app — drag the window (or the wave button it rides with) to move it, and closing the window never stops the stream, which keeps playing behind the wave button; its red dot shows while a stream is live. The window button on the player brings you back to this page. This card is the player's control center: pick a break, show or hide the player, and set auto-play here.</p>
+
+        <div class="surf-nowrow">
+          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
+          <button class="btn-small" id="surfForecastBtn" type="button">Wave forecast</button>
+          <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
+        </div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Auto choice</div>
+            <div class="sw-sub">Best conditions picks the break by its live forecast score (Open-Meteo) and daylight; Follow the Sun picks by daylight alone; Off stops auto-picking. A break you pick yourself always wins until you re-enable auto here.</div>
+          </div>
+        </div>
+        <div class="seg-control" id="surfAutoModeSeg" role="group" aria-label="Auto choice" style="margin-top:10px;">
+          <button type="button" data-am="best" aria-pressed="true">Best conditions</button>
+          <button type="button" data-am="sun" aria-pressed="false">Follow the Sun</button>
+          <button type="button" data-am="off" aria-pressed="false">Off</button>
+        </div>
+
+        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Auto-play streams</div>
+            <div class="sw-sub">On: when you open Surf Break, the best daylight break starts by itself, muted, and Follow the Sun keeps cycling. Surf Break is summon-only — nothing loads until you open it. Off: Follow the Sun doesn't cycle and a picked spot waits for Play — kinder to your data plan — but opening Surf Break always loads the player, because opening it is asking to watch. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
+        </div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Lineup zones</div>
+            <div class="sw-sub">On: each spot's poster still in the player above carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
+        </div>
+
+        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">Data note:</strong> these are live video streams and they use data — on a cellular connection that can be significant. Surf Break stays closed (and uses no data) until you open it.</p>
+        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. Leaving this page never stops the stream, and switching tabs never stops it either; it unloads only when you tap Stop in the player, or when the app goes into the background, so nothing keeps eating data unseen.</p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
+      </section>
+      </div><!-- /panel-surfbreak -->
 
       <!-- Tutorial sheet — opens ONLY from the Tutorial button on the Device tab.
            Never auto-opens, never a first-run modal. -->
@@ -11452,8 +11361,6 @@ var STRAIN_SRC_LINKS = {
         var dockSpot = document.getElementById("surfDockSpot");
         var dockMeta = document.getElementById("surfDockMeta");
         var dockStatus = document.getElementById("surfDockStatus");
-        var collapseBtn = document.getElementById("surfCollapseBtn");
-        var expandBtn = document.getElementById("surfExpandBtn");
         var dockStopBtn = document.getElementById("surfDockStopBtn");
         var showHideBtn = document.getElementById("surfShowHideBtn");
         var facade = document.getElementById("surfFacade");
@@ -11558,8 +11465,8 @@ var STRAIN_SRC_LINKS = {
         var ytPlayer = null, plainFrame = false;
         var dwellStart = 0, loadTimer = 0, slowTimer = 0;
         var manualHold = false, stoppedByUser = false, gestureArmed = false;
-        var dockState = "hidden"; /* hidden | expanded | mini */
-        var surfStage = "closed"; /* closed | mini | full — the two-stage Surf Break view: the wave button opens "mini" (stream only), its expand control opens "full" (the whole sheet) */
+        var dockState = "hidden"; /* hidden | expanded — the player has no collapsed form */
+        var surfStage = "closed"; /* closed | mini — the floating player window only: the wave button opens it ("mini"), closing folds it away. There is NO full overlay stage: the full Surf Break menu lives on the Surf Break PAGE (#panel-surfbreak), reached by page navigation. */
         var bgSuspended = false, bgPaused = false;
         /* Auto-recovery chain: when a stream errors or ends on its own
            (not a manual pick), the player advances through the remaining
@@ -11594,7 +11501,7 @@ var STRAIN_SRC_LINKS = {
         /* --- dock chrome: header, status line, card button, content padding --- */
         function dockVisible() { return !dock.hidden; }
         function syncDockPad() {
-          var h = dock.hidden ? 0 : (dock.offsetHeight || (dockState === "mini" ? 96 : 330));
+          var h = dock.hidden ? 0 : (dock.offsetHeight || 330);
           /* Bottom clearance now clears only the surf dock, measured in its
              CURRENT state — there is no bottom tab bar anymore (navigation
              lives in the left tray, summoned by the edge handle). */
@@ -11632,27 +11539,21 @@ var STRAIN_SRC_LINKS = {
              to take fullscreen: CSS hides every fullscreen control
              (mini expand, dock Fullscreen, in-dock exit) on this flag. */
           document.body.classList.toggle("surf-fb-on", mode === "fallback");
-          if (showHideBtn) showHideBtn.textContent = dockVisible() ? "Hide player" : "Show player";
+          if (showHideBtn) showHideBtn.textContent = surfStage !== "closed" ? "Hide player" : "Show player";
           syncDockPad();
           syncFab();
         }
         function setDockState(st) {
-          /* The in-sheet dock GRID's mini layout (a 112px column) can
-             never hold the fallback text panel, so that grid state is
-             refused while it shows. This is only the dock's internal
-             layout axis — the overlay's mini STAGE keeps the dock
-             expanded and renders the compact fallback in its frame. */
-          if (st === "mini" && mode === "fallback") st = "expanded";
-          dockState = st;
-          if (st === "mini") exitZoom(); /* no zoom in the mini view — collapsing resets it */
-          dock.setAttribute("data-state", st);
-          collapseBtn.hidden = st !== "expanded" || mode === "fallback";
-          expandBtn.hidden = st !== "mini";
+          /* The player has exactly one layout: expanded. There is no
+             collapsed dock state and no collapse control — the fold
+             control that used to shrink the dock is deleted. */
+          dockState = st === "hidden" ? "hidden" : "expanded";
+          dock.setAttribute("data-state", dockState);
           syncDockPad();
         }
-        function showDock(st) {
+        function showDock() {
           dock.hidden = false;
-          setDockState(st || (dockState === "mini" ? "mini" : "expanded"));
+          setDockState("expanded");
           syncDockChrome();
         }
         function hideDock() {
@@ -11665,11 +11566,10 @@ var STRAIN_SRC_LINKS = {
           facade.hidden = which !== "facade";
           playerBox.hidden = which !== "player";
           fallback.hidden = which !== "fallback";
-          /* In the full stage the fallback card gets the dock's full
-             room; in the mini stage it stays compact inside the frame
-             (CSS renders the mini variant) — showing it never forces
-             the dock wider and never escalates the stage. */
-          if (which === "fallback" && surfStage !== "mini") showDock("expanded");
+          /* The fallback renders IN PLACE inside the floating player
+             frame (CSS renders the compact variant) — showing it never
+             changes the presentation form. */
+          if (which === "fallback") showDock();
           syncDockChrome();
           syncZoomUI(); /* the gesture layer tracks which stage child is visible */
         }
@@ -12162,13 +12062,12 @@ var STRAIN_SRC_LINKS = {
         }
         function showFallback(kind, triedNames) {
           mode = "fallback";
-          /* The fallback renders WITHIN the stage it failed in: the
-             compact card inside the mini frame, the full card in the
-             full sheet. A load failure NEVER escalates the stage by
-             itself — the viewer can still open the full sheet with
-             the explicit full-sheet control if they want the long
-             text. (syncDockChrome's surf-fb-on toggle also hides the
-             fullscreen controls while this shows.) */
+          /* The fallback renders IN PLACE within the floating player
+             frame — a load failure NEVER changes the presentation form
+             by itself. The long explanation lives on the Surf Break
+             page, one window-button tap away. (syncDockChrome's
+             surf-fb-on toggle also hides the fullscreen controls
+             while this shows.) */
           destroyPlayer();
           var spot = spotByKey(currentKey);
           showOnly("fallback");
@@ -12242,6 +12141,7 @@ var STRAIN_SRC_LINKS = {
           currentKey = spot.key;
           bgPaused = false;
           showDock();
+          if (surfStage === "closed") setSurfStage("mini"); /* starting a stream opens the floating player window on whatever screen is showing — in place, never a menu */
           setFacade(spot);
           destroyPlayer();
           showOnly("player");
@@ -12305,7 +12205,8 @@ var STRAIN_SRC_LINKS = {
           var spot = spotByKey(key);
           if (autoOn) { startStream(spot); }
           else {
-            showDock("expanded");
+            if (surfStage === "closed") setSurfStage("mini");
+            showDock();
             unload();
             setNow("Your pick: <strong>" + spot.name + "</strong> — tap Play in the player dock to watch. Follow the Sun cycling is paused while this is your pick.");
           }
@@ -12334,34 +12235,30 @@ var STRAIN_SRC_LINKS = {
             if (b) currentKey = b;
             renderChips();
           }
-          showDock("expanded");
+          showDock();
           startStream(spotByKey(currentKey));
           if (fcStale()) fetchForecast(); /* keep the Best-conditions pick fresh while he watches */
         }
-        /* --- Surf Break overlay + floating wave button: TWO STAGES ---
+        /* --- Surf Break: floating wave button + floating player + PAGE ---
            The wave button (#surfFab) rides on every screen. Tapping it
-           now opens STAGE 1 — the minimized stream view: a small
-           floating 16:9 frame holding ONLY the live player, anchored
-           just above the button. The full Surf Break sheet (STAGE 2 —
-           the player plus the whole control center) is reached only
-           from the minimized frame's expand control. Both stages are
-           the same overlay element and the same ONE player node,
-           restyled by the .is-mini / .is-full classes, so moving
-           between stages never moves, restarts or reloads the stream.
-           Opening Stage 1 runs openSurfFromTab — the player loads and
-           starts by itself on whatever tab he is on, and a stream that
-           is already loading/playing/waiting is never restarted.
-           Closing the full sheet (its Close, the backdrop, Escape, or
-           the wave button) steps back to Stage 1 while a stream is
-           loaded/playing, and folds everything away when nothing was
-           ever loaded; closing Stage 1 folds it away and the stream
-           keeps playing behind the button, whose red dot (syncFab,
-           driven from syncDockChrome on every stream state change)
-           shows it at a glance. The tab underneath is never switched,
-           scrolled or reloaded (its scroll position is restored if the
-           browser moved it), and the body scroll lock belongs to the
-           full sheet only — the minimized frame blocks nothing outside
-           its own bounds. --- */
+           opens the floating player window — a small floating 16:9
+           frame holding ONLY the live player (a PLAYER, not a menu),
+           anchored just above the button, usable while any page shows.
+           There is NO second overlay stage and no collapsed-menu form:
+           the full Surf Break menu (break chips, auto modes, the whole
+           control center) lives on the Surf Break PAGE in the app's
+           navigation (#panel-surfbreak), reached by tapping the Surf
+           Break bottom-bar tab or the player's window button — plain
+           page navigation, exactly like every other section.
+           Opening the window runs openSurfFromTab — the player loads
+           and starts by itself on whatever tab he is on, and a stream
+           that is already loading/playing/waiting is never restarted.
+           Closing the window folds it away and the stream keeps
+           playing behind the button, whose red dot (syncFab, driven
+           from syncDockChrome on every stream state change) shows it
+           at a glance. The tab underneath is never switched, scrolled
+           or reloaded by the window (its scroll position is restored
+           if the browser moved it). --- */
         var overlayEl = document.getElementById("surfOverlay");
         var fabBtn = document.getElementById("surfFab");
         var fabDot = document.getElementById("surfFabDot");
@@ -12369,7 +12266,7 @@ var STRAIN_SRC_LINKS = {
         var miniCloseBtn = document.getElementById("surfMiniClose");
         var miniExpandBtn = document.getElementById("surfMiniExpand");
         var miniControlsEl = document.getElementById("surfMiniControls");
-        var surfTabBtn = document.getElementById("tab-surfbreak"); /* the Surf Break bottom-bar tab: a second door to the full view */
+        var surfTabBtn = document.getElementById("tab-surfbreak"); /* the Surf Break bottom-bar tab: the door to the Surf Break PAGE */
         var overlayOpen = false, savedScrollY = 0;
         function syncFab() {
           if (!fabBtn) return;
@@ -12553,14 +12450,13 @@ var STRAIN_SRC_LINKS = {
         }
         function placeFab() {
           /* Render the bubble wherever the unit model puts it for
-             the current stage. Full stage / fullscreen: the bubble is
-             NOT rendered at all — it must never float on top of the
-             full-stage card or the fullscreen frame (closing goes
-             through the sheet's own Close, the backdrop, or Escape).
-             No saved anchor: the CSS home — in mini it coincides with
-             the attached spot by construction of the default anchor. */
+             the current state. Fullscreen: the bubble is NOT rendered
+             at all — it must never float on top of the fullscreen
+             frame. No saved anchor: the CSS home — in the floating
+             window state it coincides with the attached spot by
+             construction of the default anchor. */
           if (!fabBtn) return;
-          if (surfStage === "full" || surfFsOn()) { fabBtn.hidden = true; fabClearInline(); return; }
+          if (surfFsOn()) { fabBtn.hidden = true; fabClearInline(); return; }
           fabBtn.hidden = false;
           if (!miniPos) { fabClearInline(); return; }
           var bp = bubblePosForAnchor(clampUnitAnchor(miniPos.left, miniPos.top));
@@ -12603,8 +12499,8 @@ var STRAIN_SRC_LINKS = {
            and scroll position sit underneath. Where element fullscreen
            is unavailable (iPhone web views), the same node fills the
            viewport via .surf-fs-fake instead. surfStage is never
-           changed by fullscreen: exiting returns to the exact stage
-           (mini or full) the enlarge was tapped in. ---- */
+           changed by fullscreen: exiting returns to the floating
+           window exactly as it was. ---- */
         var surfFs = false, surfFsFake = false;
         var fsBtn = document.getElementById("surfFsBtn");
         var dockFsBtn = document.getElementById("surfDockFsBtn");
@@ -12624,7 +12520,7 @@ var STRAIN_SRC_LINKS = {
              stylesheet's mini-stage rule owns it again) when
              fullscreen exits. */
           if (miniControlsEl) miniControlsEl.style.display = surfFs ? "none" : "";
-          placeFab(); /* fullscreen: the bubble rests at its home; exiting returns it to the unit */
+          placeFab(); /* fullscreen: the bubble is hidden; exiting returns it to the unit */
         }
         function fakeFsEnter() {
           surfFs = true; surfFsFake = true;
@@ -12671,12 +12567,13 @@ var STRAIN_SRC_LINKS = {
         var stageAnimUntil = 0;
         function setSurfStage(next) {
           if (!overlayEl) return;
+          if (next !== "closed" && next !== "mini") return; /* the ONLY stages that exist: closed, and the floating player window */
           if (next === surfStage) return; /* already in that stage: a pure no-op, never a re-animation */
-          /* Stage-transition debounce: the sheet/mini animations run
-             ~260–300ms. While one is still animating, further
+          /* Stage-transition debounce: the window animation runs
+             ~260-300ms. While one is still animating, further
              stage-changing inputs are ignored outright, so rapid
-             expand/fold tapping (or a gesture that leaks a second
-             stage call) can never strobo between stages. */
+             fold tapping (or a gesture that leaks a second stage
+             call) can never strobo. */
           var nowMs = Date.now();
           if (nowMs < stageAnimUntil) return;
           stageAnimUntil = nowMs + 300;
@@ -12686,82 +12583,45 @@ var STRAIN_SRC_LINKS = {
           overlayOpen = next !== "closed";
           overlayEl.hidden = !overlayOpen;
           overlayEl.classList.toggle("is-mini", next === "mini");
-          overlayEl.classList.toggle("is-full", next === "full");
           if (next !== "mini") { overlayEl.style.left = ""; overlayEl.style.top = ""; overlayEl.style.width = ""; }
-          document.body.classList.toggle("surf-overlay-open", next === "full");
           if (fabBtn) {
             fabBtn.setAttribute("aria-expanded", overlayOpen ? "true" : "false");
             fabBtn.setAttribute("aria-label", overlayOpen ? "Close Surf Break" : "Open Surf Break");
             fabBtn.classList.toggle("is-open", overlayOpen);
           }
-          if (surfTabBtn) {
-            /* The Surf Break bar tab carries the active state exactly
-               while the FULL view is open — the screen underneath keeps
-               its own highlight untouched. */
-            var sfOn = next === "full";
-            surfTabBtn.classList.toggle("alt-surf-on", sfOn);
-            surfTabBtn.setAttribute("aria-selected", sfOn ? "true" : "false");
-          }
           if (overlayOpen && prev === "closed") {
             savedScrollY = window.scrollY || 0;
-            if (next === "full" && overlayScrollEl) overlayScrollEl.scrollTop = 0;
           } else if (!overlayOpen && (window.scrollY || 0) !== savedScrollY) {
             window.scrollTo(0, savedScrollY);
           }
           if (next === "mini") positionMini();
-          placeFab(); /* the bubble takes its place in the unit for the new stage: attached in mini, at the anchor's corner when closed, home in full */
+          placeFab(); /* the bubble takes its place in the unit: attached to the window, or at the anchor's corner when closed */
           applyZoom(); /* re-clamp any live pan to the frame's new size */
           syncFab();
         }
-        /* Stage 1 — what the wave button (and the Session tab's Open
-           Surf button, and auto-play's open path) opens now. */
+        /* The floating player window — what the wave button (and the
+           Session paths that summon the player) opens. */
         function openSurfMini() {
           if (!overlayEl) return;
           var wasClosed = surfStage === "closed";
           setSurfStage("mini");
           if (wasClosed) openSurfFromTab();
         }
-        /* Stage 2 — from Stage 1's full-sheet control, or directly
-           from the Surf Break bottom-bar tab (openSurfFullDirect).
-           surfTabReturn marks a full view the TAB opened: closing it
-           returns straight to the screen underneath (the tab is a door
-           to the full view, not a stop at the mini), while a full view
-           reached through the bubble's mini keeps the classic
-           step-back-to-mini close. */
-        var surfTabReturn = false;
-        function openSurfFull() {
-          if (!overlayEl || surfStage !== "mini") return;
-          surfTabReturn = false;
-          setSurfStage("full");
-          if (overlayScrollEl) overlayScrollEl.scrollTop = 0;
-        }
-        /* The Surf Break bar tab's door: the FULL Surf Break view
-           directly, over whatever screen is current — same overlay,
-           same ONE player node, never a reload. From closed it goes
-           straight to full, starting the stream exactly the way a
-           bubble open does; from the mini it expands the same stream
-           in place. Surf Break is not a swipe-ring stop and the pager
-           never treats it as a screen: the tab switch underneath is
-           never touched. */
-        function openSurfFullDirect() {
-          if (!overlayEl || surfStage === "full") return;
-          if (surfStage === "mini") {
-            openSurfFull();
-            if (surfStage === "full") surfTabReturn = true;
-            return;
-          }
-          setSurfStage("full");
-          if (surfStage !== "full") return; /* the stage debounce ate it: nothing opened, nothing started */
-          surfTabReturn = true;
-          openSurfFromTab();
-          if (overlayScrollEl) overlayScrollEl.scrollTop = 0;
+        /* The Surf Break PAGE: plain page navigation through the
+           bottom-bar tab's own click (the bar script shows
+           #panel-surfbreak and lights the tab, exactly like every
+           other section). The player's window button and the Forecast
+           Watch path come through here — page navigation replaces the
+           old expanded overlay stage entirely. If he is already on
+           the Surf Break page, the click simply re-shows it at the
+           top, where the break menu is. */
+        function openSurfPage() {
+          if (surfTabBtn) surfTabBtn.click();
         }
         function closeSurf() {
           if (!overlayEl || surfStage === "closed") return;
           if (surfFs) { exitSurfFullscreen(); return; } /* first close in fullscreen just exits fullscreen */
-          if (surfStage === "full" && surfTabReturn) { surfTabReturn = false; setSurfStage("closed"); return; } /* opened by the bar tab: straight back to the screen underneath */
-          if (surfStage === "full" && streamActive()) { setSurfStage("mini"); return; }
-          if (surfStage === "mini") exitZoom(); /* folding the mini view away resets its zoom to the 1× full frame */
+          exitZoom(); /* folding the floating window away resets its zoom to the 1x full frame */
           setSurfStage("closed");
         }
         if (fabBtn) fabBtn.addEventListener("click", function () {
@@ -12783,14 +12643,14 @@ var STRAIN_SRC_LINKS = {
            that follows is swallowed, so a drag never also opens or
            folds the stream. A clean tap is untouched and keeps its
            meaning (open from closed, fold from mini) via the click
-           handler above. In the full stage and in fullscreen the
-           bubble does not drag — it is the plain toggle there.
+           handler above. In fullscreen the bubble does not drag — it
+           is hidden there entirely.
            fabMinTop stays: it is the island clearance the closed
            bubble clamp and the default anchor both respect. --- */
         var fabDrag = null, fabDragMoved = false, fabSuppressClickAt = 0;
         if (fabBtn) {
           fabBtn.addEventListener("pointerdown", function (e) {
-            if (surfStage === "full" || surfFsOn()) { fabDrag = null; return; }
+            if (surfFsOn()) { fabDrag = null; return; }
             var r = fabBtn.getBoundingClientRect();
             fabDrag = {
               id: e.pointerId, sx: e.clientX, sy: e.clientY,
@@ -12874,15 +12734,11 @@ var STRAIN_SRC_LINKS = {
             dn = null;
           }, true);
         });
-        var overlayCloseEl = document.getElementById("surfOverlayClose");
-        if (overlayCloseEl) overlayCloseEl.addEventListener("click", closeSurf);
-        var overlayScrimEl = document.getElementById("surfOverlayScrim");
-        if (overlayScrimEl) overlayScrimEl.addEventListener("click", closeSurf);
         if (miniCloseBtn) miniCloseBtn.addEventListener("click", closeSurf);
-        /* The enlarge control is fullscreen now (in place, same node);
-           the full Surf Break sheet keeps its own control beside it. */
+        /* The enlarge control is fullscreen (in place, same node);
+           the window button beside it loads the Surf Break PAGE. */
         if (miniExpandBtn) miniExpandBtn.addEventListener("click", toggleSurfFullscreen);
-        if (miniFullBtn) miniFullBtn.addEventListener("click", openSurfFull);
+        if (miniFullBtn) miniFullBtn.addEventListener("click", openSurfPage);
         if (fsBtn) fsBtn.addEventListener("click", toggleSurfFullscreen);
         if (dockFsBtn) dockFsBtn.addEventListener("click", toggleSurfFullscreen);
         document.addEventListener("keydown", function (e) {
@@ -12954,8 +12810,8 @@ var STRAIN_SRC_LINKS = {
           facade.addEventListener("pointerup", fEnd);
           facade.addEventListener("pointercancel", fEnd);
         }
-        /* --- Whole-box move (mini stage): EVERY surface of the mini
-           box drags the unit, in every state ---
+        /* --- Whole-box move (floating player): EVERY surface of the
+           floating box drags the unit, in every state ---
            The live player (gesture layer) and the poster facade already
            own their surfaces with their own disambiguation (flick
            cycles, pinch zooms, zoomed drag pans, sustained drag moves)
@@ -12968,7 +12824,7 @@ var STRAIN_SRC_LINKS = {
            anchor persisted on release); a slide that started on a
            button has its click swallowed whole, so the button never
            fires; a clean tap with no slide is left completely alone
-           and activates its button normally. Full stage: no moving. */
+           and activates its button normally. */
         var boxDrag = null;
         function boxDragSettle() {
           if (!boxDrag) return;
@@ -13009,20 +12865,20 @@ var STRAIN_SRC_LINKS = {
         window.__surfOverlay = {
           open: openSurfMini,
           openMini: openSurfMini,
-          openFull: openSurfFull,
-          openFullDirect: openSurfFullDirect,
+          openPage: openSurfPage,
+          openFull: openSurfPage,
+          openFullDirect: openSurfPage,
           close: closeSurf,
           toggle: function () { if (surfStage === "closed") openSurfMini(); else closeSurf(); },
           isOpen: function () { return surfStage !== "closed"; },
           isMini: function () { return surfStage === "mini"; },
-          isFull: function () { return surfStage === "full"; },
+          isFull: function () { return false; }, /* there is no full overlay stage anymore — the full menu is the Surf Break page */
           stage: function () { return surfStage; }
         };
-        /* The Surf Break bottom-bar tab: a second door to the full
-           view (the wave bubble, the mini stage and the coupled drag
-           are unchanged). It is wired here, with the surf state in
-           scope — not a tab switch, never a swipe-ring stop. */
-        if (surfTabBtn) surfTabBtn.addEventListener("click", function () { openSurfFullDirect(); });
+        /* The Surf Break bottom-bar tab is wired by the bottom-bar
+           script as plain page navigation (it shows #panel-surfbreak
+           like every other section's page) — the surf module no
+           longer intercepts it. */
         /* Sound button: the tap happens in THIS frame, inside a real user
            gesture — the strongest claim a web page can make on iOS's
            audio session, unlike a tap on the speaker icon inside the
@@ -13047,31 +12903,12 @@ var STRAIN_SRC_LINKS = {
         });
         syncSoundBtn();
         dockStopBtn.addEventListener("click", stopStream);
-        collapseBtn.addEventListener("click", function () { setDockState("mini"); syncDockChrome(); });
-        expandBtn.addEventListener("click", function () { setDockState("expanded"); syncDockChrome(); });
-        /* Tapping the mini view itself (its poster/stage area, not a button
-           or link inside it) also expands the dock. */
-        dock.addEventListener("click", function (e) {
-          if (dockState !== "mini") return;
-          var body = document.getElementById("surfDockBody");
-          if (!body || !body.contains(e.target)) return;
-          if (e.target.closest && e.target.closest("button, a")) return;
-          setDockState("expanded");
-          syncDockChrome();
-        });
         if (showHideBtn) showHideBtn.addEventListener("click", function () {
-          if (dockVisible()) {
+          if (surfStage !== "closed") {
             stopStream();
+            setSurfStage("closed");
           } else {
-            stoppedByUser = false;
-            bgPaused = false;
-            if (!manualHold) {
-              var b = bestPickKey();
-              if (b) currentKey = b;
-              renderChips();
-            }
-            showDock("expanded");
-            startStream(spotByKey(currentKey));
+            openSurfMini(); /* the floating player opens over this page and starts by itself */
           }
         });
         retryBtn.addEventListener("click", function () { stoppedByUser = false; startStream(spotByKey(currentKey)); });
@@ -13088,9 +12925,8 @@ var STRAIN_SRC_LINKS = {
         });
         var surfForecastBtn = document.getElementById("surfForecastBtn");
         if (surfForecastBtn) surfForecastBtn.addEventListener("click", function () {
-          setSurfStage("closed");
           var fb = document.getElementById("tab-forecast");
-          if (fb) fb.click();
+          if (fb) fb.click(); /* page navigation only — the floating player is untouched */
         });
 
         /* --- first-gesture primer: any first touch/scroll/key arms playback --- */
@@ -13175,14 +13011,11 @@ var STRAIN_SRC_LINKS = {
            support gate either: the streams need no Bluetooth, so the dock
            rides along even on the unsupported-browser notice, the one screen
            where the app itself never opens. */
-        if (false) {
+        {
           /* ALTERNATIVE: Surf Break is summon-only — the dock never renders
              and no stream loads on app open, whatever the auto-play setting.
-             Opening Surf Break (the wave button, or Show player in its
-             control center) runs the normal start path from there. */
-          showDock("mini");
-          startStream(spot0);
-        } else {
+             Opening Surf Break (the wave button, or Show player on its
+             page) runs the normal start path from there. */
           hideDock();
           stoppedByUser = true; hideDock();
           if (info0.day) setNow("Surf Break is closed — nothing is streaming. Daylight pick right now: <strong>" + spot0.name + "</strong> · " + info0.label + " local · ☀ — open Surf Break from the wave button and it starts by itself, or tap Show player here, to watch.");
@@ -13610,13 +13443,14 @@ var STRAIN_SRC_LINKS = {
         var fcRefreshBtn = document.getElementById("forecastRefresh");
         if (fcRefreshBtn) fcRefreshBtn.addEventListener("click", function () { fetchForecast(); });
         function watchSpot(key) {
+          /* Forecast's Watch: navigate to the Surf Break PAGE and play
+             there — the floating player opens over the page and the
+             picked break starts in place inside it. */
           manualHold = true; stoppedByUser = false; bgPaused = false;
           currentKey = key;
-          if (surfStage === "closed") openSurfMini();
-          else {
-            if (surfStage !== "mini") setSurfStage("mini");
-            startStream(spotByKey(key));
-          }
+          openSurfPage();
+          if (surfStage === "closed") setSurfStage("mini");
+          startStream(spotByKey(key));
         }
         function syncAutoModeUI() {
           if (autoSwitch) autoSwitch.setAttribute("aria-checked", autoOn ? "true" : "false");
@@ -13647,7 +13481,7 @@ var STRAIN_SRC_LINKS = {
             var b = bestPickKey();
             if (b) currentKey = b;
             renderChips();
-            showDock("expanded");
+            showDock();
             startStream(spotByKey(currentKey));
             if (fcStale()) fetchForecast();
           }
@@ -13748,12 +13582,18 @@ var STRAIN_SRC_LINKS = {
         "use strict";
         var moreBtn = document.getElementById("altMoreBtn");
         var forecastBtn = document.getElementById("tab-forecast");
+        var surfBtn = document.getElementById("tab-surfbreak");
         var morePanel = document.getElementById("panel-more");
         var forecastPanel = document.getElementById("panel-forecast");
+        var surfPanel = document.getElementById("panel-surfbreak");
         var moreOpen = false; /* the More SCREEN is the visible screen */
-        /* More and Forecast are first-class screens that live outside
-           the BLE tab map: showing one hides every tab panel, clears
-           every bar selection, and lights only its own bar button.
+        /* More, Forecast and Surf Break are first-class screens that
+           live outside the BLE tab map: showing one hides every tab
+           panel, clears every bar selection, and lights only its own
+           bar button. Surf Break's page carries the full Surf Break
+           menu (break chips, auto modes); the floating player is a
+           separate window summoned by the wave button, never a
+           presentation of this page.
            More is a screen, never a floating sheet — its three entries
            are the real Burn Guard / Device / Info tab buttons, and
            tapping one runs the normal tab switch into that section's
@@ -13761,6 +13601,7 @@ var STRAIN_SRC_LINKS = {
         function hidePseudo() {
           if (morePanel) morePanel.hidden = true;
           if (forecastPanel) forecastPanel.hidden = true;
+          if (surfPanel) surfPanel.hidden = true;
           moreOpen = false;
         }
         function showPseudo(which) {
@@ -13771,14 +13612,15 @@ var STRAIN_SRC_LINKS = {
           var unsEl = document.getElementById("unsupported");
           if (unsEl && unsEl.getAttribute("data-bt-unsupported") === "1") unsEl.hidden = true;
           Array.prototype.forEach.call(document.querySelectorAll("#app [role='tabpanel']"), function (p) { p.hidden = true; p.classList.remove("panel-enter"); });
-          ["tab-connect", "tab-temperature", "tab-session", "tab-strains", "tab-terpene", "tab-forecast", "tab-burnguard", "tab-device", "tab-info"].forEach(function (id) {
+          ["tab-connect", "tab-temperature", "tab-session", "tab-strains", "tab-terpene", "tab-forecast", "tab-surfbreak", "tab-burnguard", "tab-device", "tab-info"].forEach(function (id) {
             var b = document.getElementById(id);
             if (b) b.setAttribute("aria-selected", "false");
           });
-          var panel = which === "more" ? morePanel : forecastPanel;
+          var panel = which === "more" ? morePanel : (which === "surfbreak" ? surfPanel : forecastPanel);
           if (panel) { panel.hidden = false; panel.classList.add("panel-enter"); }
           moreOpen = which === "more";
           if (which === "forecast" && forecastBtn) forecastBtn.setAttribute("aria-selected", "true");
+          if (which === "surfbreak" && surfBtn) surfBtn.setAttribute("aria-selected", "true");
           window.scrollTo(0, 0);
           syncMoreActive();
           swipeSync();
@@ -13800,6 +13642,7 @@ var STRAIN_SRC_LINKS = {
         }
         if (moreBtn) moreBtn.addEventListener("click", function () { showPseudo("more"); });
         if (forecastBtn) forecastBtn.addEventListener("click", function () { showPseudo("forecast"); });
+        if (surfBtn) surfBtn.addEventListener("click", function () { showPseudo("surfbreak"); });
         ["tab-connect", "tab-terpene", "tab-burnguard", "tab-device", "tab-info", "tab-session", "tab-temperature", "tab-strains"].forEach(function (id) {
           var b = document.getElementById(id);
           if (b) b.addEventListener("click", function () { hidePseudo(); window.setTimeout(syncMoreActive, 0); });
@@ -13857,12 +13700,13 @@ var STRAIN_SRC_LINKS = {
            More destination shows (owner order, 2026-11-05: there its
            arrows are disabled and no dot is lit, so it is dead chrome —
            it does not render at all on the More screen or on Burn
-           Guard / Device / Info, and returns, fully working, on the six
+           Guard / Device / Info, and returns, fully working, on the
            primary screens), and the bar's More button carries the
            active state. The user leaves a More screen by
-           tapping a bar destination. (Surf Break is not a ring stop
-           either — it opens as an overlay, from the floating wave
-           button and from its own bottom-bar tab, over every menu.)
+           tapping a bar destination. (Surf Break IS a page like the
+           rest — its bottom-bar tab shows #panel-surfbreak — and it
+           rides the swipe ring right after Forecast; the floating
+           player window is separate and is not a screen at all.)
            A menu change is a plain click on that menu's real tab button,
            so every existing tab behavior (panel refresh, More closing,
            sheet closing) rides along unchanged.
@@ -13885,10 +13729,10 @@ var STRAIN_SRC_LINKS = {
            the same touch would otherwise deliver to whatever it started
            on, so swiping off a card never activates it. There is no
            wraparound at either end of the five-stop ring. */
-        var SWIPE_ORDER = ["connect", "temperature", "session", "strains", "terpene", "forecast"];
+        var SWIPE_ORDER = ["connect", "temperature", "session", "strains", "terpene", "forecast", "surfbreak"];
         var MORE_ORDER = ["burnguard", "device", "info"];
         var ALL_TABS = SWIPE_ORDER.concat(MORE_ORDER);
-        var SWIPE_TITLES = { connect: "Connect", temperature: "Temperature", session: "Session", strains: "Strains", terpene: "Terpenes", forecast: "Forecast", burnguard: "Burn Guard", device: "Device", info: "Info", more: "More" };
+        var SWIPE_TITLES = { connect: "Connect", temperature: "Temperature", session: "Session", strains: "Strains", terpene: "Terpenes", forecast: "Forecast", surfbreak: "Surf Break", burnguard: "Burn Guard", device: "Device", info: "Info", more: "More" };
         var swipeLabel = document.getElementById("swipeLabel");
         var swipeDots = document.getElementById("swipeDots");
         var swipePrev = document.getElementById("swipePrev");
@@ -13897,7 +13741,7 @@ var STRAIN_SRC_LINKS = {
         var swipeNav = document.getElementById("swipeNav");
         var swipeNavHome = swipeNav ? { parent: swipeNav.parentNode, next: swipeNav.nextSibling } : null;
         var topbarEl = document.getElementById("topbar");
-        var BAR_SCREEN_NAMES = ["connect", "temperature", "session", "strains", "terpene", "forecast", "burnguard", "device", "info"];
+        var BAR_SCREEN_NAMES = ["connect", "temperature", "session", "strains", "terpene", "forecast", "surfbreak", "burnguard", "device", "info"];
         function visibleScreen() {
           /* What is ACTUALLY on screen, read from the panels — the one
              source of truth the highlight sync trusts. */
@@ -13919,8 +13763,9 @@ var STRAIN_SRC_LINKS = {
              tab switcher's own button map never cleared it, leaving
              two bars lit at once. The More button follows the More rule
              (lit on More and its sub-screens). The Surf Break tab is
-             not a screen button: its active state belongs to the surf
-             stage machine and is never touched here. Attributes are
+             a page button like the rest — its page is #panel-surfbreak
+             and the floating player's stage machine never touches bar
+             state. Attributes are
              only written when they actually change, so the aria
              MutationObserver below settles instead of looping. The
              brand header block renders only on Connect (its READY pill
@@ -13945,6 +13790,8 @@ var STRAIN_SRC_LINKS = {
           SWIPE_ORDER.forEach(function () { swipeDots.appendChild(document.createElement("span")); });
         }
         function swipeCurrent() {
+          var sp = document.getElementById("panel-surfbreak");
+          if (sp && !sp.hidden) return "surfbreak";
           var mp = document.getElementById("panel-more");
           if (mp && !mp.hidden) return "more";
           for (var i = 0; i < ALL_TABS.length; i++) {
@@ -14270,11 +14117,12 @@ var STRAIN_SRC_LINKS = {
         }, 1500);
 
         /* ---- (12) Surf Break state sync (the Session card is gone) ----
-           Surf Break is reached ONLY through the floating wave button —
-           there is no surf card or open button on any menu screen. The
-           old Session card's buttons were removed with the card; the
-           lookups below are null-guarded and simply stay inert, and the
-           programmatic open path (window.__surfOverlay) is untouched. */
+           Surf Break's menu lives on its own page (the Surf Break
+           bottom-bar tab); the player is summoned through the floating
+           wave button. The old Session card's buttons were removed
+           with the card; the lookups below are null-guarded and simply
+           stay inert, and the programmatic open path
+           (window.__surfOverlay) is untouched. */
         var surfDockEl = $("surfDock"), surfShowHide = $("surfShowHideBtn");
         function surfUiOpen() {
           var ov = window.__surfOverlay;
