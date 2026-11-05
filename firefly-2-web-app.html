@@ -153,7 +153,7 @@
         z-index: 1;
         max-width: 560px;
         margin: 0 auto;
-        padding: calc(62px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
+        padding: calc(80px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
       }
 
       /* ---------- Header / status ---------- */
@@ -1019,7 +1019,7 @@
         position: fixed; inset: 0; z-index: 50;
         background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
         overflow-y: auto;
-        padding: calc(64px + env(safe-area-inset-top)) 22px calc(32px + env(safe-area-inset-bottom));
+        padding: calc(84px + env(safe-area-inset-top)) 22px calc(32px + env(safe-area-inset-bottom));
       }
       .unsupported-inner { max-width: 520px; margin: 0 auto; }
       .unsupported h1 { font-size: 27px; margin: 18px 0 10px; }
@@ -1099,18 +1099,41 @@
       /* ---------- Terpene temperature chart ---------- */
       .band-list { display: grid; gap: 10px; }
       .band {
-        appearance: none; cursor: pointer; font: inherit;
         width: 100%;
         min-height: 62px;
-        text-align: left;
         border-radius: 14px;
         border: 1px solid var(--line);
-        padding: 12px 14px;
+        padding: 0;
         color: var(--ink);
+        display: flex;
+        align-items: stretch;
+        overflow: hidden;
+      }
+      .band-load {
+        appearance: none; cursor: pointer; font: inherit;
+        flex: 1 1 auto; min-width: 0;
+        min-height: 62px;
+        text-align: left;
+        border: 0;
+        padding: 12px 6px 12px 14px;
+        color: var(--ink);
+        background: transparent;
         display: flex;
         align-items: center;
         gap: 12px;
       }
+      .band-info {
+        appearance: none; cursor: pointer; font: inherit;
+        flex: none; width: 48px;
+        border: 0; border-left: 1px solid var(--line);
+        background: transparent;
+        color: var(--ink-faint);
+        font-size: 20px;
+        display: grid; place-items: center;
+      }
+      .band-carry .bc-title { font-size: 16px; font-weight: 800; margin: 0 0 4px; }
+      .band-carry .bc-rel { color: var(--ink-soft); font-size: 14px; margin: 0 0 8px; }
+      .band-carry .bc-state { font-size: 14px; font-weight: 700; color: var(--ink); margin: 0 0 10px; }
       .band .band-temps {
         font-family: var(--mono);
         font-weight: 600;
@@ -1122,7 +1145,7 @@
       .band .band-name { font-weight: 800; font-size: 15.5px; display: block; }
       .band .band-teaser { color: var(--ink-soft); font-size: 13px; display: block; margin-top: 1px; }
       .band .band-arrow { color: var(--ink-faint); font-size: 20px; flex: none; }
-      .band[aria-pressed="true"] {
+      .band:has(.band-load[aria-pressed="true"]) {
         border-color: var(--ember);
         box-shadow: 0 0 0 2px var(--ember) inset;
       }
@@ -1721,7 +1744,9 @@
         position: fixed; z-index: 55;
         left: 50%; transform: translateX(-50%);
         width: min(560px, calc(100vw - 16px));
-        bottom: calc(8px + env(safe-area-inset-bottom));
+        /* Stacked directly above the fixed bottom tab bar (64px tall,
+           8px off the bottom, 10px gap) — never overlapping it. */
+        bottom: calc(82px + env(safe-area-inset-bottom));
         background: linear-gradient(165deg, var(--card-a) 0%, var(--card-b) 55%, var(--card-c) 100%);
         -webkit-backdrop-filter: blur(14px) saturate(1.25);
         backdrop-filter: blur(14px) saturate(1.25);
@@ -1769,6 +1794,15 @@
       .surf-dock[data-state="mini"] .surf-loading { font-size: 10.5px; padding: 6px; gap: 5px; }
       .surf-dock[data-state="mini"] .surf-loading .surf-spinner { width: 13px; height: 13px; border-width: 2px; }
       .surf-dock[data-state="mini"] .surf-dock-btns { margin-left: 0; }
+      /* The fallback is a text panel: it can never live in the mini grid's
+         112px body column. If it is ever visible while the dock still
+         carries data-state="mini" (state desync, engine quirk, a collapse
+         racing the error), the grid is void and the dock lays out as a
+         normal full-width block until the state catches up. */
+      .surf-dock[data-state="mini"]:has(.surf-fallback:not([hidden])) { display: block; }
+      /* On the unsupported-browser screen there is no tab bar (the app
+         shell is hidden), so the dock sits at the plain bottom offset. */
+      body:has(> .unsupported:not([hidden])) .surf-dock { bottom: calc(8px + env(safe-area-inset-bottom)); }
 
       /* ---------- Strain photo zoom — one shared tap-on / tap-off overlay ---------- */
       .photo-zoom {
@@ -1820,7 +1854,8 @@
           radial-gradient(64% 40% at 50% 104%, var(--nebula-b), transparent 68%);
         opacity: 0.9; }
       /* Floating glass tab bar */
-      .tabbar { position: sticky; top: calc(58px + env(safe-area-inset-top)); z-index: 40;
+      .tabbar { position: fixed; z-index: 54; left: 50%; transform: translateX(-50%);
+        bottom: calc(8px + env(safe-area-inset-bottom)); width: min(560px, calc(100vw - 16px)); margin: 0;
         border-radius: 999px; padding: 5px; gap: 2px;
         -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 30px rgba(0,0,0,0.42); }
@@ -1860,6 +1895,9 @@
       /* Dock clearance: content never hides under the fixed surf dock */
       body:has(> .surf-dock[data-state="expanded"]:not([hidden])) .wrap { padding-bottom: 430px; }
       body:has(> .surf-dock[data-state="mini"]:not([hidden])) .wrap { padding-bottom: 170px; }
+      /* Anchored jumps (scrollIntoView) must clear the island at the top
+         and the tab bar + dock stack at the bottom. */
+      .card, .band-detail, .tab-title { scroll-margin-top: 88px; scroll-margin-bottom: 130px; }
     </style>
     <script>
       /* Theme + motion boot — runs before first paint so a saved theme/motion
@@ -2103,6 +2141,17 @@
       <!-- ================= Tab: Session ================= -->
       <div id="panel-session" role="tabpanel" aria-labelledby="tab-session">
       <h2 class="tab-title">Session</h2>
+
+      <!-- Terpene range carry-over: filled by the Terpenes chart when a
+           range is loaded, so its what's-releasing summary rides along to
+           the top of the Session tab and reports the read-back result. -->
+      <section class="card band-carry" id="bandCarry" hidden aria-label="Terpene range you loaded">
+        <h2>From the Terpenes chart</h2>
+        <p class="bc-title" id="bcTitle"></p>
+        <p class="bc-rel" id="bcRel"></p>
+        <p class="bc-state" id="bcState" role="status" aria-live="polite"></p>
+        <button class="btn-small" id="bcClose" type="button">Dismiss</button>
+      </section>
 
       <!-- Session glow orb + quick theme switch (decorative visual) -->
       <section class="card orb-card" aria-label="Session glow and theme">
@@ -2715,7 +2764,7 @@
 
         <section class="card" aria-labelledby="chart-h">
           <h2 id="chart-h">What each temperature releases</h2>
-          <p class="card-sub">Cannabis compounds let go of the plant at different heats. Tap any temperature to see what's releasing there — it also moves the temperature setting on the Session tab.</p>
+          <p class="card-sub">Cannabis compounds let go of the plant at different heats. Tap a range and what's releasing there opens right here — its temperature loads at the same moment, sends from the Session tab automatically when you're connected (Burn Guard ceiling applies, caps announced), and this range's summary rides along to the top of the Session tab. The › on a card opens just the science, without loading.</p>
           <div class="band-list" id="bandList"></div>
 
           <div class="band-detail" id="bandDetail" aria-live="polite">
@@ -3354,6 +3403,7 @@
             setSetStatus("err", "The Firefly didn't confirm " + fmtTemp(p.sendF) + " within 6 seconds — it still reports " + currentTempText() + ". Unauthenticated connections are ignored by the device: tap Authenticate above, then Set again.");
             log("Set temperature did NOT confirm by read-back (still " + currentTempText() + "). Nothing was applied as far as the device reports.", "err");
             if (p.fu && typeof fuOnTempFailed === "function") fuOnTempFailed(p);
+            if (p.band && typeof bandOnTempFailed === "function") bandOnTempFailed(p);
           } else if (p.kind === "activation") {
             setActStatus("err", "The Firefly didn't confirm the sensor change within 6 seconds — it still reports " + (devState.activation !== null ? ACTIVATION_LONG[devState.activation] : "—") + ". If you're not authenticated, tap Authenticate on the connect card and try again.");
             log("Set activation did NOT confirm by read-back.", "err");
@@ -4135,6 +4185,7 @@
             setSetStatus("ok", "Confirmed — your Firefly read back " + fmtTemp(p.sendF) + " and is now set to it." + (p.pickedF !== p.sendF ? " (You picked " + fmtTemp(p.pickedF) + "; Burn Guard compensation sent " + fmtTemp(p.sendF) + ".)" : ""));
             log("Temperature CONFIRMED by read-back: the Firefly now reports " + p.sendF + "°F.", "ok");
             if (p.fu && typeof fuOnTempConfirmed === "function") fuOnTempConfirmed(p);
+            if (p.band && typeof bandOnTempConfirmed === "function") bandOnTempConfirmed(p);
             if (p.guided && typeof onGuidedConfirmed === "function") onGuidedConfirmed(p);
           } else if (p.kind === "activation") {
             setActStatus("ok", "Confirmed — your Firefly read back: " + ACTIVATION_LONG[p.value] + ".");
@@ -8211,7 +8262,7 @@ var STRAIN_SRC_LINKS = {
           selectedBand = i;
           if (moveSetpoint) setSetpoint(band.setpoint);
           bdTitle.textContent = band.name + " · " + band.min + "–" + band.max + "°F";
-          bdSub.textContent = "Your Session tab temperature is now " + setpointF + "°F. Head there and tap Set to send it — a change only counts once your Firefly reads the new setting back.";
+          bdSub.textContent = "What's releasing in this range — the science is right here. Tapping the range card itself loads its temperature: it sends from the Session tab automatically when you're connected, and this summary rides along to the top of that tab.";
           var html = "";
           html += '<p class="bd-label">Starts releasing here</p>';
           if (band.compounds.length) {
@@ -8229,25 +8280,123 @@ var STRAIN_SRC_LINKS = {
           html += '<p class="bd-text">' + band.feel + "</p>";
           html += '<p class="bd-label">Best for</p>';
           html += '<p class="bd-text"><strong>' + band.bestFor + "</strong></p>";
-          html += '<button class="btn btn-goto" id="bdGoto" type="button">See ' + setpointF + '°F on the Session tab</button>';
           bdBody.innerHTML = html;
-          document.getElementById("bdGoto").addEventListener("click", function () { switchTab("session"); });
           syncBandHighlight();
         }
 
+        /* ---- Range tap = load + go (the stacked order) ----
+           Tapping a range card does everything at once: (1) the range's
+           what's-releasing science opens in place in the detail panel
+           directly under the list, scrolled into view; (2) its setpoint
+           loads into the Session control — capped at the Burn Guard
+           flower ceiling when it exceeds it, the cap announced on screen
+           and in the log, never silent; (3) when connected, the EXISTING
+           Set pipeline sends it (setTempBtn.click() — same ceiling guard,
+           compensation, startPending read-back, and the one writeFrame
+           site every temperature send shares; no new write site); the
+           pending is tagged pending.band, mirroring Fire Up's pending.fu,
+           so read-back success/failure also updates the Session banner;
+           (4) after a one-second beat (long enough to see the science
+           that just opened), the app switches to the Session tab, where
+           the same release summary is pinned at the top in #bandCarry.
+           When not connected nothing is sent and nothing is faked: the
+           temperature is staged and both status surfaces say so.
+           The card's › button is science-only: it opens the same detail
+           (and stages the setpoint, as before) without loading/sending
+           or leaving the tab. One expansion at a time: the detail panel
+           is shared, so selecting another range swaps its content. */
+        var bcEl = document.getElementById("bandCarry");
+        var bcTitle = document.getElementById("bcTitle");
+        var bcRel = document.getElementById("bcRel");
+        var bcState = document.getElementById("bcState");
+        var bandGoTimer = 0;
+        function bandReleaseText(band) {
+          var parts = [band.teaser + "."];
+          if (band.compounds.length) {
+            band.compounds.forEach(function (c) { parts.push(c.name + " — starts releasing around " + c.temp + "."); });
+          } else { parts.push(band.noneNote); }
+          return parts.join(" ");
+        }
+        function bandCarryShow(band, targetF, capped, stateText) {
+          bcEl.hidden = false;
+          bcTitle.textContent = band.name + " · " + band.min + "–" + band.max + "°F";
+          bcRel.textContent = bandReleaseText(band);
+          bcState.textContent = stateText;
+          if (capped) bcState.textContent += " Burn Guard capped this range: it aims for " + band.setpoint + "°F, above your " + settings.ceilingF + "°F flower ceiling — " + targetF + "°F was loaded instead.";
+        }
+        function bandOnTempConfirmed(p) {
+          if (!p.band) return;
+          var band = BANDS[p.band.idx];
+          bcEl.hidden = false;
+          bcTitle.textContent = band.name + " · " + band.min + "–" + band.max + "°F";
+          bcRel.textContent = bandReleaseText(band);
+          bcState.textContent = "Confirmed — your Firefly read back " + fmtTemp(p.sendF) + " and is now set to it." + (p.band.capped ? " (Capped from " + band.setpoint + "°F by your Burn Guard ceiling.)" : "");
+        }
+        function bandOnTempFailed(p) {
+          if (!p.band) return;
+          var band = BANDS[p.band.idx];
+          bcEl.hidden = false;
+          bcState.textContent = "Didn't confirm — your Firefly didn't read back " + fmtTemp(p.sendF) + " within 6 seconds, so it isn't shown as set. See the temperature status below for the full note.";
+        }
+        document.getElementById("bcClose").addEventListener("click", function () { bcEl.hidden = true; });
+        function loadBand(i) {
+          var band = BANDS[i];
+          selectBand(i, false); /* science opens in place, instantly */
+          var target = band.setpoint, capped = false;
+          if (material === "flower" && target > settings.ceilingF) { target = settings.ceilingF; capped = true; }
+          setSetpoint(target);
+          bdSub.textContent = capped
+            ? "Burn Guard capped this range: " + band.name + " aims for " + band.setpoint + "°F, above your " + settings.ceilingF + "°F flower ceiling — " + target + "°F was loaded instead. Taking you to the Session tab."
+            : "Loaded " + target + "°F from the " + band.name + " range — taking you to the Session tab, where this summary is pinned at the top.";
+          document.getElementById("bandDetail").scrollIntoView({ block: "start" });
+          var connected = isConnected && !!rxChar;
+          bandCarryShow(band, target, capped, connected
+            ? "Sending " + target + "°F — waiting for your Firefly to read it back…"
+            : target + "°F is staged on the Session tab — connect and authenticate, then tap \u201CSet temperature on the Firefly\u201D to send it. Nothing has been sent yet.");
+          if (connected) {
+            setTempBtn.click(); /* the existing pipeline — no new write site */
+            if (pending && pending.kind === "temp") {
+              pending.band = { idx: i, capped: capped };
+              bcState.textContent = "Sending " + fmtTemp(pending.sendF) + " — waiting for your Firefly to read it back…" + (capped ? " Burn Guard capped this range: it aims for " + band.setpoint + "°F, above your " + settings.ceilingF + "°F flower ceiling — " + target + "°F was loaded instead." : "");
+            } else {
+              bcState.textContent = "The send didn't run — the temperature status on the Session tab says why (for example, a pulse is running). The temperature itself is loaded.";
+            }
+            if (capped) log("Terpenes chart: " + band.name + " range aims for " + band.setpoint + "°F — capped to your Burn Guard flower ceiling of " + settings.ceilingF + "°F and loaded at " + target + "°F.", "info");
+            log("Terpenes chart: loaded " + band.name + " (" + band.min + "–" + band.max + "°F) at " + target + "°F through the standard Set pipeline.", "info");
+          } else {
+            setSetStatus("", "Staged from the Terpenes chart: " + band.name + " loaded " + fmtTemp(target) + (capped ? " (capped from " + band.setpoint + "°F by your Burn Guard flower ceiling)" : "") + " — connect and authenticate, then tap Set to send it. A change only counts when your Firefly reads it back.");
+            log("Terpenes chart: loaded " + band.name + " (" + band.min + "–" + band.max + "°F) at " + target + "°F — staged only, not connected, nothing sent.", "info");
+          }
+          if (bandGoTimer) window.clearTimeout(bandGoTimer);
+          bandGoTimer = window.setTimeout(function () { switchTab("session"); }, 1000);
+        }
+
         BANDS.forEach(function (band, i) {
+          var wrap = document.createElement("div");
+          wrap.className = "band";
+          wrap.style.background = "linear-gradient(90deg, " + band.tint + ", var(--surface) 78%)";
           var b = document.createElement("button");
           b.type = "button";
-          b.className = "band";
+          b.className = "band-load";
           b.setAttribute("aria-pressed", "false");
-          b.style.background = "linear-gradient(90deg, " + band.tint + ", var(--surface) 78%)";
+          b.setAttribute("aria-label", band.name + ", " + band.min + " to " + band.max + " degrees — load this temperature and go to the Session tab");
           b.innerHTML =
             '<span class="band-temps">' + band.min + "–" + band.max + "°F</span>" +
             '<span class="band-main"><span class="band-name">' + band.name + '</span>' +
-            '<span class="band-teaser">' + band.teaser + "</span></span>" +
-            '<span class="band-arrow" aria-hidden="true">›</span>';
-          b.addEventListener("click", function () { selectBand(i, true); });
-          bandListEl.appendChild(b);
+            '<span class="band-teaser">' + band.teaser + "</span></span>";
+          b.addEventListener("click", function () { loadBand(i); });
+          var info = document.createElement("button");
+          info.type = "button";
+          info.className = "band-info";
+          info.setAttribute("aria-label", "What releases in the " + band.name + " range — science only, no load");
+          info.textContent = "›";
+          info.addEventListener("click", function () {
+            selectBand(i, true);
+            document.getElementById("bandDetail").scrollIntoView({ block: "start" });
+          });
+          wrap.appendChild(b);
+          wrap.appendChild(info);
+          bandListEl.appendChild(wrap);
           bandBtns.push(b);
         });
 
@@ -8671,11 +8820,27 @@ var STRAIN_SRC_LINKS = {
             b.disabled = !(canSession && !(typeof pulse !== "undefined" && pulse.active));
           });
         }
+        /* Island clearance: the fixed island must never sit on top of a
+           header, title, or first card. The wrap's top padding tracks the
+           island's measured height (collapsed or expanded) + its top
+           offset + a margin, on every tab, in every theme. */
+        var islClearLast = "";
+        function syncIslandClearance() {
+          if (!islandEl || !appEl) return;
+          var h = Math.ceil(islandEl.getBoundingClientRect().height) || 50;
+          var v = "calc(" + (8 + h + 18) + "px + env(safe-area-inset-top))";
+          if (v !== islClearLast) { islClearLast = v; appEl.style.paddingTop = v; }
+        }
         function islSetExpanded(on) {
           islExpanded = on;
           haptics.tick();
           renderIsland();
+          window.requestAnimationFrame(syncIslandClearance);
+          window.setTimeout(syncIslandClearance, 520); /* after the width/radius transition settles */
         }
+        window.addEventListener("resize", syncIslandClearance);
+        window.setInterval(syncIslandClearance, 1000);
+        syncIslandClearance();
         if (islandEl) {
           islandEl.addEventListener("click", function (e) {
             if (e.target.closest && e.target.closest("#islExpanded") && !(e.target.closest && e.target.closest("#islClose"))) return;
@@ -9302,13 +9467,17 @@ var STRAIN_SRC_LINKS = {
          dock (#surfDock) in the app shell — outside every tab panel — so it is
          visible on all tabs and tab switches never move, destroy or reload it.
          With Auto-play on (default), the best daylight break starts by itself,
-         muted, as soon as the app opens. The stream unloads only on Stop, on
-         the app going into the background (visibilitychange), or on stream
-         end/error — never on a tab switch. Collapsing the dock switches it to
-         a mini live view: the same player node, only restyled smaller by CSS,
-         so nothing reloads; if a stream ends/errors while collapsed, the dock
-         expands itself so the fallback (with its YouTube link) is fully
-         readable. */
+         muted, as soon as the app opens. The stream unloads only on Stop or
+         on the app going into the background (visibilitychange) — never on
+         a tab switch. On a stream error/end, an automatic start advances
+         through the untried spots in Follow the Sun daylight-rank order
+         (a manual pick retries its own spot once) and the fallback —
+         naming every spot tried — appears only after the chain is
+         exhausted. Collapsing the dock switches it to a mini live view:
+         the same player node, only restyled smaller by CSS, so nothing
+         reloads; the fallback can never render in the mini view (mini is
+         refused while it shows, in JS and again in CSS), so it is always
+         fully readable at full width. */
       (function () {
         "use strict";
         var SPOTS = [
@@ -9400,14 +9569,27 @@ var STRAIN_SRC_LINKS = {
         var manualHold = false, stoppedByUser = false, gestureArmed = false;
         var dockState = "hidden"; /* hidden | expanded | mini */
         var bgSuspended = false, bgPaused = false;
+        /* Auto-recovery chain: when a stream errors or ends on its own
+           (not a manual pick), the player advances through the remaining
+           spots in Follow the Sun daylight-rank order before any fallback
+           is shown. chainTried holds the spot keys attempted in the
+           current chain, in order; chainManualRetried marks the single
+           same-spot retry a manual pick gets before its fallback. */
+        var chainTried = [], chainManualRetried = false;
+        function resetChain() { chainTried = []; chainManualRetried = false; }
 
         function setNow(html) { nowLine.innerHTML = html; }
 
         /* --- dock chrome: header, status line, card button, content padding --- */
         function dockVisible() { return !dock.hidden; }
+        var tabBarEl = document.querySelector(".tabbar");
         function syncDockPad() {
           var h = dock.hidden ? 0 : (dock.offsetHeight || (dockState === "mini" ? 96 : 330));
-          if (appWrap) appWrap.style.paddingBottom = dock.hidden ? "" : (40 + h + 22) + "px";
+          /* Bottom clearance must clear BOTH fixed bars: the tab bar
+             (always pinned at the bottom of the app shell) plus the surf
+             dock stacked above it when it is visible. */
+          var tabH = tabBarEl && appWrap && !appWrap.hidden ? (tabBarEl.offsetHeight || 64) : 0;
+          if (appWrap) appWrap.style.paddingBottom = (40 + tabH + 14 + (dock.hidden ? 0 : h + 10)) + "px";
           /* The dock also floats over the unsupported-browser notice (the one
              screen where the app itself never opens), so give that scroll
              area the same clearance. */
@@ -9441,9 +9623,12 @@ var STRAIN_SRC_LINKS = {
           syncDockPad();
         }
         function setDockState(st) {
+          /* The fallback is a text panel and can never be squeezed into
+             the mini grid's 112px column: mini is refused while it shows. */
+          if (st === "mini" && mode === "fallback") st = "expanded";
           dockState = st;
           dock.setAttribute("data-state", st);
-          collapseBtn.hidden = st !== "expanded";
+          collapseBtn.hidden = st !== "expanded" || mode === "fallback";
           expandBtn.hidden = st !== "mini";
           syncDockPad();
         }
@@ -9560,6 +9745,7 @@ var STRAIN_SRC_LINKS = {
         }
         function onPlaying() {
           mode = "playing";
+          resetChain(); /* a spot that plays ends any recovery chain */
           bgPaused = false;
           loading.hidden = true;
           dwellStart = Date.now();
@@ -9573,19 +9759,59 @@ var STRAIN_SRC_LINKS = {
           setNow("The webview wants one first touch before video can start — <strong>tap or scroll anywhere once</strong> and " + spotByKey(currentKey).name + " starts by itself.");
           syncDockChrome();
         }
-        function showFallback(kind) {
+        function showFallback(kind, triedNames) {
           mode = "fallback";
           destroyPlayer();
           var spot = spotByKey(currentKey);
           showOnly("fallback");
+          var triedTxt = (triedNames && triedNames.length > 1) ? " Tried, in order: " + triedNames.join(" · ") + "." : "";
           if (kind === "ended") {
             fbTitle.textContent = "That live stream has ended";
-            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, or open it on YouTube.";
+            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, watch it on YouTube, or pick another break in the Surf Break card on the Device tab." + triedTxt;
+          } else if (triedNames && triedNames.length > 1) {
+            fbTitle.textContent = "None of the breaks loaded";
+            fbText.textContent = "Every break was tried in Follow the Sun order and none came through — they may have restarted, or the connection hiccuped." + triedTxt + " Try again, or pick a break in the Surf Break card on the Device tab.";
           } else {
             fbTitle.textContent = "Couldn't load " + spot.name + " just now";
-            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, pick another break above, or watch " + spot.name + " on YouTube.";
+            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, watch " + spot.name + " on YouTube, or pick another break in the Surf Break card on the Device tab.";
           }
-          setNow("Stream not playing — <strong>" + spot.name + "</strong> is paused, so nothing is using data.");
+          ytLink.href = "https://www.youtube.com/watch?v=" + spot.id;
+          setNow("Stream not playing — nothing is using data." + (triedNames && triedNames.length ? " Tried: " + triedNames.join(", ") + "." : ""));
+          syncDockChrome();
+        }
+        /* Failure routing. A MANUAL pick gets one automatic retry of the
+           same spot, then the fallback for that spot. An automatic start
+           (app open, Follow the Sun advance, background resume) advances
+           through every untried spot in daylight-rank order first; the
+           fallback appears only when all of them have failed in a row,
+           and it names every spot that was tried. */
+        function recoveryOrder() {
+          var keys = rankedDaylight(new Date()).map(function (r) { return r.spot.key; });
+          SPOTS.forEach(function (s) { if (keys.indexOf(s.key) === -1) keys.push(s.key); });
+          return keys;
+        }
+        function handleStreamFailure(kind) {
+          var failedSpot = spotByKey(currentKey);
+          if (manualHold) {
+            if (!chainManualRetried) {
+              chainManualRetried = true;
+              setNow("<strong>" + failedSpot.name + "</strong> didn't load — retrying it once…");
+              startStream(failedSpot, true);
+              return;
+            }
+            showFallback(kind, [failedSpot.name]);
+            return;
+          }
+          if (chainTried.indexOf(failedSpot.key) === -1) chainTried.push(failedSpot.key);
+          var order = recoveryOrder(), nextKey = null;
+          for (var i = 0; i < order.length; i++) { if (chainTried.indexOf(order[i]) === -1) { nextKey = order[i]; break; } }
+          if (nextKey) {
+            var ns = spotByKey(nextKey);
+            setNow("<strong>" + failedSpot.name + "</strong> didn't load — moving on to <strong>" + ns.name + "</strong> (Follow the Sun order).");
+            startStream(ns, true);
+          } else {
+            showFallback(kind, chainTried.map(function (k) { return spotByKey(k).name; }));
+          }
         }
         function buildPlainFrame(spot) {
           plainFrame = true;
@@ -9598,7 +9824,8 @@ var STRAIN_SRC_LINKS = {
           frameWrap.appendChild(f);
           slowTimer = setTimeout(function () { if (mode === "loading") onPlaying(); }, 4000);
         }
-        function startStream(spot) {
+        function startStream(spot, keepChain) {
+          if (!keepChain) resetChain();
           currentKey = spot.key;
           bgPaused = false;
           showDock();
@@ -9607,6 +9834,7 @@ var STRAIN_SRC_LINKS = {
           showOnly("player");
           loading.hidden = false;
           mode = "loading";
+          syncDockChrome();
           setNow(nowText("Loading:"));
           ensureApi(function (ok) {
             if (mode !== "loading" || currentKey !== spot.key) return; /* superseded */
@@ -9622,10 +9850,10 @@ var STRAIN_SRC_LINKS = {
                   onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } },
                   onStateChange: function (e) {
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
-                    else if (e.data === YT.PlayerState.ENDED) showFallback("ended");
+                    else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
                     else if ((e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) && mode === "loading") onWaitingGesture();
                   },
-                  onError: function () { showFallback("error"); }
+                  onError: function () { handleStreamFailure("error"); }
                 }
               });
             } catch (err) { buildPlainFrame(spot); return; }
@@ -9716,7 +9944,7 @@ var STRAIN_SRC_LINKS = {
           gestureArmed = true;
           if (mode === "waiting" && ytPlayer && ytPlayer.playVideo) {
             try { ytPlayer.playVideo(); } catch (e) { /* ignore */ }
-            loadTimer = setTimeout(function () { if (mode === "waiting") showFallback("error"); }, 6000);
+            loadTimer = setTimeout(function () { if (mode === "waiting") handleStreamFailure("error"); }, 6000);
           }
         }
         ["pointerdown", "touchstart", "keydown", "wheel"].forEach(function (ev) {
@@ -9739,7 +9967,7 @@ var STRAIN_SRC_LINKS = {
               startStream(spotByKey(nxt));
               setNow(nowText("Follow the Sun moved on — now showing:"));
             } else if (!cur.day) {
-              setNow("No break is in daylight right now — keeping <strong>" + spotByKey(currentKey).name + "</strong> on. Pick any spot above whenever you like.");
+              setNow("No break is in daylight right now — keeping <strong>" + spotByKey(currentKey).name + "</strong> on. Pick any spot in this card whenever you like.");
             }
           }
         }, 20000);
