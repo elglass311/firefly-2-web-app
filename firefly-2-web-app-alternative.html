@@ -2211,6 +2211,16 @@
       .fc-score { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
       .fc-actions { display: inline-flex; gap: 8px; flex: none; }
       .fc-actions .btn-small { text-decoration: none; display: inline-flex; align-items: center; }
+      /* In-app forecast charts (Open-Meteo hourly series, hand-rolled SVG) */
+      .fc-row { align-items: flex-start; }
+      .fc-chartwrap { flex: 1 1 100%; min-width: 0; margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 10px; }
+      .fc-chart { margin: 0 0 14px; }
+      .fc-chart:last-child { margin-bottom: 2px; }
+      .fc-chart-title { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13.5px; font-weight: 800; color: var(--ink); margin: 0 0 6px; }
+      .fc-chart-title span { font-size: 12px; font-weight: 600; color: var(--ink-faint); }
+      .fc-chart svg { display: block; width: 100%; height: auto; background: rgba(0, 0, 0, 0.22); border: 1px solid var(--line); border-radius: 10px; }
+      .fc-legend { font-size: 12px; color: var(--ink-soft); margin-top: 5px; line-height: 1.5; }
+      .fc-chart-note { font-size: 13px; color: var(--ink-soft); padding: 10px 2px 4px; }
       .wrap { padding-bottom: 110px !important; }
       /* Segmented switchers: sticky, opaque, labeled */
       .seg-control.seg-tabs { position: sticky; top: calc(env(safe-area-inset-top) + 64px); z-index: 40; background: var(--surface); }
@@ -2657,10 +2667,11 @@
         color: var(--ember);
         box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
         cursor: pointer; font: inherit; padding: 0;
-        touch-action: none; /* tap-only: the button never drags, and a press on it must not pan or scroll the page underneath — a drag that starts here simply does nothing */
+        touch-action: none; /* the bubble drags the whole surf unit (bubble + mini window, one shared anchor) — a press on it must never pan or scroll the page underneath */
         user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
       }
       .surf-fab:active { transform: scale(0.93); }
+      .surf-fab.is-dragging { cursor: grabbing; transform: none; box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55), 0 0 0 2px var(--ember), inset 0 1px 0 rgba(255, 255, 255, 0.10); }
       .surf-fab svg { width: 26px; height: 26px; }
       .surf-fab.is-open {
         background: linear-gradient(180deg, var(--btn-a) 0%, var(--btn-b) 45%, var(--btn-c) 100%);
@@ -3178,7 +3189,7 @@
         <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
         <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">Data note:</strong> these are live video streams and they use data — on a cellular connection that can be significant. Surf Break stays closed (and uses no data) until you open it.</p>
         <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. Closing this panel never stops the stream, and switching tabs never stops it either; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen.</p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
       </section>
         </div>
       </div>
@@ -4376,7 +4387,7 @@
         <p class="card-sub" id="forecastUpdated">Loading the live forecast…</p>
         <div id="forecastRows"></div>
         <button class="btn btn-ghost" id="forecastRefresh" type="button" style="margin-top:4px;">Refresh forecast</button>
-        <p class="muted" style="margin:12px 0 0;"><strong style="color:var(--ink-soft);">Best by live forecast data (Open-Meteo) — Surfline linked for full reports.</strong> Wave height and period come from the Open-Meteo Marine API; wind from the Open-Meteo forecast API. The score weights swell height and period most, scores light or offshore wind above strong onshore wind, and counts daylight at the break. It is a transparent ranking of published forecast data — not a guarantee of conditions.</p>
+        <p class="muted" style="margin:12px 0 0;"><strong style="color:var(--ink-soft);">Best by live forecast data (Open-Meteo), with the full 3-day charts right here in the app.</strong> Wave height and period come from the Open-Meteo Marine API; wind from the Open-Meteo forecast API. Tap <strong style="color:var(--ink-soft);">Charts</strong> on any break for its next 72 hours of swell and wind. The score weights swell height and period most, scores light or offshore wind above strong onshore wind, and counts daylight at the break. It is a transparent ranking of published forecast data — not a guarantee of conditions.</p>
       </section>
       </div><!-- /panel-forecast -->
 
@@ -11564,8 +11575,8 @@ var STRAIN_SRC_LINKS = {
           if (!overlayEl) return;
           overlayEl.classList.remove("is-moving");
           var rr = overlayEl.getBoundingClientRect();
-          miniPos = { left: Math.round(rr.left), top: Math.round(rr.top) };
-          lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+          saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) }); /* the window drag moved the whole unit: the anchor (and the attached bubble) settle with it */
+          placeFab();
         }
         function cycleSurf(dir) {
           var idx = -1;
@@ -12100,45 +12111,161 @@ var STRAIN_SRC_LINKS = {
           w = Math.max(180, Math.min(w, vw - 16));
           return { w: w, h: Math.round(w * 9 / 16), vw: vw, vh: vh };
         }
-        /* The mini window's own dragged position (the window itself is
-           what gets grabbed and dragged, on its own surface — see the
-           gesture layer and the poster facade): once set it takes
-           precedence over the wave-button anchor in positionMini, and
-           it persists across sessions. */
+        /* ---- ONE surf unit, ONE shared anchor ----
+           The wave bubble and the mini stream window are a single
+           unit with a single anchor position, persisted under
+           ff2alt.surfMiniPos.v1. The anchor (miniPos) is the mini
+           window's top-left corner, exactly as this key has always
+           stored it — saved positions keep their meaning, and with
+           nothing saved the defaults are exactly what they have
+           always been: the bubble at its CSS home (bottom-right,
+           above the bottom bar) and the window derived from it.
+           The bubble's place in the unit is FIXED relative to the
+           window — right-aligned with it, 10px below its bottom
+           edge, at the unit's bottom-right corner — so:
+             · closed: only the bubble shows, sitting at the
+               anchor's corner spot;
+             · mini open: the window renders at the anchor and the
+               bubble rides attached at that same corner spot — it
+               has no position of its own, ever;
+             · grabbing EITHER part (the bubble, or the window via
+               its sustained-drag gesture) moves the anchor and the
+               whole unit travels in lockstep;
+             · closing leaves the bubble at the anchor's corner, and
+               reopening restores the window at the same anchor.
+           In the full stage and in fullscreen the bubble is not
+           part of the unit on screen: it rests at its CSS home as
+           the plain open/close toggle, and entering mini returns
+           the unit to its anchor. ---- */
         var MINI_POS_KEY = "ff2alt.surfMiniPos.v1";
+        var FAB_PX = 52, UNIT_GAP = 10; /* bubble size + the fixed gap between window bottom and bubble top */
+        var fabDragging = false; /* a bubble drag is in flight (declared here: miniPlace's bubble sync reads it) */
         var miniPos = null;
         try {
           var mpSaved = JSON.parse(lsGet(MINI_POS_KEY) || "null");
           if (mpSaved && isFinite(mpSaved.left) && isFinite(mpSaved.top)) miniPos = { left: mpSaved.left, top: mpSaved.top };
-        } catch (e) { /* ignore: anchor to the wave button */ }
+        } catch (e) { /* ignore: no saved anchor — defaults apply */ }
+        function unitBottomLimit() {
+          /* The lowest y the UNIT's bottom edge (the bubble's bottom)
+             may reach: just above the bottom tab bar. */
+          var bar = document.getElementById("altTabbar");
+          if (bar) { var br = bar.getBoundingClientRect(); if (br.height) return Math.round(br.top) - 4; }
+          var vh = window.innerHeight || 640;
+          return vh - 74;
+        }
+        function clampUnitAnchor(left, top) {
+          /* Clamp an anchor (window top-left) so the WHOLE unit —
+             window plus the attached bubble below its right corner —
+             stays fully inside the viewport and above the bottom bar. */
+          var g = miniGeom();
+          var l = Math.min(Math.max(8, Math.round(left)), Math.max(8, g.vw - g.w - 8));
+          var maxT = Math.min(g.vh - g.h - 8, unitBottomLimit() - UNIT_GAP - FAB_PX - g.h);
+          if (maxT < 8) maxT = Math.max(8, g.vh - g.h - 8);
+          var t = Math.min(Math.max(8, Math.round(top)), maxT);
+          return { left: l, top: t };
+        }
+        function bubblePosForAnchor(a) {
+          /* The bubble's top-left for an anchor: right-aligned with
+             the window, UNIT_GAP below its bottom edge. */
+          var g = miniGeom();
+          return { left: a.left + g.w - FAB_PX, top: a.top + g.h + UNIT_GAP };
+        }
+        function anchorForBubblePos(bp) {
+          var g = miniGeom();
+          return clampUnitAnchor(bp.left - (g.w - FAB_PX), bp.top - (g.h + UNIT_GAP));
+        }
+        function defaultAnchor() {
+          /* The anchor implied by the bubble's untouched CSS home —
+             reproduces the long-standing default geometry exactly:
+             window right-aligned to the bubble, 10px above it (or
+             just below it when there isn't room above). */
+          var g = miniGeom();
+          var vw = g.vw, vh = g.vh;
+          var fabRight = vw - 14, fabTop = vh - 78 - FAB_PX;
+          var left = Math.round(fabRight - g.w);
+          var top = Math.round(fabTop - g.h - UNIT_GAP);
+          var minTop = fabMinTop();
+          if (top < minTop) {
+            var below = Math.round(fabTop + FAB_PX + UNIT_GAP);
+            top = (below + g.h <= vh - 8) ? below : minTop;
+          }
+          return clampUnitAnchor(left, top);
+        }
+        function currentAnchor() {
+          if (miniPos) return clampUnitAnchor(miniPos.left, miniPos.top);
+          if (surfStage === "mini" && overlayEl) {
+            var r = overlayEl.getBoundingClientRect();
+            if (r.width) return clampUnitAnchor(r.left, r.top);
+          }
+          return defaultAnchor();
+        }
+        function saveAnchor(a) {
+          miniPos = clampUnitAnchor(a.left, a.top);
+          lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+        }
+        function fabSetInline(left, top) {
+          if (!fabBtn) return;
+          fabBtn.style.left = Math.round(left) + "px";
+          fabBtn.style.top = Math.round(top) + "px";
+          fabBtn.style.right = "auto";
+          fabBtn.style.bottom = "auto";
+        }
+        function fabClearInline() {
+          if (!fabBtn) return;
+          fabBtn.style.left = ""; fabBtn.style.top = "";
+          fabBtn.style.right = ""; fabBtn.style.bottom = "";
+        }
+        function clampBubblePos(left, top) {
+          /* Closed-state bubble clamp: fully inside the viewport,
+             clear of the status island up top and the bottom bar. */
+          var vw = window.innerWidth || 360;
+          var l = Math.min(Math.max(8, Math.round(left)), Math.max(8, vw - FAB_PX - 8));
+          var maxT = Math.max(8, unitBottomLimit() - FAB_PX);
+          var t = Math.min(Math.max(fabMinTop(), Math.round(top)), maxT);
+          if (t < 8) t = 8;
+          return { left: l, top: t };
+        }
+        function placeFab() {
+          /* Render the bubble wherever the unit model puts it for
+             the current stage. Full stage / fullscreen: the CSS home
+             (plain toggle, not part of the on-screen unit). No saved
+             anchor: the CSS home too — in mini it coincides with the
+             attached spot by construction of the default anchor. */
+          if (!fabBtn) return;
+          if (surfStage === "full" || surfFsOn()) { fabClearInline(); return; }
+          if (!miniPos) { fabClearInline(); return; }
+          var bp = bubblePosForAnchor(clampUnitAnchor(miniPos.left, miniPos.top));
+          fabSetInline(bp.left, bp.top);
+        }
+        function syncFabAttached(winLeft, winTop) {
+          /* Mini stage: pin the bubble to the window's corner for a
+             window placed at (winLeft, winTop) — used on every
+             miniPlace so window drags carry the bubble in lockstep. */
+          if (!fabBtn || surfStage !== "mini" || surfFsOn()) return;
+          if (!miniPos && !fabDragging && !zMoveOn && !fMoveOn) { fabClearInline(); return; }
+          var g = miniGeom();
+          fabSetInline(winLeft + g.w - FAB_PX, winTop + g.h + UNIT_GAP);
+        }
         function miniPlace(left, top) {
           if (!overlayEl) return null;
           var g = miniGeom();
-          var l = Math.min(Math.max(8, Math.round(left)), Math.max(8, g.vw - g.w - 8));
-          var t = Math.min(Math.max(8, Math.round(top)), Math.max(8, g.vh - g.h - 8));
-          overlayEl.style.left = l + "px";
-          overlayEl.style.top = t + "px";
+          var c = clampUnitAnchor(left, top);
+          overlayEl.style.left = c.left + "px";
+          overlayEl.style.top = c.top + "px";
           overlayEl.style.width = g.w + "px";
-          return { left: l, top: t };
+          syncFabAttached(c.left, c.top);
+          return { left: c.left, top: c.top };
         }
         function positionMini() {
           if (!overlayEl || surfStage !== "mini" || !fabBtn) return;
           if (surfFsOn()) return; /* fullscreen owns the frame right now */
           if (miniPos) { miniPlace(miniPos.left, miniPos.top); return; }
+          var a = defaultAnchor();
           var g = miniGeom();
-          var fr = fabBtn.getBoundingClientRect();
-          var minTop = fabMinTop();
-          var left = Math.round(fr.right - g.w);
-          var top = Math.round(fr.top - g.h - 10);
-          if (top < minTop) {
-            var below = Math.round(fr.bottom + 10);
-            top = (below + g.h <= g.vh - 8) ? below : minTop;
-          }
-          left = Math.min(Math.max(8, left), Math.max(8, g.vw - g.w - 8));
-          top = Math.min(Math.max(8, top), Math.max(8, g.vh - g.h - 8));
-          overlayEl.style.left = left + "px";
-          overlayEl.style.top = top + "px";
+          overlayEl.style.left = a.left + "px";
+          overlayEl.style.top = a.top + "px";
           overlayEl.style.width = g.w + "px";
+          fabClearInline(); /* the CSS home IS the attached spot for the default anchor */
         }
         /* ---- Stream fullscreen, in place ----
            The enlarge control takes #surfDock ITSELF fullscreen (the
@@ -12168,6 +12295,7 @@ var STRAIN_SRC_LINKS = {
              stylesheet's mini-stage rule owns it again) when
              fullscreen exits. */
           if (miniControlsEl) miniControlsEl.style.display = surfFs ? "none" : "";
+          placeFab(); /* fullscreen: the bubble rests at its home; exiting returns it to the unit */
         }
         function fakeFsEnter() {
           surfFs = true; surfFsFake = true;
@@ -12234,6 +12362,7 @@ var STRAIN_SRC_LINKS = {
             window.scrollTo(0, savedScrollY);
           }
           if (next === "mini") positionMini();
+          placeFab(); /* the bubble takes its place in the unit for the new stage: attached in mini, at the anchor's corner when closed, home in full */
           applyZoom(); /* re-clamp any live pan to the frame's new size */
           syncFab();
         }
@@ -12262,19 +12391,89 @@ var STRAIN_SRC_LINKS = {
           if (surfStage === "closed") openSurfMini(); else closeSurf();
         });
         window.addEventListener("resize", positionMini);
-        /* --- Wave button: tap-only, fixed home ---
-           The wave button never travels. It rests at its standard
-           bottom-right home above the bottom bar (the .surf-fab CSS
-           position), and tapping it only opens/folds the stream (the
-           click handler above). There is deliberately NO drag
-           handling on it: a press that slides off it does nothing at
-           all, and no saved button position is applied or updated
-           anymore (an old ff2alt.surfFabPos.v1 value may still sit
-           in storage; it is simply ignored). What moves is the
-           stream window itself, grabbed directly on its own surface
-           — see the gesture layer and the poster facade. fabMinTop
-           stays: positionMini still anchors the mini window above
-           the button without sliding under the status island. --- */
+        /* --- Wave bubble drag: grabbing the bubble moves the UNIT ---
+           The bubble and the mini window are one unit on one shared
+           anchor (see the anchor block above), so the bubble drags in
+           BOTH of its states:
+             · closed — the bubble follows the finger, clamped fully
+               inside the viewport above the bottom bar; the anchor
+               trails it (the window will open at that anchor);
+             · mini open — the bubble keeps its fixed attached offset
+               and the window translates with it in lockstep through
+               miniPlace, which re-pins the bubble on every move.
+           A press that travels beyond ~8px is a drag: on release the
+           anchor is saved under ff2alt.surfMiniPos.v1 and the click
+           that follows is swallowed, so a drag never also opens or
+           folds the stream. A clean tap is untouched and keeps its
+           meaning (open from closed, fold from mini) via the click
+           handler above. In the full stage and in fullscreen the
+           bubble does not drag — it is the plain toggle there.
+           fabMinTop stays: it is the island clearance the closed
+           bubble clamp and the default anchor both respect. --- */
+        var fabDrag = null, fabDragMoved = false, fabSuppressClickAt = 0;
+        if (fabBtn) {
+          fabBtn.addEventListener("pointerdown", function (e) {
+            if (surfStage === "full" || surfFsOn()) { fabDrag = null; return; }
+            var r = fabBtn.getBoundingClientRect();
+            fabDrag = {
+              id: e.pointerId, sx: e.clientX, sy: e.clientY,
+              bl: r.left, bt: r.top,
+              anchor: currentAnchor()
+            };
+            fabDragMoved = false; fabDragging = false;
+            try { fabBtn.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+          });
+          fabBtn.addEventListener("pointermove", function (e) {
+            if (!fabDrag || e.pointerId !== fabDrag.id) return;
+            var dx = e.clientX - fabDrag.sx, dy = e.clientY - fabDrag.sy;
+            if (!fabDragMoved && Math.hypot(dx, dy) <= 8) return;
+            if (!fabDragMoved) {
+              fabDragMoved = true; fabDragging = true;
+              fabBtn.classList.add("is-dragging");
+              if (surfStage === "mini" && overlayEl) overlayEl.classList.add("is-moving");
+            }
+            if (surfStage === "mini") {
+              /* Move the anchor; miniPlace moves the window and
+                 re-pins this bubble at its attached offset — the
+                 finger and the bubble stay together because the
+                 offset never changes. */
+              var na = clampUnitAnchor(fabDrag.anchor.left + dx, fabDrag.anchor.top + dy);
+              miniPlace(na.left, na.top);
+            } else {
+              var nb = clampBubblePos(fabDrag.bl + dx, fabDrag.bt + dy);
+              fabSetInline(nb.left, nb.top);
+            }
+          });
+          var fabDragEnd = function (e) {
+            if (!fabDrag || (e && e.pointerId !== undefined && e.pointerId !== fabDrag.id)) return;
+            var wasDrag = fabDragMoved;
+            fabDrag = null; fabDragMoved = false; fabDragging = false;
+            fabBtn.classList.remove("is-dragging");
+            if (overlayEl) overlayEl.classList.remove("is-moving");
+            if (!wasDrag) return; /* a clean tap: the click that follows does its usual work */
+            fabSuppressClickAt = Date.now();
+            if (surfStage === "mini" && overlayEl) {
+              var rr = overlayEl.getBoundingClientRect();
+              saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) });
+            } else {
+              var br = fabBtn.getBoundingClientRect();
+              saveAnchor(anchorForBubblePos({ left: br.left, top: br.top }));
+            }
+            placeFab();
+          };
+          fabBtn.addEventListener("pointerup", fabDragEnd);
+          fabBtn.addEventListener("pointercancel", fabDragEnd);
+          /* Swallow the click a drag leaves behind (capture phase, so
+             it runs ahead of the open/fold click handler above). */
+          fabBtn.addEventListener("click", function (e) {
+            if (Date.now() - fabSuppressClickAt < 700) {
+              e.preventDefault(); e.stopImmediatePropagation();
+              fabSuppressClickAt = 0;
+            }
+          }, true);
+        }
+        window.addEventListener("resize", function () { placeFab(); });
+        placeFab(); /* boot: a saved anchor puts the closed bubble at its corner spot */
         function fabMinTop() {
           var minTop = 76;
           var isl = document.querySelector(".island");
@@ -12338,8 +12537,8 @@ var STRAIN_SRC_LINKS = {
             if (!overlayEl) return;
             overlayEl.classList.remove("is-moving");
             var rr = overlayEl.getBoundingClientRect();
-            miniPos = { left: Math.round(rr.left), top: Math.round(rr.top) };
-            lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+            saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) }); /* the window drag moved the whole unit: the anchor (and the attached bubble) settle with it */
+            placeFab();
           }
           facade.addEventListener("pointerdown", function (e) {
             if (e.target.closest && e.target.closest("button, a")) return;
@@ -12569,6 +12768,7 @@ var STRAIN_SRC_LINKS = {
            (×0.65 at night at the break). */
         var FC_KEY = "ff2alt.forecastCache.v1";
         var fcData = null, fcAt = 0, fcFetching = false;
+        var fcOpen = {}; /* per-break chart expansion, kept across re-renders in this session */
         try {
           var fcSaved = JSON.parse(lsGet(FC_KEY) || "null");
           if (fcSaved && fcSaved.spots) { fcData = fcSaved.spots; fcAt = fcSaved.at || 0; }
@@ -12613,16 +12813,213 @@ var STRAIN_SRC_LINKS = {
           var bk = bestForecastKey();
           if (bk && bk !== currentKey) startStream(spotByKey(bk));
         }
+        /* ---- In-app charts: the HOURLY Open-Meteo series, drawn here ----
+           Each break's fetch keeps the hourly series (3+ days) alongside
+           the current values, in the same last-good cache. A row's Charts
+           toggle draws two hand-rolled SVG charts from that series —
+           the next 72 hours starting at the break's current local hour:
+           swell (bars = swell height in feet, line = swell period in
+           seconds on a second axis, compass labels sampled along the
+           axis) and wind (bars = speed in mph, colored by the same
+           offshore logic the score uses, gusts as a line). Both carry a
+           NOW line, day separators with date labels, and daylight
+           shading for 06:00–19:00 at the break. Every value comes from
+           the fetched series — nothing is interpolated or invented;
+           hours the model left null are simply skipped. */
+        function fcNum(v) { return (v == null || !isFinite(v)) ? null : Number(v); }
+        function spotLocalNowKey(tz) {
+          try {
+            var parts = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
+            var y = "", mo = "", da = "", hh = "";
+            for (var i = 0; i < parts.length; i++) {
+              if (parts[i].type === "year") y = parts[i].value;
+              else if (parts[i].type === "month") mo = parts[i].value;
+              else if (parts[i].type === "day") da = parts[i].value;
+              else if (parts[i].type === "hour") hh = parts[i].value;
+            }
+            var hNum = parseInt(hh, 10) % 24;
+            hh = (hNum < 10 ? "0" : "") + hNum;
+            return y + "-" + mo + "-" + da + "T" + hh;
+          } catch (e) { return ""; }
+        }
+        function fcWindow(spot, d) {
+          var s = d && d.series;
+          if (!s || !s.t || !s.t.length) return null;
+          var nowK = spotLocalNowKey(spot.tz);
+          var ni = -1;
+          for (var i = 0; i < s.t.length; i++) { if (String(s.t[i]).slice(0, 13) === nowK) { ni = i; break; } }
+          var start = ni >= 0 ? ni : Math.max(0, s.t.length - 72);
+          var end = Math.min(s.t.length, start + 72);
+          var hrs = [];
+          for (var j = start; j < end; j++) {
+            var ts = String(s.t[j]);
+            hrs.push({
+              time: ts, hod: parseInt(ts.slice(11, 13), 10), dateStr: ts.slice(0, 10), now: j === ni,
+              sh: fcNum(s.sh && s.sh[j]), sp: fcNum(s.sp && s.sp[j]), sd: fcNum(s.sd && s.sd[j]),
+              ws: fcNum(s.ws && s.ws[j]), wd: fcNum(s.wd && s.wd[j]), wg: fcNum(s.wg && s.wg[j])
+            });
+          }
+          return hrs;
+        }
+        function windFavor(spot, wdir) {
+          var g = SPOT_GEO[spot.key];
+          if (!g || wdir == null) return "";
+          var diff = angDiff(wdir, g.off);
+          return diff <= 60 ? "off" : (diff >= 120 ? "on" : "cross");
+        }
+        function fcDateLabel(dateStr) {
+          var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          var WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+          var p = dateStr.split("-");
+          var y = parseInt(p[0], 10), m = parseInt(p[1], 10), da = parseInt(p[2], 10);
+          var wd = "";
+          try { wd = WD[new Date(Date.UTC(y, m - 1, da)).getUTCDay()] + " "; } catch (e) { /* ignore */ }
+          return wd + MON[m - 1] + " " + da;
+        }
+        function fcChartSVG(spot, hrs, kind) {
+          var VW = 340, ML = 30, MR = 26, MT = 14, PH = 74, MB = 20, H = MT + PH + MB;
+          var PW = VW - ML - MR, n = hrs.length, step = PW / Math.max(1, n);
+          var barW = Math.max(1.4, step * 0.68);
+          var X = function (i) { return ML + i * step; };
+          var CX = function (i) { return ML + i * step + step / 2; };
+          var i, v, yMax = 2, pMax = 16;
+          if (kind === "swell") {
+            var mFt = 0, mSp = 0;
+            for (i = 0; i < n; i++) {
+              if (hrs[i].sh != null) mFt = Math.max(mFt, hrs[i].sh * 3.28084);
+              if (hrs[i].sp != null) mSp = Math.max(mSp, hrs[i].sp);
+            }
+            yMax = Math.max(4, Math.ceil(mFt / 2) * 2);
+            pMax = Math.max(16, Math.ceil(mSp / 4) * 4);
+          } else {
+            var mMph = 0;
+            for (i = 0; i < n; i++) {
+              if (hrs[i].ws != null) mMph = Math.max(mMph, hrs[i].ws * 0.621371);
+              if (hrs[i].wg != null) mMph = Math.max(mMph, hrs[i].wg * 0.621371);
+            }
+            yMax = Math.max(20, Math.ceil(mMph / 5) * 5);
+          }
+          var Y = function (val) { return MT + PH - (val / yMax) * PH; };
+          var out = [];
+          out.push('<svg viewBox="0 0 ' + VW + ' ' + H + '" role="img" data-chart="' + kind + '" data-spot="' + spot.key + '" aria-label="' + (kind === "swell" ? "Swell" : "Wind") + ' chart for ' + spot.name + ', next 72 hours">');
+          /* daylight shading, 06:00–19:00 spot-local */
+          for (i = 0; i < n; i++) {
+            if (hrs[i].hod >= 6 && hrs[i].hod < 19) out.push('<rect x="' + X(i).toFixed(1) + '" y="' + MT + '" width="' + step.toFixed(1) + '" height="' + PH + '" style="fill:var(--ember)" opacity="0.055"/>');
+          }
+          /* day separators + date labels */
+          for (i = 0; i < n; i++) {
+            if (i === 0 || hrs[i].dateStr !== hrs[i - 1].dateStr) {
+              if (i > 0) out.push('<line x1="' + X(i).toFixed(1) + '" y1="' + MT + '" x2="' + X(i).toFixed(1) + '" y2="' + (MT + PH) + '" style="stroke:var(--ink-faint)" stroke-width="0.7" stroke-dasharray="3 2" opacity="0.7"/>');
+              out.push('<text x="' + (X(i) + 2).toFixed(1) + '" y="' + (H - 5) + '" font-size="7.5" style="fill:var(--ink-soft)">' + fcDateLabel(hrs[i].dateStr) + '</text>');
+            }
+          }
+          /* gridlines + axis labels */
+          var fracs = [0, 0.5, 1];
+          for (var f = 0; f < fracs.length; f++) {
+            var fr = fracs[f], gy = MT + PH - fr * PH;
+            out.push('<line x1="' + ML + '" y1="' + gy.toFixed(1) + '" x2="' + (VW - MR) + '" y2="' + gy.toFixed(1) + '" style="stroke:var(--line)" stroke-width="0.6" opacity="0.55"/>');
+            var lv = yMax * fr;
+            out.push('<text x="' + (ML - 3) + '" y="' + (gy + 2.5).toFixed(1) + '" font-size="7.5" text-anchor="end" style="fill:var(--ink-faint)">' + (kind === "swell" ? (Math.round(lv * 10) / 10) : Math.round(lv)) + '</text>');
+            if (kind === "swell") out.push('<text x="' + (VW - MR + 3) + '" y="' + (gy + 2.5).toFixed(1) + '" font-size="7.5" style="fill:var(--ink-faint)">' + Math.round(pMax * fr) + '</text>');
+          }
+          out.push('<text x="2" y="' + (MT - 4) + '" font-size="7.5" style="fill:var(--ink-faint)">' + (kind === "swell" ? "ft" : "mph") + '</text>');
+          if (kind === "swell") out.push('<text x="' + (VW - 8) + '" y="' + (MT - 4) + '" font-size="7.5" text-anchor="end" style="fill:var(--ink-faint)">sec</text>');
+          if (kind === "swell") {
+            for (i = 0; i < n; i++) {
+              if (hrs[i].sh == null) continue;
+              var ft = hrs[i].sh * 3.28084, bh = Math.max(0.6, (ft / yMax) * PH);
+              out.push('<rect class="fc-bar" data-i="' + i + '" data-ft="' + (Math.round(ft * 100) / 100) + '" x="' + (CX(i) - barW / 2).toFixed(1) + '" y="' + (MT + PH - bh).toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="0.6" style="fill:var(--ember)" opacity="0.85"><title>' + hrs[i].time.slice(11, 16) + ' · swell ' + (Math.round(ft * 10) / 10) + ' ft</title></rect>');
+            }
+            var dAttr = "", pen = false;
+            for (i = 0; i < n; i++) {
+              if (hrs[i].sp == null) { pen = false; continue; }
+              var py = MT + PH - (hrs[i].sp / pMax) * PH;
+              dAttr += (pen ? "L" : "M") + CX(i).toFixed(1) + " " + py.toFixed(1) + " ";
+              pen = true;
+            }
+            if (dAttr) out.push('<path class="fc-period-line" d="' + dAttr + '" fill="none" style="stroke:var(--leaf)" stroke-width="1.4"/>');
+            for (i = 0; i < n; i++) {
+              if (i % 12 !== 6 || hrs[i].sd == null) continue;
+              out.push('<text x="' + CX(i).toFixed(1) + '" y="' + (MT + PH - 3) + '" font-size="7" text-anchor="middle" style="fill:var(--ink-soft)">' + compass8(hrs[i].sd) + '</text>');
+            }
+          } else {
+            for (i = 0; i < n; i++) {
+              if (hrs[i].ws == null) continue;
+              var mph = hrs[i].ws * 0.621371, wh = Math.max(0.6, (mph / yMax) * PH);
+              var fav = windFavor(spot, hrs[i].wd);
+              var fill = fav === "off" ? "var(--leaf)" : (fav === "on" ? "var(--red)" : (fav === "cross" ? "var(--ember)" : "var(--ink-faint)"));
+              out.push('<rect class="fc-bar" data-i="' + i + '" data-mph="' + (Math.round(mph * 100) / 100) + '" data-fav="' + (fav || "na") + '" x="' + (CX(i) - barW / 2).toFixed(1) + '" y="' + (MT + PH - wh).toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + wh.toFixed(1) + '" rx="0.6" style="fill:' + fill + '" opacity="0.88"><title>' + hrs[i].time.slice(11, 16) + ' · wind ' + Math.round(mph) + ' mph ' + compass8(hrs[i].wd) + '</title></rect>');
+            }
+            var gAttr = "", gPen = false;
+            for (i = 0; i < n; i++) {
+              if (hrs[i].wg == null) { gPen = false; continue; }
+              var gy2 = Y(hrs[i].wg * 0.621371);
+              gAttr += (gPen ? "L" : "M") + CX(i).toFixed(1) + " " + gy2.toFixed(1) + " ";
+              gPen = true;
+            }
+            if (gAttr) out.push('<path class="fc-gust-line" d="' + gAttr + '" fill="none" style="stroke:var(--ink)" stroke-width="1.1" stroke-dasharray="3 2" opacity="0.65"/>');
+          }
+          /* NOW line */
+          for (i = 0; i < n; i++) {
+            if (!hrs[i].now) continue;
+            var nx = X(i);
+            out.push('<line class="fc-now-line" data-now-x="' + nx.toFixed(1) + '" x1="' + nx.toFixed(1) + '" y1="' + (MT - 2) + '" x2="' + nx.toFixed(1) + '" y2="' + (MT + PH) + '" stroke="#ff5147" stroke-width="1.4"/>');
+            out.push('<text x="' + Math.min(nx + 3, VW - MR - 20).toFixed(1) + '" y="' + (MT - 4) + '" font-size="8" font-weight="bold" fill="#ff5147">NOW</text>');
+            break;
+          }
+          out.push('</svg>');
+          return out.join("");
+        }
+        function buildCharts(spot, d) {
+          var box = document.createElement("div");
+          var src = document.createElement("p");
+          src.className = "fc-legend";
+          src.style.margin = "0 0 8px";
+          src.textContent = "Open-Meteo model data · fetched " + (fcAt ? new Date(fcAt).toLocaleString() : "—") + (fcStale() && fcAt ? " · cached — refresh for the latest" : "") + " · next 72 hours, " + spot.name + " local time · shaded hours are daylight (06:00–19:00)";
+          box.appendChild(src);
+          var hrs = fcWindow(spot, d);
+          if (!hrs || !hrs.length) {
+            var nn = document.createElement("p");
+            nn.className = "fc-chart-note";
+            nn.textContent = "No hourly data in this forecast yet — tap Refresh forecast to load the charts.";
+            box.appendChild(nn);
+            return box;
+          }
+          var defs = [
+            { kind: "swell", title: "Swell — height & period", units: "bars: ft · line: period (sec) · letters: swell direction", legend: "Bars: swell height in feet. Line: swell period in seconds (right axis) — longer period, more powerful swell. Letters along the bottom: swell direction that hour." },
+            { kind: "wind", title: "Wind — speed & gusts", units: "mph", legend: "Bars: wind speed in mph — green offshore, amber cross-shore, red onshore (same shore logic as the score). Dashed line: gusts in mph." }
+          ];
+          defs.forEach(function (def) {
+            var sec = document.createElement("div");
+            sec.className = "fc-chart";
+            var hd = document.createElement("p");
+            hd.className = "fc-chart-title";
+            hd.appendChild(document.createTextNode(def.title));
+            var un = document.createElement("span");
+            un.textContent = def.units;
+            hd.appendChild(un);
+            sec.appendChild(hd);
+            var holder = document.createElement("div");
+            holder.innerHTML = fcChartSVG(spot, hrs, def.kind);
+            sec.appendChild(holder);
+            var lg = document.createElement("p");
+            lg.className = "fc-legend";
+            lg.textContent = def.legend;
+            sec.appendChild(lg);
+            box.appendChild(sec);
+          });
+          return box;
+        }
         function renderForecast() {
           var rows = document.getElementById("forecastRows");
           var upd = document.getElementById("forecastUpdated");
           if (!rows) return;
           var bk = bestForecastKey();
           if (upd) {
-            if (fcFetching) upd.textContent = fcAt ? "Refreshing — showing the last good forecast from " + new Date(fcAt).toLocaleTimeString() + "…" : "Loading the live forecast…";
+            if (fcFetching) upd.textContent = fcAt ? "Refreshing — showing Open-Meteo model data fetched " + new Date(fcAt).toLocaleString() + " (cached)…" : "Loading the live forecast…";
             else if (fcAt) {
               var ageMin = Math.max(0, Math.round((Date.now() - fcAt) / 60000));
-              upd.textContent = "Updated " + new Date(fcAt).toLocaleString() + " · Source: Open-Meteo" + (ageMin >= 30 ? " · cached " + (ageMin >= 60 ? Math.round(ageMin / 60) + "h" : ageMin + "m") + " ago — refresh for the latest" : "");
+              upd.textContent = "Open-Meteo model data · fetched " + new Date(fcAt).toLocaleString() + (ageMin >= 30 ? " · cached " + (ageMin >= 60 ? Math.round(ageMin / 60) + "h" : ageMin + "m") + " ago — refresh for the latest" : "");
             } else upd.textContent = "Forecast unavailable — no data yet. Check your connection and tap Refresh forecast.";
           }
           rows.innerHTML = "";
@@ -12674,15 +13071,37 @@ var STRAIN_SRC_LINKS = {
             watch.setAttribute("aria-label", "Watch " + spot.name + " live");
             watch.addEventListener("click", function () { watchSpot(spot.key); });
             acts.appendChild(watch);
-            var sl = document.createElement("a");
-            sl.className = "btn-small";
-            sl.textContent = "Surfline report";
-            sl.href = "https://www.surfline.com/search?q=" + encodeURIComponent(spot.name + " surf report");
-            sl.target = "_blank";
-            sl.rel = "noopener";
-            sl.setAttribute("aria-label", "Open the Surfline surf report search for " + spot.name);
-            acts.appendChild(sl);
+            var chartBtn = document.createElement("button");
+            chartBtn.type = "button";
+            chartBtn.className = "btn-small";
+            chartBtn.textContent = fcOpen[spot.key] ? "Hide charts" : "Charts";
+            chartBtn.setAttribute("aria-expanded", fcOpen[spot.key] ? "true" : "false");
+            chartBtn.setAttribute("aria-label", (fcOpen[spot.key] ? "Hide" : "Show") + " the 3-day swell and wind charts for " + spot.name);
+            chartBtn.addEventListener("click", function () {
+              fcOpen[spot.key] = !fcOpen[spot.key];
+              renderForecast();
+            });
+            acts.appendChild(chartBtn);
             row.appendChild(acts);
+            if (fcOpen[spot.key]) {
+              var wrap = document.createElement("div");
+              wrap.className = "fc-chartwrap";
+              wrap.setAttribute("data-charts-for", spot.key);
+              if (d && d.series) {
+                wrap.appendChild(buildCharts(spot, d));
+              } else if (d && d.wh != null) {
+                var nn = document.createElement("p");
+                nn.className = "fc-chart-note";
+                nn.textContent = "Hourly chart data isn't in this forecast yet — tap Refresh forecast to load the 3-day charts.";
+                wrap.appendChild(nn);
+              } else {
+                var nn2 = document.createElement("p");
+                nn2.className = "fc-chart-note";
+                nn2.textContent = "Forecast unavailable for this break right now — no chart data to show.";
+                wrap.appendChild(nn2);
+              }
+              row.appendChild(wrap);
+            }
             rows.appendChild(row);
           });
         }
@@ -12693,8 +13112,16 @@ var STRAIN_SRC_LINKS = {
           var jobs = SPOTS.map(function (spot) {
             var g = SPOT_GEO[spot.key];
             if (!g) return Promise.resolve();
-            var mUrl = "https://marine-api.open-meteo.com/v1/marine?latitude=" + g.lat + "&longitude=" + g.lon + "&current=wave_height,wave_period,wave_direction&timezone=UTC";
-            var wUrl = "https://api.open-meteo.com/v1/forecast?latitude=" + g.lat + "&longitude=" + g.lon + "&current=wind_speed_10m,wind_direction_10m&timezone=UTC";
+            /* Current values (unchanged) PLUS the hourly series for the
+               in-app charts: 4 forecast days in the break's own timezone
+               so the next 72 hours from the current local hour are
+               always covered. Series are stored in the same cache entry
+               (meters / km/h, exactly as the APIs publish them; the
+               charts convert to feet / mph). If an hourly block is
+               missing, the previous cached series is kept. */
+            var tzQ = encodeURIComponent(spot.tz);
+            var mUrl = "https://marine-api.open-meteo.com/v1/marine?latitude=" + g.lat + "&longitude=" + g.lon + "&current=wave_height,wave_period,wave_direction&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction&forecast_days=4&timezone=" + tzQ;
+            var wUrl = "https://api.open-meteo.com/v1/forecast?latitude=" + g.lat + "&longitude=" + g.lon + "&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&forecast_days=4&timezone=" + tzQ;
             return Promise.all([
               fetch(mUrl).then(function (r) { return r.json(); }),
               fetch(wUrl).then(function (r) { return r.json(); })
@@ -12702,12 +13129,36 @@ var STRAIN_SRC_LINKS = {
               var mc = res[0] && res[0].current, wc = res[1] && res[1].current;
               if (!mc && !wc) return;
               if (!fcData) fcData = {};
+              var prev = fcData[spot.key];
+              var series = (prev && prev.series) || null;
+              var mh = res[0] && res[0].hourly, wh2 = res[1] && res[1].hourly;
+              if (mh && mh.time && mh.time.length && wh2 && wh2.time && wh2.time.length) {
+                var nH = Math.min(mh.time.length, wh2.time.length);
+                var aligned = true;
+                for (var hi = 0; hi < nH; hi++) { if (String(mh.time[hi]) !== String(wh2.time[hi])) { aligned = false; break; } }
+                if (aligned) {
+                  var pick = function (arr) {
+                    if (!arr) return null;
+                    var o = [];
+                    for (var k = 0; k < nH; k++) o.push(arr[k] == null || !isFinite(arr[k]) ? null : Number(arr[k]));
+                    return o;
+                  };
+                  var tt = [];
+                  for (var k2 = 0; k2 < nH; k2++) tt.push(String(mh.time[k2]));
+                  series = {
+                    t: tt,
+                    sh: pick(mh.swell_wave_height), sp: pick(mh.swell_wave_period), sd: pick(mh.swell_wave_direction),
+                    ws: pick(wh2.wind_speed_10m), wd: pick(wh2.wind_direction_10m), wg: pick(wh2.wind_gusts_10m)
+                  };
+                }
+              }
               fcData[spot.key] = {
                 wh: mc ? mc.wave_height : null,
                 wp: mc ? mc.wave_period : null,
                 wd: mc ? mc.wave_direction : null,
                 ws: wc ? wc.wind_speed_10m : null,
-                wdir: wc ? wc.wind_direction_10m : null
+                wdir: wc ? wc.wind_direction_10m : null,
+                series: series
               };
             }).catch(function () { /* keep the cached values for this break */ });
           });
@@ -12784,7 +13235,11 @@ var STRAIN_SRC_LINKS = {
           fetch: fetchForecast,
           bestKey: bestForecastKey,
           score: function (key) { return forecastScore(spotByKey(key)); },
-          at: function () { return fcAt; }
+          at: function () { return fcAt; },
+          series: function (key) { var d = fcData && fcData[key]; return d ? (d.series || null) : null; },
+          window72: function (key) { var d = fcData && fcData[key]; return d ? fcWindow(spotByKey(key), d) : null; },
+          openCharts: function (key, open) { fcOpen[key] = open !== false; renderForecast(); },
+          renderCharts: function (key) { var d = fcData && fcData[key]; return (d && d.series) ? buildCharts(spotByKey(key), d) : null; }
         };
         window.__surfDock = {
           openFromTab: openSurfFromTab,
@@ -12811,7 +13266,17 @@ var STRAIN_SRC_LINKS = {
               watchdogResumes: watchdogResumes,
               iframes: frameWrap.querySelectorAll("iframe").length,
               inPanel: !!dock.closest("[role='tabpanel']"),
-              head: dockSpot.textContent + " | " + dockMeta.textContent
+              head: dockSpot.textContent + " | " + dockMeta.textContent,
+              unit: (function () {
+                var fr = fabBtn ? fabBtn.getBoundingClientRect() : null;
+                var wr = (overlayEl && surfStage === "mini") ? overlayEl.getBoundingClientRect() : null;
+                return {
+                  anchor: miniPos ? { left: miniPos.left, top: miniPos.top } : null,
+                  fab: fr ? { left: Math.round(fr.left), top: Math.round(fr.top), right: Math.round(fr.right), bottom: Math.round(fr.bottom) } : null,
+                  win: wr ? { left: Math.round(wr.left), top: Math.round(wr.top), right: Math.round(wr.right), bottom: Math.round(wr.bottom), w: Math.round(wr.width), h: Math.round(wr.height) } : null,
+                  offset: (fr && wr) ? { dx: Math.round(fr.left - wr.left), dy: Math.round(fr.top - wr.top) } : null
+                };
+              })()
             };
           }
         };
