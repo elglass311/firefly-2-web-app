@@ -1674,7 +1674,14 @@
         min-height: 40px; padding: 6px 16px;
         font-size: 13.5px; font-weight: 700; white-space: nowrap;
       }
-      .isl-left { display: inline-flex; align-items: center; gap: 7px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+      /* The dot's pulse (dotPulse scale) and its connected glow spill a
+         few px past the dot's own box on every side. isl-left's clip box
+         therefore starts 11px BEFORE the dot (negative margin pulls the
+         box left, matching padding pushes the content back), so the
+         growing circle + glow render whole inside the pill — the dot,
+         the label, the badge and the battery line all keep their exact
+         positions, sizes and colors. */
+      .isl-left { display: inline-flex; align-items: center; gap: 7px; min-width: 0; overflow: hidden; text-overflow: ellipsis; margin-left: -11px; padding-left: 11px; }
       .isl-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #8a8f88; }
       .isl-dot.on { background: #4ade80; box-shadow: 0 0 9px rgba(74, 222, 128, 0.9); }
       .isl-dot.busy { background: var(--ember); animation: pulse 1s ease-in-out infinite; }
@@ -2107,6 +2114,14 @@
          backstop on top of the real fixes, never a substitute. */
       html, body { overflow-x: hidden; }
       html, body { max-width: 100%; }
+      /* No pull-to-refresh, ever, app-side: a vertical drag at the top
+         edge of any screen (menu scrolls, surf window drags included)
+         must never be hijacked by a browser page refresh. Normal
+         in-app scrolling is untouched — this only stops the scroll
+         chain from escaping to the browser's refresh gesture. */
+      html, body { overscroll-behavior: none; }
+      .surf-overlay, .surf-overlay-sheet, .surf-overlay-scroll, .surf-dock,
+      .tray, .sheet, .photo-zoom { overscroll-behavior: none; }
       .wrap, .sheet-inner, .unsupported-inner { min-width: 0; }
       img, video, canvas, iframe { max-width: 100%; }
       /* Single-column grids: a minmax(0,1fr) track can never be sized by
@@ -2685,6 +2700,10 @@
         border: 2px solid rgba(0, 0, 0, 0.4);
       }
       .surf-fab-dot[hidden] { display: none !important; }
+      /* In the full stage and in fullscreen the wave bubble is not
+         rendered at all (the surf script sets its hidden attribute):
+         it must never float on top of the full-stage card. */
+      .surf-fab[hidden] { display: none !important; }
       .surf-fab.is-playing .surf-fab-dot { animation: pulse 1.6s ease-in-out infinite; }
       @media (prefers-reduced-motion: reduce) {
         .surf-fab.is-playing .surf-fab-dot { animation: none; }
@@ -2793,6 +2812,31 @@
       .surf-overlay.is-mini .surf-facade-meta { display: none !important; }
       .surf-overlay.is-mini .surf-play { width: 46px; height: 46px; }
       .surf-overlay.is-mini .surf-play svg { width: 20px; height: 20px; }
+      /* Load-failure fallback INSIDE the mini stage: a failure never
+         escalates the mini to the full sheet, so the fallback renders
+         compact within the frame — same 16:9 box, title + actions
+         only, the long explanation stays in the full-stage card. */
+      .surf-overlay.is-mini .surf-fallback {
+        aspect-ratio: 16 / 9; padding: 10px 12px;
+        display: flex; flex-direction: column; justify-content: center;
+        background: var(--surface);
+      }
+      .surf-overlay.is-mini .surf-fallback-title {
+        font-size: 13px; margin: 0 0 7px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .surf-overlay.is-mini #surfFallbackText { display: none !important; }
+      .surf-overlay.is-mini .surf-fallback-actions { flex-wrap: nowrap; gap: 6px; }
+      .surf-overlay.is-mini .surf-fallback-actions .btn-small {
+        min-height: 30px; padding: 4px 9px; font-size: 12px; white-space: nowrap;
+      }
+      /* While the load-failure fallback is showing (either stage) the
+         fullscreen controls are hidden: there is no stream to take
+         fullscreen. The surf script toggles body.surf-fb-on with the
+         fallback state. */
+      body.surf-fb-on #surfMiniExpand,
+      body.surf-fb-on #surfDockFsBtn,
+      body.surf-fb-on #surfFsBtn { display: none !important; }
       .surf-mini-controls { display: none; }
       .surf-overlay.is-mini .surf-mini-controls {
         display: flex; gap: 6px;
@@ -3393,13 +3437,6 @@
         </div>
       </section>
 
-
-      <section class="card" aria-labelledby="alt-surf-h">
-        <h2 id="alt-surf-h">Surf Break</h2>
-        <p class="card-sub">Live surf cams — they live behind the wave button at the bottom right, over any tab. Closed until you open them; nothing streams and no data is used while closed. <strong style="color:var(--ink);">Data note:</strong> streams use data, and on a cellular connection that can be significant.</p>
-        <button class="btn btn-ghost" id="altSurfOpen" type="button">Open Surf Break</button>
-        <button class="btn btn-ghost" id="altSurfClose" type="button" hidden>Close Surf Break — stop stream</button>
-      </section>
 
               <div class="seg-control seg-tabs" data-segtabs="session" role="group" aria-label="Session views"><button type="button" data-seg="guided" aria-pressed="true">Guided</button><button type="button" data-seg="pulse" aria-pressed="false">Pulse</button></div>
       <div class="seg-view" data-segtab="session" data-segview="guided">
@@ -11191,9 +11228,10 @@ var STRAIN_SRC_LINKS = {
          naming every spot tried — appears only after the chain is
          exhausted. Collapsing the dock switches it to a mini live view:
          the same player node, only restyled smaller by CSS, so nothing
-         reloads; the fallback can never render in the mini view (mini is
-         refused while it shows, in JS and again in CSS), so it is always
-         fully readable at full width. */
+         reloads. A load failure renders its fallback WITHIN the stage
+         it failed in — a compact card in the mini frame, the full
+         readable card in the full sheet — and never escalates the
+         stage by itself. */
       (function () {
         "use strict";
         var SPOTS = [
@@ -11386,13 +11424,20 @@ var STRAIN_SRC_LINKS = {
         function syncDockChrome() {
           syncDockHead();
           syncDockStatus();
+          /* While the load-failure fallback shows there is no stream
+             to take fullscreen: CSS hides every fullscreen control
+             (mini expand, dock Fullscreen, in-dock exit) on this flag. */
+          document.body.classList.toggle("surf-fb-on", mode === "fallback");
           if (showHideBtn) showHideBtn.textContent = dockVisible() ? "Hide player" : "Show player";
           syncDockPad();
           syncFab();
         }
         function setDockState(st) {
-          /* The fallback is a text panel and can never be squeezed into
-             the mini grid's 112px column: mini is refused while it shows. */
+          /* The in-sheet dock GRID's mini layout (a 112px column) can
+             never hold the fallback text panel, so that grid state is
+             refused while it shows. This is only the dock's internal
+             layout axis — the overlay's mini STAGE keeps the dock
+             expanded and renders the compact fallback in its frame. */
           if (st === "mini" && mode === "fallback") st = "expanded";
           dockState = st;
           if (st === "mini") exitZoom(); /* no zoom in the mini view — collapsing resets it */
@@ -11416,7 +11461,11 @@ var STRAIN_SRC_LINKS = {
           facade.hidden = which !== "facade";
           playerBox.hidden = which !== "player";
           fallback.hidden = which !== "fallback";
-          if (which === "fallback") showDock("expanded"); /* the fallback + its YouTube link always get full room */
+          /* In the full stage the fallback card gets the dock's full
+             room; in the mini stage it stays compact inside the frame
+             (CSS renders the mini variant) — showing it never forces
+             the dock wider and never escalates the stage. */
+          if (which === "fallback" && surfStage !== "mini") showDock("expanded");
           syncDockChrome();
           syncZoomUI(); /* the gesture layer tracks which stage child is visible */
         }
@@ -11687,8 +11736,10 @@ var STRAIN_SRC_LINKS = {
               if (zMoveOn) {
                 /* Window-move release: set the mini window down where
                    it is and remember the spot across sessions. No tap,
-                   no cycle, no pan comes out of this gesture. */
+                   no cycle, no pan comes out of this gesture — and its
+                   synthesized click is swallowed whole. */
                 zSettleMove();
+                surfSwallowNextClick();
                 cancelPendingTap();
                 zDrag = null; zPinch = null; zMoved = false; zPinched = false;
                 return;
@@ -11699,7 +11750,12 @@ var STRAIN_SRC_LINKS = {
                    travel that clearly beats the vertical drift. */
                 var sdx = e.clientX - endDrag.sx, sdy = e.clientY - endDrag.sy;
                 if (Math.abs(sdx) >= 48 && Math.abs(sdx) >= Math.abs(sdy) * 1.4) {
+                  /* Flick-cycle IN PLACE: the stream changes, the stage
+                     never does (mini stays mini, full stays full), and
+                     the gesture's synthesized click is swallowed so no
+                     tap handler can escalate anything afterwards. */
                   cancelPendingTap();
+                  surfSwallowNextClick();
                   zLastTapAt = 0;
                   cycleSurf(sdx < 0 ? 1 : -1);
                   zDrag = null; zPinch = null; zMoved = false; zPinched = false;
@@ -11893,10 +11949,13 @@ var STRAIN_SRC_LINKS = {
         }
         function showFallback(kind, triedNames) {
           mode = "fallback";
-          /* The fallback is a reading panel — it can never live inside
-             the minimized frame, so the view steps up to the full sheet
-             (same player node; nothing reloads) to show it. */
-          if (surfStage === "mini") setSurfStage("full");
+          /* The fallback renders WITHIN the stage it failed in: the
+             compact card inside the mini frame, the full card in the
+             full sheet. A load failure NEVER escalates the stage by
+             itself — the viewer can still open the full sheet with
+             the explicit full-sheet control if they want the long
+             text. (syncDockChrome's surf-fb-on toggle also hides the
+             fullscreen controls while this shows.) */
           destroyPlayer();
           var spot = spotByKey(currentKey);
           showOnly("fallback");
@@ -11972,6 +12031,10 @@ var STRAIN_SRC_LINKS = {
           setFacade(spot);
           destroyPlayer();
           showOnly("player");
+          /* Loading never moves the mini: re-assert its anchored spot
+             and size so the spinner shows inside the anchored frame —
+             no intermediate free-floating states while a stream loads. */
+          if (surfStage === "mini") positionMini();
           loading.hidden = false;
           mode = "loading";
           syncDockChrome();
@@ -12100,6 +12163,54 @@ var STRAIN_SRC_LINKS = {
           if (fabDot) fabDot.hidden = !live;
         }
         function streamActive() { return mode === "loading" || mode === "playing" || mode === "waiting"; }
+        /* --- Gesture claim: the surf layer owns any gesture that
+           starts inside its subtree, in EVERY stage ---
+           A pointerdown/touchstart whose target is inside #surfOverlay
+           (which contains #surfDock, the stage, the gesture layer, the
+           facade and the mini controls) or on the wave bubble (#surfFab)
+           claims that gesture for the surf layer from its first instant
+           until it ends — plus a short tail that covers the synthesized
+           click the gesture leaves behind. The app-level tab-swipe
+           recognizer consults window.__surfClaimActive() at BOTH
+           touchstart and touchend and abandons a claimed gesture
+           entirely, so a flick or drag on the floating mini (or the
+           bubble) can never also turn the menu page underneath, and a
+           stage change can never ride along with a page turn. The
+           claim is registered in the capture phase so it is already in
+           force before any bubble-phase recognizer sees the gesture. */
+        var surfClaimOn = false, surfClaimEndAt = 0;
+        function surfClaimTarget(e) {
+          var t = e.target;
+          return !!(t && t.closest && t.closest("#surfOverlay, #surfDock, #surfFab"));
+        }
+        function surfClaimBegin(e) { if (surfClaimTarget(e)) { surfClaimOn = true; surfClaimEndAt = 0; } }
+        function surfClaimFinish() { if (surfClaimOn) { surfClaimOn = false; surfClaimEndAt = Date.now(); } }
+        document.addEventListener("pointerdown", surfClaimBegin, true);
+        document.addEventListener("touchstart", surfClaimBegin, true);
+        document.addEventListener("pointerup", surfClaimFinish, true);
+        document.addEventListener("pointercancel", surfClaimFinish, true);
+        window.__surfClaimActive = function () { return surfClaimOn || (surfClaimEndAt > 0 && Date.now() - surfClaimEndAt < 350); };
+        /* --- Synthesized-click swallow ---
+           After a recognized flick-cycle or a window drag on the
+           player, the gesture's synthesized click is swallowed whole
+           (capture phase, exactly once) so it can never land on an
+           expand, fullscreen, fold or close control, nor on the dock's
+           tap-to-expand path. Stage changes come ONLY from the
+           explicit controls: mini expand, fullscreen, fold, close. */
+        var surfSwallowClickUntil = 0;
+        /* The synthesized click trails its pointerup by milliseconds,
+           so a 200ms window always catches it — and can never eat a
+           deliberate follow-up tap on a real control (no human re-taps
+           that fast), which a longer window demonstrably could. */
+        function surfSwallowNextClick() { surfSwallowClickUntil = Date.now() + 200; }
+        document.addEventListener("click", function (e) {
+          if (Date.now() < surfSwallowClickUntil) {
+            surfSwallowClickUntil = 0;
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          }
+        }, true);
         /* Minimized-frame geometry: ~62% of the screen width (capped
            so it stays a small window on wide screens too), a true 16:9
            box, right-aligned to the wave button and parked just above
@@ -12227,12 +12338,15 @@ var STRAIN_SRC_LINKS = {
         }
         function placeFab() {
           /* Render the bubble wherever the unit model puts it for
-             the current stage. Full stage / fullscreen: the CSS home
-             (plain toggle, not part of the on-screen unit). No saved
-             anchor: the CSS home too — in mini it coincides with the
-             attached spot by construction of the default anchor. */
+             the current stage. Full stage / fullscreen: the bubble is
+             NOT rendered at all — it must never float on top of the
+             full-stage card or the fullscreen frame (closing goes
+             through the sheet's own Close, the backdrop, or Escape).
+             No saved anchor: the CSS home — in mini it coincides with
+             the attached spot by construction of the default anchor. */
           if (!fabBtn) return;
-          if (surfStage === "full" || surfFsOn()) { fabClearInline(); return; }
+          if (surfStage === "full" || surfFsOn()) { fabBtn.hidden = true; fabClearInline(); return; }
+          fabBtn.hidden = false;
           if (!miniPos) { fabClearInline(); return; }
           var bp = bubblePosForAnchor(clampUnitAnchor(miniPos.left, miniPos.top));
           fabSetInline(bp.left, bp.top);
@@ -12339,8 +12453,18 @@ var STRAIN_SRC_LINKS = {
         }
         document.addEventListener("fullscreenchange", onFsChange);
         document.addEventListener("webkitfullscreenchange", onFsChange);
+        var stageAnimUntil = 0;
         function setSurfStage(next) {
           if (!overlayEl) return;
+          if (next === surfStage) return; /* already in that stage: a pure no-op, never a re-animation */
+          /* Stage-transition debounce: the sheet/mini animations run
+             ~260–300ms. While one is still animating, further
+             stage-changing inputs are ignored outright, so rapid
+             expand/fold tapping (or a gesture that leaks a second
+             stage call) can never strobo between stages. */
+          var nowMs = Date.now();
+          if (nowMs < stageAnimUntil) return;
+          stageAnimUntil = nowMs + 300;
           if (surfFsFake && next !== surfStage) fakeFsExit(); /* a stage change always leaves the fallback fullscreen first */
           var prev = surfStage;
           surfStage = next;
@@ -12571,8 +12695,8 @@ var STRAIN_SRC_LINKS = {
             if (!fDown) { fMoveOn = false; fMoveOrigin = null; return; }
             var dx = e.clientX - fDown.x, dy = e.clientY - fDown.y;
             fDown = null;
-            if (fMoveOn) { fSettleMove(); return; }
-            if (Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.4) cycleSurf(dx < 0 ? 1 : -1);
+            if (fMoveOn) { fSettleMove(); surfSwallowNextClick(); return; }
+            if (Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.4) { surfSwallowNextClick(); cycleSurf(dx < 0 ? 1 : -1); }
           };
           facade.addEventListener("pointerup", fEnd);
           facade.addEventListener("pointercancel", fEnd);
@@ -12743,15 +12867,15 @@ var STRAIN_SRC_LINKS = {
         if (false) {
           /* ALTERNATIVE: Surf Break is summon-only — the dock never renders
              and no stream loads on app open, whatever the auto-play setting.
-             Opening Surf Break (Session tab button or Show player below)
-             runs the normal start path from there. */
+             Opening Surf Break (the wave button, or Show player in its
+             control center) runs the normal start path from there. */
           showDock("mini");
           startStream(spot0);
         } else {
           hideDock();
           stoppedByUser = true; hideDock();
-          if (info0.day) setNow("Surf Break is closed — nothing is streaming. Daylight pick right now: <strong>" + spot0.name + "</strong> · " + info0.label + " local · ☀ — open Surf Break from the wave button and it starts by itself, or tap Show player here, or Open Surf Break on the Session tab, to watch.");
-          else setNow("Surf Break is closed — nothing is streaming. No break is in daylight right now — every spot still plays if you pick it; the ☀/☾ badges show each break's local time. Open Surf Break from the wave button and it starts by itself, or tap Show player here, or Open Surf Break on the Session tab, to watch.");
+          if (info0.day) setNow("Surf Break is closed — nothing is streaming. Daylight pick right now: <strong>" + spot0.name + "</strong> · " + info0.label + " local · ☀ — open Surf Break from the wave button and it starts by itself, or tap Show player here, to watch.");
+          else setNow("Surf Break is closed — nothing is streaming. No break is in daylight right now — every spot still plays if you pick it; the ☀/☾ badges show each break's local time. Open Surf Break from the wave button and it starts by itself, or tap Show player here, to watch.");
         }
         syncDockChrome();
 
@@ -13524,6 +13648,7 @@ var STRAIN_SRC_LINKS = {
           var t = e.target;
           if (!t || !t.closest) return;
           if (t.closest(SWIPE_EXCLUDE)) return; /* the app's own horizontal controls + fixed chrome */
+          if (window.__surfClaimActive && window.__surfClaimActive()) return; /* a gesture the surf layer claimed (mini, full sheet, or the wave bubble — any stage) never turns a page */
           if (!t.closest("#app")) return; /* menu screens only */
           if (document.querySelector(".sheet:not([hidden])") || document.querySelector(".photo-zoom:not([hidden])")) return;
           swX = e.touches[0].clientX; swY = e.touches[0].clientY; swT = Date.now();
@@ -13533,6 +13658,7 @@ var STRAIN_SRC_LINKS = {
         document.addEventListener("touchend", function (e) {
           if (!swOk) return;
           swOk = false;
+          if (window.__surfClaimActive && window.__surfClaimActive()) return; /* surf-claimed gesture: the pager ignores it entirely, start to finish */
           if (moreOpen) return;
           if (!e.changedTouches || !e.changedTouches.length) return;
           var dx = e.changedTouches[0].clientX - swX;
@@ -13764,12 +13890,12 @@ var STRAIN_SRC_LINKS = {
           if (window.__segState && window.__segState.strains === "mylogs") renderMyLogs();
         }, 1500);
 
-        /* ---- (12) Surf Break: summon from the Session tab ----
-           Surf Break lives behind the floating wave button now. This
-           card's Open button opens the same overlay (which starts the
-           stream by itself); Close stops the stream and folds the
-           overlay back down to the button. The buttons swap with the
-           Surf UI state: overlay open, or a stream up in the dock. */
+        /* ---- (12) Surf Break state sync (the Session card is gone) ----
+           Surf Break is reached ONLY through the floating wave button —
+           there is no surf card or open button on any menu screen. The
+           old Session card's buttons were removed with the card; the
+           lookups below are null-guarded and simply stay inert, and the
+           programmatic open path (window.__surfOverlay) is untouched. */
         var surfDockEl = $("surfDock"), surfShowHide = $("surfShowHideBtn");
         function surfUiOpen() {
           var ov = window.__surfOverlay;
