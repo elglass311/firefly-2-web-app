@@ -143,12 +143,16 @@
          own pointer gestures, and the photo-zoom viewer is a transform
          overlay, not browser zoom. */
       html, body { touch-action: manipulation; }
-      /* Pull-to-refresh is disabled app-side, everywhere: no vertical
-         drag — at the top of a menu, inside the surf dock/overlay, or
-         while dragging the surf window — can ever be hijacked into a
-         page refresh, whatever the browser's own setting says. Normal
-         in-app scrolling is untouched (this governs only what happens
-         when a scroll container reaches its edge). */
+      /* Pull-to-refresh defense, layer 2 of 2: no vertical drag — at
+         the top of a menu, inside the surf dock/overlay, or while
+         dragging the surf window — overscroll-chains into a page
+         refresh. Normal in-app scrolling is untouched (this governs
+         only what happens when a scroll container reaches its edge).
+         Layer 1 is the active in-page guard (window.__ptrGuard, in
+         the head boot scripts): WKWebView hosts like Bluefy drive
+         pull-to-refresh from the host scroll view, where this CSS
+         alone never gets a say, so the guard cancels the at-top
+         downward pull itself and this rule backs it up. */
       html, body { overscroll-behavior: none; }
       button, a, input, select, textarea, summary, label,
       [role="tab"], [role="switch"], [role="button"] { touch-action: manipulation; }
@@ -1685,7 +1689,13 @@
       }
       .island * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
       .island[data-state="session"] { width: min(430px, calc(100vw - 20px)); }
-      .island[data-state="expanded"] { width: min(430px, calc(100vw - 20px)); border-radius: 26px; cursor: default; }
+      /* Expanded: the pill itself NEVER changes geometry — no width,
+         radius or height change, ever (owner's anti-strobe order: the
+         old in-place growth re-measured the island and shoved the
+         page's top padding on every tap). The detail card below is a
+         separate absolutely-positioned overlay anchored to the pill,
+         out of flow, animated with transform/opacity only. */
+      .island[data-state="expanded"] { cursor: default; overflow: visible; }
       .isl-compact {
         display: flex; align-items: center; gap: 10px;
         min-height: 40px; padding: 6px 16px;
@@ -1708,7 +1718,18 @@
       .isl-dot.busy { background: var(--ember); animation: pulse 1s ease-in-out infinite; }
       .isl-mid { flex: 1; text-align: center; color: var(--ember); overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
       .isl-temp { margin-left: auto; font-variant-numeric: tabular-nums; color: #fff; }
-      .isl-expanded { padding: 4px 16px 16px; animation: panelIn var(--dur-2) var(--ease-out); }
+      .isl-expanded {
+        position: absolute; top: calc(100% + 8px); left: 50%;
+        transform: translateX(-50%);
+        width: min(430px, calc(100vw - 20px));
+        background: #000; color: #f4f6f0;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 26px;
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        padding: 14px 16px 16px;
+        animation: islCardIn var(--dur-2) var(--ease-out);
+      }
+      @keyframes islCardIn { from { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
       .isl-exp-head { display: flex; gap: 12px; align-items: center; margin: 6px 0 10px; }
       .isl-exp-head .str-mono { width: 52px; height: 52px; border-radius: 12px; }
       .isl-exp-name { font-weight: 800; font-size: 16.5px; line-height: 1.25; }
@@ -2043,7 +2064,14 @@
         bottom: auto;
         padding: 6px;
         border-radius: 14px;
+        /* The WHOLE mini window is a move-drag surface (owner's order):
+           no touch that starts on it — card body, facade, fallback, or
+           any of its buttons — may be claimed by the browser for
+           scrolling or pull-to-refresh; the surf script's pointer
+           handlers decide tap vs. drag. */
+        touch-action: none;
       }
+      .surf-dock.mini * { -webkit-user-drag: none; }
       .surf-dock.mini:not([hidden]) { animation: surfMiniIn var(--dur-2) var(--ease-out); }
       @keyframes surfMiniIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       @media (prefers-reduced-motion: reduce) { .surf-dock.mini:not([hidden]) { animation: none; } }
@@ -2658,7 +2686,7 @@
       .tray-mark { border-radius: 8px; }
       .tray-close { border-radius: 8px; }
       .tray-handle-pill { border-radius: 8px; }
-      .island[data-state="expanded"] { border-radius: 20px; }
+      .island[data-state="expanded"] .isl-expanded { border-radius: 20px; }
       .isl-exp-head .str-mono { border-radius: 8px; }
       .isl-close { border-radius: 8px; }
       .surf-dock { border-radius: 14px; }
@@ -2688,6 +2716,17 @@
          move, and nothing here ever opens the Bluetooth picker. The
          classes are driven by the connect-lead script at the end of
          the page, watching the app's own auth UI. */
+      /* Brand header scoping (owner's order): the .topbar brand block
+         (photo mark, "Firefly 2+" wordmark, status pill, tagline)
+         belongs ONLY to the initial connection landing — the Session
+         tab before the device has authenticated. The connect-lead
+         script toggles body.brand-on for exactly that state; in every
+         other state the block is display:none — out of the layout
+         entirely, leaving no gap — and each screen starts with its
+         own tab title. The status island is a separate fixed element
+         and is never touched by this rule. */
+      .topbar { display: none; }
+      body.brand-on .topbar { display: flex; }
       #panel-session { display: flex; flex-direction: column; }
       #panel-session.session-authed #connectCard { order: 10; }
       #connectCard.connect-demoted { padding: 14px 16px; }
@@ -2730,6 +2769,114 @@
             document.documentElement.setAttribute("data-motion", mode);
             lsSet("ff2.motion.v1", mode);
             try { window.dispatchEvent(new CustomEvent("ff-motion", { detail: mode })); } catch (e) { /* ignore */ }
+          }
+        };
+      })();
+    </script>
+    <script>
+      /* ================= Pull-to-refresh guard (active layer) =================
+         Layer 2 of the pull-to-refresh defense is the stylesheet's
+         overscroll-behavior: none. On its own it is NOT enough in
+         Bluefy's WKWebView: the host webview's own scroll view drives
+         the rubber-band / pull-to-refresh there, and the page CSS
+         never gets a say (owner's screen recording, 2026-11-05: a
+         downward pull at the top of the Connect screen rubber-bands,
+         goes black, and fully reloads, CSS notwithstanding).
+         This guard is the active layer. It listens at document level
+         with { passive: false } (required — document-level touch
+         listeners are passive by default in some engines, which
+         would silently neuter preventDefault). For each single touch
+         it resolves the touched element's effective scroller — the
+         nearest ancestor that actually scrolls vertically, or the
+         document scroller when there is none — and tracks the start
+         point, the last point, and that scroller. On every touchmove
+         it calls preventDefault() ONLY while ALL of these hold:
+           · the effective scroller is at its very top (scrollTop <= 0,
+             re-read live on each move, so a panel scrolled even 1px
+             down is never blocked);
+           · the gesture is vertical-dominant (|dy| > |dx| from the
+             touch start — horizontal gestures, the tray swipe, the
+             surf flick-cycle, are never touched);
+           · the finger is moving DOWN (dy > 0 both since touchstart
+             and since the previous move — upward scrolling is never
+             touched).
+         Prevention is re-decided on every move: the instant any
+         condition stops holding, that move and the rest of the touch
+         go unprevented. Multi-touch (pinch zoom) disarms the guard
+         outright, and the app's deliberate gesture surfaces (coupled
+         window/button drags, sliders, steppers) run on pointer events
+         and clicks, which a touchmove preventDefault does not gate.
+         The surf dock's and the Forecast panel's own scrollers are
+         covered by the same nearest-scroller walk — no special cases.
+         Net effect: the downward overscroll pull is cancelled in-page
+         before the host webview can turn it into a refresh, and every
+         other gesture behaves exactly as before. Test hook:
+         window.__ptrGuard (stats + the scroller resolver). */
+      (function () {
+        "use strict";
+        var active = {}; /* touch identifier -> { scroller, startX, startY, lastX, lastY } */
+        var stats = { starts: 0, moves: 0, prevented: 0 };
+        function docScroller() {
+          return document.scrollingElement || document.documentElement;
+        }
+        function findScroller(el) {
+          var node = el;
+          while (node && node.nodeType === 1 && node !== document.body && node !== document.documentElement) {
+            var oy = "";
+            try { oy = window.getComputedStyle(node).overflowY; } catch (err) { oy = ""; }
+            if ((oy === "auto" || oy === "scroll" || oy === "overlay") && node.scrollHeight > node.clientHeight) return node;
+            node = node.parentElement || node.parentNode;
+          }
+          return docScroller();
+        }
+        function onStart(e) {
+          if (!e.touches || e.touches.length !== 1) { active = {}; return; }
+          var t = e.touches[0];
+          active = {};
+          active[t.identifier] = {
+            scroller: findScroller(e.target),
+            startX: t.clientX, startY: t.clientY,
+            lastX: t.clientX, lastY: t.clientY
+          };
+          stats.starts++;
+        }
+        function onMove(e) {
+          if (!e.touches || e.touches.length !== 1) return; /* pinch / multi-touch: never guarded */
+          var t = e.touches[0];
+          var g = active[t.identifier];
+          if (!g) return;
+          stats.moves++;
+          var totalDx = t.clientX - g.startX;
+          var totalDy = t.clientY - g.startY;
+          var stepDy = t.clientY - g.lastY;
+          g.lastX = t.clientX; g.lastY = t.clientY;
+          var scroller = g.scroller || docScroller();
+          var atTop = !scroller || scroller.scrollTop <= 0;
+          var verticalDominant = Math.abs(totalDy) > Math.abs(totalDx);
+          var movingDown = totalDy > 0 && stepDy > 0;
+          if (atTop && verticalDominant && movingDown && e.cancelable) {
+            e.preventDefault();
+            stats.prevented++;
+          }
+        }
+        function onEnd(e) {
+          if (e.changedTouches) {
+            for (var i = 0; i < e.changedTouches.length; i++) delete active[e.changedTouches[i].identifier];
+          }
+          if (!e.touches || e.touches.length === 0) active = {};
+        }
+        document.addEventListener("touchstart", onStart, { passive: false });
+        document.addEventListener("touchmove", onMove, { passive: false });
+        document.addEventListener("touchend", onEnd, { passive: true });
+        document.addEventListener("touchcancel", onEnd, { passive: true });
+        window.__ptrGuard = {
+          installed: true,
+          stats: stats,
+          findScroller: findScroller,
+          activeCount: function () {
+            var n = 0;
+            for (var k in active) if (Object.prototype.hasOwnProperty.call(active, k)) n++;
+            return n;
           }
         };
       })();
@@ -2778,6 +2925,15 @@
             <div class="isl-exp-sub" id="islExpSub">Connect your Firefly, then stage a strain from the Strains tab.</div>
           </div>
         </div>
+        <div class="isl-rows" id="islDevRows">
+          <div class="isl-r"><span>Connection</span><b id="islDevConn">—</b></div>
+          <div class="isl-r"><span>Device</span><b id="islDevName">—</b></div>
+          <div class="isl-r"><span>Battery</span><b id="islDevBatt">—</b></div>
+          <div class="isl-r"><span>Temperature (device read-back)</span><b id="islDevTemp">—</b></div>
+          <div class="isl-r"><span>Activation</span><b id="islDevAct">—</b></div>
+          <div class="isl-r"><span>uCoil</span><b id="islDevCoil">—</b></div>
+          <div class="isl-r"><span>Last read-back</span><b id="islDevRead">—</b></div>
+        </div>
         <div class="isl-rows">
           <div class="isl-r"><span>Device reports (confirmed)</span><b id="islExpTemp">—</b></div>
           <div class="isl-r"><span>Guided ladder</span><b id="islExpLadder">—</b></div>
@@ -2790,6 +2946,11 @@
           <button type="button" class="btn btn-ghost" data-isl-pulse="10">Pulse 10s</button>
           <button type="button" class="btn btn-stop" id="islEnd" hidden>End session</button>
         </div>
+        <div class="isl-btns" id="islConnBtns">
+          <button type="button" class="btn btn-primary" id="islConnectBtn" hidden>Connect</button>
+          <button type="button" class="btn btn-ghost" id="islDisconnectBtn" hidden>Disconnect</button>
+        </div>
+        <p id="islListenNote" style="margin:10px 0 0; font-size:12.5px; color:#b9beb4;" hidden>Listening — capturing what your Firefly sends. The app writes nothing during this window, so no actions are offered until it ends.</p>
         <p style="margin:10px 0 0; font-size:12.5px; color:#b9beb4;">The island only ever shows what your Firefly itself has confirmed — it never guesses a temperature.</p>
       </div>
     </div>
@@ -4459,6 +4620,9 @@
 
         /* Live device state — only ever filled from device frames, never assumed. */
         var devState = null;
+        /* When the last settings-frame read-back landed (ms epoch), for
+           the island's status card. 0 = no read-back yet this connection. */
+        var lastReadAt = 0;
         function freshDevState() {
           return {
             profileByte: null, tempF: null, activation: null, lock: null,
@@ -5273,6 +5437,7 @@
           if (typeof resetPulse === "function") resetPulse();
           if (typeof onGuidedDisconnect === "function") onGuidedDisconnect();
           devState = freshDevState();
+          lastReadAt = 0;
           profileTable = {};
           profileTableC = {};
           tableFirstAt = 0;
@@ -5429,6 +5594,7 @@
           next.coilRaw = f[12];
           next.coilValue = f[12] + 80;
           devState = next;
+          lastReadAt = Date.now(); /* a settings frame IS a device read-back */
 
           if (!f1Seen) {
             f1Seen = true;
@@ -10247,6 +10413,7 @@ var STRAIN_SRC_LINKS = {
         var islTempEl = document.getElementById("islTemp");
         var islExpandedEl = document.getElementById("islExpanded");
         var islExpanded = false;
+        var islToggleLockUntil = 0; /* ~300ms toggle lock: one tap = exactly one state change */
         var islTickTimer = null;
         var fuArmed = false;
         var fuStrainName = "";
@@ -10303,6 +10470,43 @@ var STRAIN_SRC_LINKS = {
                 ? strStaged.ladder.map(function (l) { return l.f + "°F"; }).join(" → ") + " (staged)"
                 : guidedLadderDesc() + " (standard)";
           document.getElementById("islExpCeil").textContent = fmtTemp(settings.ceilingF);
+          /* Device status rows: ONLY state this app actually holds,
+             read live from the same variables the tabs render from.
+             Anything the app does not have shows "—" — nothing is
+             invented, estimated or carried over from a past connection
+             (devState is rebuilt empty on every disconnect). */
+          var dEl = function (id) { return document.getElementById(id); };
+          if (dEl("islDevConn")) dEl("islDevConn").textContent = listening
+            ? "Listening — capturing frames"
+            : isConnected
+              ? (authState === "authenticated" ? "Connected · authenticated" : authState === "authenticating" ? "Connected · authenticating…" : "Connected")
+              : (typeof connecting !== "undefined" && connecting) ? "Connecting…" : "Not connected";
+          if (dEl("islDevName")) dEl("islDevName").textContent = (isConnected && typeof device !== "undefined" && device && device.name) ? device.name : "—";
+          if (dEl("islDevBatt")) dEl("islDevBatt").textContent = (devState && devState.battery !== null && devState.battery !== undefined) ? BATTERY_NAMES[devState.battery] + " (step " + (devState.battery + 1) + " of 5)" : "—";
+          if (dEl("islDevTemp")) dEl("islDevTemp").textContent = (devState && devState.tempF !== null && devState.tempF !== undefined) ? fmtTemp(devState.tempF) : "—";
+          if (dEl("islDevAct")) dEl("islDevAct").textContent = (devState && devState.activation !== null && devState.activation !== undefined) ? ACTIVATION_NAMES[devState.activation] : "—";
+          if (dEl("islDevCoil")) dEl("islDevCoil").textContent = (devState && devState.coilValue !== null && devState.coilValue !== undefined) ? devState.coilValue + "%" : "—";
+          if (dEl("islDevRead")) dEl("islDevRead").textContent = lastReadAt ? new Date(lastReadAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" }) : "—";
+          /* Connection actions proxy the Session card's EXISTING
+             buttons — no duplicate connect/disconnect code paths.
+             During the listen-first window NO actions are offered at
+             all: the app writes nothing while listening, and the card
+             says so instead. */
+          var islCBtn = dEl("islConnectBtn"), islDBtn = dEl("islDisconnectBtn"), islLNote = dEl("islListenNote");
+          if (islCBtn && islDBtn && islLNote) {
+            if (listening) {
+              islCBtn.hidden = true; islDBtn.hidden = true; islLNote.hidden = false;
+            } else {
+              islLNote.hidden = true;
+              islDBtn.hidden = !isConnected;
+              islCBtn.hidden = isConnected;
+              if (!isConnected) {
+                var rb0 = dEl("reconnectBtn");
+                islCBtn.textContent = (rb0 && !rb0.hidden) ? "Reconnect" : "Connect";
+                islCBtn.disabled = (typeof connecting !== "undefined" && connecting);
+              }
+            }
+          }
           var canSession = isConnected && authState === "authenticated";
           var startBtn = document.getElementById("islStart");
           startBtn.hidden = !(canSession && !guided.active && guided.phase !== "complete");
@@ -10326,24 +10530,39 @@ var STRAIN_SRC_LINKS = {
           if (v !== islClearLast) { islClearLast = v; appEl.style.paddingTop = v; }
         }
         function islSetExpanded(on) {
+          /* Deliberately NO clearance sync here (owner's anti-strobe
+             order): the island is fixed and its expanded card is an
+             absolutely-positioned overlay, so expanding or collapsing
+             changes NO layout anywhere — the wrap's top padding tracks
+             the pill only, whose geometry never changes, and the
+             periodic syncIslandClearance therefore writes the same
+             value before, during and after every toggle. */
+          if (on === islExpanded) { renderIsland(); return; }
           islExpanded = on;
           haptics.tick();
           renderIsland();
-          window.requestAnimationFrame(syncIslandClearance);
-          window.setTimeout(syncIslandClearance, 520); /* after the width/radius transition settles */
         }
+        window.__island = {
+          expanded: function () { return islExpanded; },
+          set: islSetExpanded,
+          lastReadAt: function () { return lastReadAt; }
+        };
         window.addEventListener("resize", syncIslandClearance);
-        window.setInterval(syncIslandClearance, 1000);
+        window.setInterval(function () { syncIslandClearance(); if (islExpanded) renderIsland(); }, 1000);
         syncIslandClearance();
         if (islandEl) {
           islandEl.addEventListener("click", function (e) {
             if (e.target.closest && e.target.closest("#islExpanded") && !(e.target.closest && e.target.closest("#islClose"))) return;
-            if (!isConnected) {
-              switchTab("session");
-              var cc = document.querySelector("#panel-session .card");
-              if (cc) cc.scrollIntoView({ block: "start" });
-              return;
-            }
+            /* The pill's ONLY tap behavior, in every state (owner's
+               order): toggle the overlay status card. ~300ms lock so
+               one physical tap can only ever produce one toggle —
+               duplicate firings of the same tap inside the window are
+               ignored, and the next genuine tap (after the window)
+               toggles exactly once. No tab switch, no scroll, no
+               layout side effects. */
+            var nowMs = Date.now();
+            if (nowMs < islToggleLockUntil) return;
+            islToggleLockUntil = nowMs + 300;
             islSetExpanded(!islExpanded);
           });
           islandEl.addEventListener("keydown", function (e) {
@@ -10376,6 +10595,35 @@ var STRAIN_SRC_LINKS = {
               islSetExpanded(false);
               pulseBtn.click();
             });
+          });
+          /* Connection actions: proxy the Session card's own buttons,
+             so the picker, the reconnect path and the disconnect path
+             each exist exactly once in the app. */
+          var islConnectBtn = document.getElementById("islConnectBtn");
+          if (islConnectBtn) islConnectBtn.addEventListener("click", function (e) {
+            e.stopPropagation(); haptics.tick();
+            islSetExpanded(false);
+            var rb = document.getElementById("reconnectBtn");
+            if (rb && !rb.hidden) rb.click();
+            else { var cb = document.getElementById("connectBtn"); if (cb) cb.click(); }
+          });
+          var islDisconnectBtn = document.getElementById("islDisconnectBtn");
+          if (islDisconnectBtn) islDisconnectBtn.addEventListener("click", function (e) {
+            e.stopPropagation(); haptics.tick();
+            islSetExpanded(false);
+            var db = document.getElementById("disconnectBtn");
+            if (db) db.click();
+          });
+          /* Tap anywhere outside the island collapses the card; the
+             island's own taps are contained-check exempt, so an
+             outside tap can never double as a toggle. */
+          document.addEventListener("click", function (e) {
+            if (!islExpanded) return;
+            if (islandEl.contains(e.target)) return;
+            islSetExpanded(false);
+          });
+          document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && islExpanded) islSetExpanded(false);
           });
         }
         function onTabShown() { renderIsland(); if (typeof wheelRefreshAll === "function") wheelRefreshAll(); }
@@ -11299,6 +11547,21 @@ var STRAIN_SRC_LINKS = {
         var MINI_POS_KEY = "ff2.surfMiniPos";
         var AUTO_MODE_KEY = "ff2.surfAutoMode";
         var FC_KEY = "ff2.surfForecast.v1";
+        /* Dead-stream marks (owner's order): a break whose stream
+           fails to load is marked dead for THIS SESSION ONLY — a plain
+           in-memory map, never written to storage, so every fresh app
+           load gives every cam a fresh chance. Auto modes (auto-pick,
+           Best / Follow-the-Sun rotation, failure skip chains) and
+           flick-cycling skip dead-marked breaks; an explicit manual
+           pick (break chips, Forecast Watch, the wave button opening
+           on a break, Play, Try again) always re-tests its break, and
+           a stream that actually plays clears its mark at once. The
+           helpers live up here because autoPickKey is first called
+           before the state block below runs. */
+        var deadSpots = {};
+        function isDead(key) { return !!deadSpots[key]; }
+        function markDead(key) { deadSpots[key] = true; }
+        function clearDead(key) { if (deadSpots[key]) delete deadSpots[key]; }
 
         var stage = document.getElementById("surfStage");
         var dock = document.getElementById("surfDock");
@@ -11441,6 +11704,27 @@ var STRAIN_SRC_LINKS = {
           if (idx === -1) return r[0].spot.key;
           if (r.length === 1) return currentKey;
           return r[(idx + 1) % r.length].spot.key;
+        }
+        /* Dead-aware daylight picks: the first daylight break that is
+           not dead-marked, and the next one after a given break —
+           Follow the Sun starts and rotates on live cams only. Null
+           when every daylight break is dead (or none is in daylight). */
+        function bestAliveKey(date) {
+          var r = rankedDaylight(date);
+          for (var i = 0; i < r.length; i++) if (!isDead(r[i].spot.key)) return r[i].spot.key;
+          return null;
+        }
+        function nextAliveDaylightKey(date, currentKey) {
+          var r = rankedDaylight(date);
+          if (!r.length) return null;
+          var idx = -1;
+          for (var i = 0; i < r.length; i++) if (r[i].spot.key === currentKey) idx = i;
+          for (var step = 1; step <= r.length; step++) {
+            var cand = r[(idx + step) % r.length].spot.key;
+            if (cand === currentKey) return null;
+            if (!isDead(cand)) return cand;
+          }
+          return null;
         }
 
         /* --- wave forecast: live Open-Meteo conditions + a transparent
@@ -11676,12 +11960,32 @@ var STRAIN_SRC_LINKS = {
           });
           return best;
         }
+        /* The best-scoring break that is NOT dead-marked. Auto-pick
+           and the Best rotation use this; the Forecast panel's BEST
+           NOW badge keeps bestForecastKey — a pure conditions ranking,
+           dead or alive. */
+        function bestAliveForecastKey() {
+          if (!fcData || !fcData.spots) return null;
+          var best = null, bs = -1;
+          SPOTS.forEach(function (s) {
+            var d = fcData.spots[s.key];
+            if (d && !isDead(s.key) && d.score > bs) { bs = d.score; best = s.key; }
+          });
+          return best;
+        }
         /* The automatic pick, by mode: Best conditions when forecast
            data exists, Follow the Sun otherwise (and in Sun mode), and
            no pick at all in Off mode. */
         function autoPickKey(date) {
           if (autoMode === "off") return null;
-          if (autoMode === "best") { var bk = bestForecastKey(); if (bk) return bk; }
+          if (autoMode === "best") { var bk = bestAliveForecastKey(); if (bk) return bk; }
+          var ak = bestAliveKey(date);
+          if (ak) return ak;
+          /* Every candidate is dead-marked (or none is in daylight):
+             fall back to the plain ranking, so the caller still lands
+             on a real break — when its stream fails too, the skip
+             chain ends on its fallback card, where Try again lives. */
+          if (autoMode === "best") { var bk2f = bestForecastKey(); if (bk2f) return bk2f; }
           return bestKey(date);
         }
         var fcFetching = false;
@@ -11731,7 +12035,7 @@ var STRAIN_SRC_LINKS = {
            the first fetch returns. */
         function onForecastForAuto() {
           if (autoMode !== "best" || !autoOn || manualHold || stoppedByUser) return;
-          var bk = bestForecastKey();
+          var bk = bestAliveForecastKey();
           if (!bk || bk === currentKey) return;
           if (mode === "playing" || mode === "loading") {
             startStream(spotByKey(bk));
@@ -12384,7 +12688,7 @@ var STRAIN_SRC_LINKS = {
                A fast flick is over before this can arm, so it still
                reaches the cycle verdict on release untouched. */
             if (!gMove && gSwipe && e.pointerId === gSwipe.id && dockState === "mini" && !fsActive && zoomScale === 1 &&
-                Date.now() - gSwipe.t >= 180 && Math.hypot(e.clientX - gSwipe.sx, e.clientY - gSwipe.sy) > 10) {
+                (Date.now() - gSwipe.t >= 180 || mode !== "playing") && Math.hypot(e.clientX - gSwipe.sx, e.clientY - gSwipe.sy) > 10) {
               armMiniMove(e.pointerId, e.clientX, e.clientY);
             }
             if (gMove && e.pointerId === gMove.id) {
@@ -12435,6 +12739,7 @@ var STRAIN_SRC_LINKS = {
             var sw = gSwipe; gSwipe = null;
             var dx = e.clientX - sw.sx, dy = e.clientY - sw.sy;
             if (zoomScale !== 1) return; /* zoomed: the drag panned, it does not cycle */
+            if (mode !== "playing") return; /* loading / waiting: no flick — a slide was a window move (or a plain tap), never a cycle */
             if (Date.now() - sw.t > 600) return; /* a slow drag or a hold, not a swipe */
             if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
             /* A flick cycles the stream IN PLACE at whatever stage is
@@ -12553,6 +12858,7 @@ var STRAIN_SRC_LINKS = {
         function onPlaying() {
           mode = "playing";
           resetChain(); /* a spot that plays ends any recovery chain */
+          clearDead(currentKey); /* a stream that plays is alive — any dead mark on it clears at once */
           applySoundPref(null); /* a (re)started player comes up muted — put the remembered sound back */
           bgPaused = false;
           loading.hidden = true;
@@ -12601,6 +12907,7 @@ var STRAIN_SRC_LINKS = {
         function handleStreamFailure(kind) {
           exitZoom(); /* a stream error/end resets zoom even when the fallback (no new stream) follows */
           var failedSpot = spotByKey(currentKey);
+          markDead(failedSpot.key); /* a stream that fails to load is dead for the rest of this session */
           if (manualHold) {
             if (!chainManualRetried) {
               chainManualRetried = true;
@@ -12613,7 +12920,7 @@ var STRAIN_SRC_LINKS = {
           }
           if (chainTried.indexOf(failedSpot.key) === -1) chainTried.push(failedSpot.key);
           var order = recoveryOrder(), nextKey = null;
-          for (var i = 0; i < order.length; i++) { if (chainTried.indexOf(order[i]) === -1) { nextKey = order[i]; break; } }
+          for (var i = 0; i < order.length; i++) { if (chainTried.indexOf(order[i]) === -1 && !isDead(order[i])) { nextKey = order[i]; break; } }
           if (nextKey) {
             var ns = spotByKey(nextKey);
             setNow("<strong>" + failedSpot.name + "</strong> didn't load — moving on to <strong>" + ns.name + "</strong> (Follow the Sun order).");
@@ -12703,7 +13010,17 @@ var STRAIN_SRC_LINKS = {
           var idx = -1;
           for (var i = 0; i < SPOTS.length; i++) if (SPOTS[i].key === currentKey) idx = i;
           if (idx === -1) idx = 0;
-          var next = SPOTS[(idx + dir + SPOTS.length) % SPOTS.length];
+          /* Flick-cycling skips dead-marked breaks (owner's order):
+             step past every dead break in the flick's direction. If
+             every other break is dead, the flick goes nowhere — the
+             current break's own state (often its fallback card, with
+             Try again) stays exactly as it is. */
+          var next = null;
+          for (var step = 1; step < SPOTS.length; step++) {
+            var cand = SPOTS[(idx + dir * step + SPOTS.length * step) % SPOTS.length];
+            if (!isDead(cand.key)) { next = cand; break; }
+          }
+          if (!next) return;
           manualHold = true;
           stoppedByUser = false;
           bgPaused = false;
@@ -12841,6 +13158,68 @@ var STRAIN_SRC_LINKS = {
           fab.addEventListener("pointerup", fabPressEnd);
           fab.addEventListener("pointercancel", fabPressEnd);
         }
+        /* --- whole-window move drag (mini, EVERY state) ---
+           The owner: "This whole stream box should be tap and slide
+           to move around the page." The gesture layer above covers
+           only the live player's surface; this controller covers
+           EVERYTHING ELSE the mini window shows — the poster facade,
+           the fallback card, and any button riding the window (mini
+           expand / close / full, the facade Play, the fallback's
+           Watch on YouTube / Try again / Back to poster) — in every
+           state the mini can be in. A press that slides past ~10px
+           becomes a unit move: the window and its attached wave
+           button follow the finger, clamped exactly like every other
+           unit drag (in-viewport, clear of the status island and the
+           docked Forecast button), and the anchor persists to
+           ff2.surfMiniPos on release. The release's synthesized click
+           is swallowed whole, so the button under the finger never
+           fires from a drag; a clean tap with no slide is untouched
+           and activates its button normally. Live-player presses are
+           left to the gesture layer, whose own disambiguation
+           (flick cycles at 1x, pinch zooms, zoomed drag pans,
+           sustained drag / hold moves — and, while loading, any
+           sustained slide moves) is unchanged. The full view never
+           moves. */
+        var boxDrag = null;
+        dock.addEventListener("pointerdown", function (e) {
+          if (dockState !== "mini" || fsActive) return;
+          if (e.target === gesture) return; /* the live player's surface: the gesture layer owns it */
+          if (e.button !== undefined && e.button > 0) return;
+          if (boxDrag) { boxDrag = null; dock.classList.remove("mini-moving"); return; } /* a second finger cancels the drag */
+          boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, armed: false, dx: 0, dy: 0 };
+        });
+        window.addEventListener("pointermove", function (e) {
+          if (!boxDrag || e.pointerId !== boxDrag.id) return;
+          if (!boxDrag.armed) {
+            if (Math.hypot(e.clientX - boxDrag.sx, e.clientY - boxDrag.sy) <= 10) return; /* still a tap */
+            var r0 = dock.getBoundingClientRect();
+            boxDrag.dx = e.clientX - r0.left; /* grab offset taken at arm time: the window does not jump */
+            boxDrag.dy = e.clientY - r0.top;
+            boxDrag.armed = true;
+            dock.classList.add("mini-moving");
+          }
+          var w = dock.offsetWidth, h = dock.offsetHeight;
+          var p = clampMiniXY(e.clientX - boxDrag.dx, e.clientY - boxDrag.dy, w, h);
+          dock.style.left = p.x + "px";
+          dock.style.top = p.y + "px";
+          fabFollow(p.x, p.y, w, miniWinH(w)); /* the button rides attached — the unit moves as one */
+          if (e.cancelable) e.preventDefault();
+        }, { passive: false });
+        function boxDragEnd(e) {
+          if (!boxDrag || e.pointerId !== boxDrag.id) return;
+          var wasArmed = boxDrag.armed;
+          boxDrag = null;
+          dock.classList.remove("mini-moving");
+          if (wasArmed) {
+            var r = dock.getBoundingClientRect();
+            miniPos = { x: Math.round(r.left), y: Math.round(r.top) };
+            lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+            surfSwallowClick(); /* the release's click is not a tap: the button under the finger must not fire */
+          }
+        }
+        window.addEventListener("pointerup", boxDragEnd);
+        window.addEventListener("pointercancel", boxDragEnd);
+        dock.addEventListener("dragstart", function (e) { if (dockState === "mini") e.preventDefault(); });
         /* The floating wave button is the summon. Tapping it opens the
            MINIMIZED stream view over the current tab — the tab
            underneath keeps its scroll position and place — and tapping
@@ -12954,7 +13333,7 @@ var STRAIN_SRC_LINKS = {
             /* Best-conditions rotation: after a full dwell (or the
                moment the current break leaves daylight), follow the
                scores to the best break that has a camera. */
-            var bk2 = bestForecastKey();
+            var bk2 = bestAliveForecastKey();
             if (bk2 && bk2 !== currentKey && (dwell >= DWELL_MS || !cur.day)) {
               startStream(spotByKey(bk2));
               setNow(nowText("Best conditions moved on — now showing:"));
@@ -12965,7 +13344,7 @@ var STRAIN_SRC_LINKS = {
           }
           if (autoMode === "off") return;
           if (!cur.day || dwell >= DWELL_MS) {
-            var nxt = nextDaylightKey(date, currentKey);
+            var nxt = nextAliveDaylightKey(date, currentKey);
             if (nxt && nxt !== currentKey) {
               startStream(spotByKey(nxt));
               setNow(nowText("Follow the Sun moved on — now showing:"));
@@ -13050,6 +13429,7 @@ var STRAIN_SRC_LINKS = {
               fabHidden: !!(fab && fab.style.display === "none"),
               stageBusy: Date.now() < stageBusyUntil,
               key: currentKey,
+              dead: Object.keys(deadSpots),
               fs: fsActive,
               autoMode: autoMode,
               fcAt: fcData ? fcData.at : 0,
@@ -13068,6 +13448,10 @@ var STRAIN_SRC_LINKS = {
             };
           }
         };
+        window.__surfDock.markDead = function (key) { markDead(key); };
+        window.__surfDock.clearDead = function (key) { clearDead(key); };
+        window.__surfDock.isDead = function (key) { return isDead(key); };
+        window.__surfDock.boxDrag = function () { return { tracking: !!boxDrag, armed: !!(boxDrag && boxDrag.armed) }; };
         window.__surfZoom = {
           state: function () {
             var b = zoomBounds();
@@ -13312,17 +13696,31 @@ var STRAIN_SRC_LINKS = {
         var panel = document.getElementById("panel-session");
         var card = document.getElementById("connectCard");
         if (!pill || !panel || !card) return;
+        var tabSessionBtn = document.getElementById("tab-session");
         function sync() {
           var authed = pill.getAttribute("data-state") === "authenticated";
           panel.classList.toggle("session-authed", authed);
           card.classList.toggle("connect-demoted", authed);
+          /* Brand header scoping (owner's order): the .topbar brand
+             block renders ONLY on the initial connection landing —
+             the Session tab selected AND the device not yet
+             authenticated. The connect card leads that same state
+             (above); the moment either fact changes, body.brand-on
+             drops and the header leaves the layout entirely. */
+          var onSession = !tabSessionBtn || tabSessionBtn.getAttribute("aria-selected") === "true";
+          document.body.classList.toggle("brand-on", onSession && !authed);
         }
         if (window.MutationObserver) {
-          new MutationObserver(sync).observe(pill, { attributes: true, attributeFilter: ["data-state"] });
+          var mo = new MutationObserver(sync);
+          mo.observe(pill, { attributes: true, attributeFilter: ["data-state"] });
+          Array.prototype.forEach.call(document.querySelectorAll('button[role="tab"]'), function (b) {
+            mo.observe(b, { attributes: true, attributeFilter: ["aria-selected"] });
+          });
         }
         sync();
         window.__connectLead = {
           demoted: function () { return card.classList.contains("connect-demoted"); },
+          brandOn: function () { return document.body.classList.contains("brand-on"); },
           sync: sync
         };
       })();
