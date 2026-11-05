@@ -1769,8 +1769,6 @@
       .surf-zoombar[hidden] { display: none !important; }
       .surf-zoom-level { font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 42px; text-align: center; color: var(--ink); }
       .surf-zoom-note { flex: 1 1 100%; margin: 0; font-size: 12px; font-weight: 600; color: var(--ink-soft); }
-      .surf-dock[data-state="mini"] .surf-zoom-btn,
-      .surf-dock[data-state="mini"] .surf-zoombar { display: none !important; }
       /* Lineup zone: a static marker drawn on the POSTER STILL only (never
          on the live video). Positioned per spot as % of the facade box. */
       .surf-zone {
@@ -1790,7 +1788,6 @@
         padding: 3px 8px; border-radius: 999px;
         -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
       }
-      .surf-dock[data-state="mini"] .surf-zone-chip { display: none; }
       .surf-stage [hidden] { display: none !important; }
       .surf-facade, .surf-player, .surf-fallback {
         position: relative;
@@ -1867,14 +1864,20 @@
       .surf-chip .sc-badge { font-size: 12px; line-height: 1; }
       .surf-chip.is-night { opacity: 0.78; }
 
-      /* ---------- Surf dock — the ONE Surf Break player, pinned on every tab ---------- */
+      /* ---------- Surf Break overlay — the ONE Surf Break player plus its
+         full control center, floated over the current tab. The tab
+         underneath is never unloaded, scrolled or re-laid-out: the
+         overlay is a fixed panel that simply covers it, summoned and
+         dismissed by the floating wave button (#surfFab). ---------- */
       .surf-dock {
-        position: fixed; z-index: 55;
+        position: fixed; z-index: 70;
         left: 50%; transform: translateX(-50%);
         width: min(560px, calc(100vw - 16px));
-        /* Navigation no longer lives at the bottom of the screen (it moved
-           to the left tray), so the dock sits at the plain bottom offset. */
-        bottom: calc(8px + env(safe-area-inset-bottom));
+        /* Top clears the status island; bottom clears the floating wave
+           button, so neither is ever covered while the overlay is up. */
+        top: calc(64px + env(safe-area-inset-top));
+        bottom: calc(78px + env(safe-area-inset-bottom));
+        display: flex; flex-direction: column;
         background: linear-gradient(165deg, var(--card-a) 0%, var(--card-b) 55%, var(--card-c) 100%);
         -webkit-backdrop-filter: blur(14px) saturate(1.25);
         backdrop-filter: blur(14px) saturate(1.25);
@@ -1882,9 +1885,24 @@
         border-radius: 16px;
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 18px 44px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.4);
         padding: 10px;
+        overscroll-behavior: contain;
       }
+      .surf-dock:not([hidden]) { animation: surfOverlayIn var(--dur-2) var(--ease-out); }
+      @keyframes surfOverlayIn { from { opacity: 0; transform: translateX(-50%) translateY(14px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
       .surf-dock[hidden] { display: none !important; }
       .surf-dock .surf-stage { margin-top: 8px; }
+      .surf-dock-body { flex: none; }
+      /* The control center scrolls inside the overlay, under the player:
+         the head, stage and status line stay put while the break chips,
+         switches and credits move beneath them. */
+      .surf-controls {
+        flex: 1 1 auto; min-height: 0; overflow-y: auto;
+        margin-top: 10px; padding-top: 12px;
+        border-top: 1px solid var(--line);
+        -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      }
+      .surf-controls .surf-card { padding: 0 2px 2px; }
+      .surf-controls .surf-card h2 { margin: 0 0 6px; font-size: 19px; letter-spacing: 0.02em; }
       .surf-dock-head {
         display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
         font-size: 13px;
@@ -1902,32 +1920,48 @@
       .surf-dock-btns .btn-small { min-height: 38px; padding: 7px 12px; }
       .surf-dock-status { margin: 8px 2px 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
       .surf-dock-status[hidden] { display: none !important; }
-      /* Mini view: the SAME player node, shrunk — never moved, never reloaded. */
-      .surf-dock[data-state="mini"] {
-        display: grid;
-        grid-template-columns: 112px minmax(0, 1fr);
-        grid-template-areas: "body head" "body status";
-        column-gap: 10px; row-gap: 4px;
-        align-items: center;
+      /* ---------- Surf Break floating button — follows every screen ----------
+         A small glass wave button pinned to the bottom-right corner: it
+         never covers the status island (top center), the tray handle
+         (left edge) or any tab's primary controls. It opens the Surf
+         Break overlay over the current tab and closes it again; its dot
+         shows at a glance whether a stream is playing behind it
+         (pulsing red) or loading / waiting for a first tap (steady
+         amber). On wide screens it hugs the app column's right edge. */
+      .surf-fab {
+        appearance: none; cursor: pointer; font: inherit;
+        position: fixed; z-index: 75;
+        right: max(12px, calc(50% - 268px + env(safe-area-inset-right)));
+        bottom: calc(12px + env(safe-area-inset-bottom));
+        width: 52px; height: 52px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--tab-bg);
+        -webkit-backdrop-filter: blur(14px) saturate(1.35);
+        backdrop-filter: blur(14px) saturate(1.35);
+        border: 1px solid var(--card-line);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 10px 26px rgba(0, 0, 0, 0.45);
+        color: var(--ink);
+        transition: transform var(--dur-1) var(--ease-out);
       }
-      .surf-dock[data-state="mini"] .surf-dock-body { grid-area: body; min-width: 0; }
-      .surf-dock[data-state="mini"] .surf-dock-head { grid-area: head; align-content: center; }
-      .surf-dock[data-state="mini"] .surf-dock-status { grid-area: status; margin-top: 0; }
-      .surf-dock[data-state="mini"] .surf-stage { margin-top: 0; }
-      .surf-dock[data-state="mini"] .surf-dock-title { display: none; }
-      .surf-dock[data-state="mini"] .surf-facade-top { display: none; }
-      .surf-dock[data-state="mini"] .surf-facade-meta { display: none; }
-      .surf-dock[data-state="mini"] .surf-play { width: 36px; height: 36px; }
-      .surf-dock[data-state="mini"] .surf-play svg { width: 16px; height: 16px; }
-      .surf-dock[data-state="mini"] .surf-loading { font-size: 10.5px; padding: 6px; gap: 5px; }
-      .surf-dock[data-state="mini"] .surf-loading .surf-spinner { width: 13px; height: 13px; border-width: 2px; }
-      .surf-dock[data-state="mini"] .surf-dock-btns { margin-left: 0; }
-      /* The fallback is a text panel: it can never live in the mini grid's
-         112px body column. If it is ever visible while the dock still
-         carries data-state="mini" (state desync, engine quirk, a collapse
-         racing the error), the grid is void and the dock lays out as a
-         normal full-width block until the state catches up. */
-      .surf-dock[data-state="mini"]:has(.surf-fallback:not([hidden])) { display: block; }
+      .surf-fab:active { transform: scale(0.92); }
+      .surf-fab svg { width: 26px; height: 26px; flex: none; }
+      .surf-fab .fab-x { display: none; }
+      .surf-fab[aria-pressed="true"] .fab-x { display: block; }
+      .surf-fab[aria-pressed="true"] .fab-wave { display: none; }
+      .surf-fab-dot {
+        position: absolute; top: 1px; right: 1px;
+        width: 11px; height: 11px; border-radius: 50%;
+        border: 2px solid rgba(0, 0, 0, 0.55);
+        background: #ffb02e;
+        display: none;
+      }
+      .surf-fab[data-play="busy"] .surf-fab-dot { display: block; }
+      .surf-fab[data-play="playing"] .surf-fab-dot {
+        display: block; background: #ff5147; box-shadow: 0 0 8px #ff5147;
+        animation: surfFabPulse 1.6s ease-in-out infinite;
+      }
+      @keyframes surfFabPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+      @media (prefers-reduced-motion: reduce) { .surf-fab[data-play="playing"] .surf-fab-dot { animation: none; } }
 
       /* ---------- Strain photo zoom — one shared tap-on / tap-off overlay ---------- */
       .photo-zoom {
@@ -2045,11 +2079,10 @@
       .leaf-badge { border-radius: 18px; }
       .wheel { border-radius: 20px; }
       .band, .band-detail, .tut-card, .log-row, .rq-row { border-radius: 16px; }
-      /* Dock clearance: content never hides under the fixed surf dock */
-      body:has(> .surf-dock[data-state="expanded"]:not([hidden])) .wrap { padding-bottom: 430px; }
-      body:has(> .surf-dock[data-state="mini"]:not([hidden])) .wrap { padding-bottom: 170px; }
-      /* Anchored jumps (scrollIntoView) must clear the island at the top
-         and the surf dock at the bottom. */
+      /* The Surf Break overlay floats over the content and never pushes
+         it around: no clearance padding in any state — the tab underneath
+         keeps its exact layout and scroll place while the overlay is up. */
+      /* Anchored jumps (scrollIntoView) must clear the island at the top. */
       .card, .band-detail, .tab-title { scroll-margin-top: 88px; scroll-margin-bottom: 130px; }
 
       /* ================= Width repair — no shrink-to-fit (2026-11-05) =================
@@ -2471,16 +2504,19 @@
       <button type="button" role="tab" id="tab-strains" aria-selected="false" aria-controls="panel-strains"><svg class="tab-ic" aria-hidden="true"><use href="#ff-leaf-sm"/></svg><span class="tab-txt">Strains<small>Guide · picker · log</small></span></button>
       <button type="button" role="tab" id="tab-terpene" aria-selected="false" aria-controls="panel-terpene"><svg class="tab-ic" aria-hidden="true"><use href="#i-drop"/></svg><span class="tab-txt">Terpenes<small>What heat releases</small></span></button>
       <button type="button" role="tab" id="tab-burnguard" aria-selected="false" aria-controls="panel-burnguard"><svg class="tab-ic" aria-hidden="true"><use href="#i-shield"/></svg><span class="tab-txt">Burn Guard<small>Ceiling &amp; calibration</small></span></button>
-      <button type="button" role="tab" id="tab-surf" aria-selected="false" aria-controls="panel-surf"><svg class="tab-ic" aria-hidden="true"><use href="#i-wave"/></svg><span class="tab-txt">Surf<small>Live cams · Follow the Sun</small></span></button>
       <button type="button" role="tab" id="tab-device" aria-selected="false" aria-controls="panel-device"><svg class="tab-ic" aria-hidden="true"><use href="#i-device"/></svg><span class="tab-txt">Device<small>Details &amp; log</small></span></button>
       <button type="button" role="tab" id="tab-info" aria-selected="false" aria-controls="panel-info"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span class="tab-txt">Info<small>Device, app &amp; sources</small></span></button>
     </nav>
 
 
-    <!-- ============ Surf dock: the ONE Surf Break player, pinned to the bottom
-         of the viewport on EVERY tab. The player node lives here permanently
-         and never moves, so tab switches never reload it. ============ -->
-    <div class="surf-dock" id="surfDock" data-state="mini" hidden role="region" aria-label="Surf Break live player">
+    <!-- ============ Surf Break overlay: the ONE Surf Break player plus its
+         full control center, floated over whichever tab is showing. Surf
+         Break is not a tab anymore — the floating wave button (#surfFab)
+         summons this overlay and puts it away again, and the tab
+         underneath keeps its scroll position and place throughout. The
+         player node lives here permanently and never moves, so opening,
+         closing and tab switches never reload it. ============ -->
+    <div class="surf-dock" id="surfDock" data-state="hidden" hidden role="region" aria-label="Surf Break">
       <div class="surf-dock-head">
         <span class="surf-dock-title"><span class="surf-live-dot"></span>Surf Break · live</span>
         <span class="surf-dock-spot" id="surfDockSpot">Banzai Pipeline</span>
@@ -2488,8 +2524,7 @@
         <span class="surf-dock-btns">
           <button class="btn-small" id="surfSoundBtn" type="button" aria-pressed="false" aria-label="Turn stream sound on">Sound off</button>
           <button class="btn-small surf-zoom-btn" id="surfZoomBtn" type="button" aria-pressed="false" aria-label="Toggle digital zoom"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Zoom</button>
-          <button class="btn-small" id="surfCollapseBtn" type="button">Collapse</button>
-          <button class="btn-small" id="surfExpandBtn" type="button" hidden>Expand</button>
+          <button class="btn-small" id="surfCloseBtn" type="button">Close</button>
           <button class="btn-small" id="surfDockStopBtn" type="button">Stop</button>
         </span>
       </div>
@@ -2539,7 +2574,55 @@
         </div>
       </div>
       <p class="surf-dock-status" id="surfDockStatus" role="status" aria-live="polite" hidden></p>
+
+      <!-- ============ Surf Break control center: break chips, Follow the
+           Sun, lineup zones, switches and credits — the whole former Surf
+           tab, living inside the overlay under the player. ============ -->
+      <div class="surf-controls" id="surfControls">
+      <section class="surf-card" aria-labelledby="surf-h">
+        <h2 id="surf-h">Surf Break — live cams</h2>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this overlay</strong>, or the speaker inside the player. Turn sound on once and the app <strong style="color:var(--ink);">remembers</strong>: phones sometimes drop a stream's sound on their own a little way in, and when that happens the app notices and puts the sound back by itself within a couple of seconds — no need to touch the volume buttons. Your sound also comes back by itself when Follow the Sun moves to the next break and when you return to the app. To turn sound off, use the overlay's Sound button (the player's own speaker is treated as a dropped signal and gets restored). Surf Break is not a screen of its own anymore: it opens as an <strong style="color:var(--ink);">overlay</strong> over whichever tab you're on — the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it and closes it, and the tab underneath keeps its place while you watch. This is its control center: pick a break, close the player, and set auto-play here.</p>
+
+        <div class="surf-nowrow">
+          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
+          <button class="btn-small" id="surfShowHideBtn" type="button">Close player</button>
+        </div>
+
+        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Auto-play streams</div>
+            <div class="sw-sub">On (the usual): the best daylight break starts by itself, muted, as soon as you open the app — Surf Break opens by itself right here, over whichever tab you're on — and Follow the Sun keeps cycling. Off: Surf Break stays closed and nothing loads until you tap the wave button and tap Play — kinder to your data plan. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
+        </div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Lineup zones</div>
+            <div class="sw-sub">On: each spot's poster still in the player above carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
+        </div>
+
+        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
+        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. Closing this overlay never stops the stream — the wave button's pulsing red dot shows it's still playing behind the button — and switching tabs never stops it either; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen — and when it picks back up, your sound choice comes back with it.</p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
+      </section>
+      </div>
     </div>
+
+    <!-- ============ Surf Break floating button: a small wave mark that
+         follows every screen. Tap it to open the Surf Break overlay over
+         the current tab; tap it again (or the overlay's Close) to put the
+         overlay away. Its dot shows at a glance whether a stream is
+         playing behind it. ============ -->
+    <button class="surf-fab" id="surfFab" type="button" aria-pressed="false" aria-label="Open Surf Break" data-play="off">
+      <svg class="fab-wave" aria-hidden="true"><use href="#i-wave"/></svg>
+      <svg class="fab-x" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <span class="surf-fab-dot" aria-hidden="true"></span>
+    </button>
 
     <!-- ============ Unsupported-browser notice ============ -->
     <div class="unsupported" id="unsupported" hidden>
@@ -3522,43 +3605,6 @@
       </details>
       </div>
       </div><!-- /panel-device -->
-
-      <!-- ================= Tab: Surf ================= -->
-      <div id="panel-surf" role="tabpanel" aria-labelledby="tab-surf" hidden>
-      <h2 class="tab-title">Surf</h2>
-
-<section class="card surf-card" aria-labelledby="surf-h">
-        <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button in the player dock</strong>, or the speaker inside the player. Turn sound on once and the app <strong style="color:var(--ink);">remembers</strong>: phones sometimes drop a stream's sound on their own a little way in, and when that happens the app notices and puts the sound back by itself within a couple of seconds — no need to touch the volume buttons. Your sound also comes back by itself when Follow the Sun moves to the next break and when you return to the app. To turn sound off, use the dock's Sound button (the player's own speaker is treated as a dropped signal and gets restored). The player itself lives in a dock pinned to the bottom of the screen, so it rides along on <strong style="color:var(--ink);">every tab</strong> — this card is its control center: pick a break, show or hide the player, and set auto-play here.</p>
-
-        <div class="surf-nowrow">
-          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
-          <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
-        </div>
-
-        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Auto-play streams</div>
-            <div class="sw-sub">On (the usual): the best daylight break starts by itself, muted, as soon as you open the app — on whichever tab you're on — and Follow the Sun keeps cycling. Off: the player dock stays hidden and nothing loads until you open the Surf tab, tap Show player here, or tap Play in the dock — kinder to your data plan. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
-        </div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Lineup zones</div>
-            <div class="sw-sub">On: each spot's poster still in the player dock carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
-        </div>
-
-        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
-        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. The player dock rides along on every tab and switching tabs never stops the stream; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen — and when it picks back up, your sound choice comes back with it.</p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
-      </section>
-      </div><!-- /panel-surf -->
 
       <!-- ================= Tab: Info ================= -->
       <div id="panel-info" role="tabpanel" aria-labelledby="tab-info" hidden>
@@ -6314,7 +6360,6 @@
           strains: document.getElementById("tab-strains"),
           terpene: document.getElementById("tab-terpene"),
           burnguard: document.getElementById("tab-burnguard"),
-          surf: document.getElementById("tab-surf"),
           device: document.getElementById("tab-device"),
           info: document.getElementById("tab-info")
         };
@@ -6324,7 +6369,6 @@
           strains: document.getElementById("panel-strains"),
           terpene: document.getElementById("panel-terpene"),
           burnguard: document.getElementById("panel-burnguard"),
-          surf: document.getElementById("panel-surf"),
           device: document.getElementById("panel-device"),
           info: document.getElementById("panel-info")
         };
@@ -10088,11 +10132,19 @@ var STRAIN_SRC_LINKS = {
       /* ================= Surf Break — live surf cams, Follow the Sun =================
          Pure presentation layer: it never touches Bluetooth, never calls writeFrame,
          and sends nothing anywhere. Streams are public YouTube live cams loaded in
-         youtube-nocookie iframes. The ONE player lives permanently in the fixed
-         dock (#surfDock) in the app shell — outside every tab panel — so it is
-         visible on all tabs and tab switches never move, destroy or reload it.
+         youtube-nocookie iframes. Surf Break is NOT a tab: the ONE player lives
+         permanently in the overlay (#surfDock) in the app shell — outside every
+         tab panel — and a small floating wave button (#surfFab) follows every
+         screen. Tapping the button opens the overlay (player + the full Surf
+         Break control center) over the current tab, which keeps its scroll
+         position and place underneath; tapping it again, or the overlay's
+         Close, puts the overlay away. Closing never stops the stream — the
+         button's dot shows at a glance whether a stream is playing behind
+         it. The player node never moves, so opening, closing and tab
+         switches never reload it.
          With Auto-play on (default), the best daylight break starts by itself,
-         muted, as soon as the app opens. Sound is a remembered choice: once
+         muted, as soon as the app opens — presented through the overlay,
+         opened automatically over the starting tab. Sound is a remembered choice: once
          the viewer turns it on (the dock's Sound button, or the speaker in
          YouTube's own controls), a 2-second watchdog adopts that choice and
          restores it whenever the player is found muted while playing —
@@ -10101,18 +10153,15 @@ var STRAIN_SRC_LINKS = {
          hardware volume press re-asserts it. The watchdog makes that press
          unnecessary. The same restore covers every player reload (Follow
          the Sun advance, background resume, recovery chain). Turning sound
-         OFF is the dock Sound button's job; a mute seen only inside the
+         OFF is the overlay Sound button's job; a mute seen only inside the
          player's own UI is treated as a dropped signal, not an opt-out. The stream unloads only on Stop or
          on the app going into the background (visibilitychange) — never on
-         a tab switch. On a stream error/end, an automatic start advances
+         a tab switch, and never on the overlay closing. On a stream error/end, an automatic start advances
          through the untried spots in Follow the Sun daylight-rank order
          (a manual pick retries its own spot once) and the fallback —
          naming every spot tried — appears only after the chain is
-         exhausted. Collapsing the dock switches it to a mini live view:
-         the same player node, only restyled smaller by CSS, so nothing
-         reloads; the fallback can never render in the mini view (mini is
-         refused while it shows, in JS and again in CSS), so it is always
-         fully readable at full width. */
+         exhausted; the fallback always opens the overlay, so its message
+         and YouTube link are always fully readable at full width. */
       (function () {
         "use strict";
         var SPOTS = [
@@ -10138,8 +10187,8 @@ var STRAIN_SRC_LINKS = {
         var dockSpot = document.getElementById("surfDockSpot");
         var dockMeta = document.getElementById("surfDockMeta");
         var dockStatus = document.getElementById("surfDockStatus");
-        var collapseBtn = document.getElementById("surfCollapseBtn");
-        var expandBtn = document.getElementById("surfExpandBtn");
+        var closeBtn = document.getElementById("surfCloseBtn");
+        var fab = document.getElementById("surfFab");
         var dockStopBtn = document.getElementById("surfDockStopBtn");
         var soundBtn = document.getElementById("surfSoundBtn");
         var showHideBtn = document.getElementById("surfShowHideBtn");
@@ -10224,7 +10273,7 @@ var STRAIN_SRC_LINKS = {
         var ytPlayer = null, plainFrame = false;
         var dwellStart = 0, loadTimer = 0, slowTimer = 0;
         var manualHold = false, stoppedByUser = false, gestureArmed = false;
-        var dockState = "hidden"; /* hidden | expanded | mini */
+        var dockState = "hidden"; /* hidden | open — the overlay over the current tab */
         var bgSuspended = false, bgPaused = false;
         /* Auto-recovery chain: when a stream errors or ends on its own
            (not a manual pick), the player advances through the remaining
@@ -10237,18 +10286,18 @@ var STRAIN_SRC_LINKS = {
 
         function setNow(html) { nowLine.innerHTML = html; }
 
-        /* --- dock chrome: header, status line, card button, content padding --- */
+        /* --- overlay chrome: header, status line, card button, floating button --- */
         function dockVisible() { return !dock.hidden; }
         function syncDockPad() {
-          var h = dock.hidden ? 0 : (dock.offsetHeight || (dockState === "mini" ? 96 : 330));
-          /* Bottom clearance now clears only the surf dock, measured in its
-             CURRENT state — there is no bottom tab bar anymore (navigation
-             lives in the left tray, summoned by the edge handle). */
-          if (appWrap) appWrap.style.paddingBottom = (54 + (dock.hidden ? 0 : h + 10)) + "px";
-          /* The dock also floats over the unsupported-browser notice (the one
-             screen where the app itself never opens), so give that scroll
-             area the same clearance. */
-          if (unsupportedEl) unsupportedEl.style.paddingBottom = dock.hidden ? "" : "calc(" + (32 + h + 22) + "px + env(safe-area-inset-bottom))";
+          /* The overlay floats over the current tab and never pushes it
+             around: the wrap keeps its base bottom padding in EVERY
+             state, so opening or closing Surf Break never changes the
+             page underneath — scroll position and place are preserved
+             exactly. The unsupported-browser notice (the one screen
+             where the app itself never opens) likewise needs no
+             clearance: the overlay floats over it the same way. */
+          if (appWrap) appWrap.style.paddingBottom = "54px";
+          if (unsupportedEl) unsupportedEl.style.paddingBottom = "";
         }
         function followText() {
           if (manualHold) return "your pick — Follow the Sun paused";
@@ -10288,40 +10337,42 @@ var STRAIN_SRC_LINKS = {
           if (!p || plainFrame) return;
           try { p.unMute(); p.setVolume(soundVol); } catch (e) { /* ignore */ }
         }
+        /* The floating wave button mirrors the overlay + stream state at
+           a glance: pressed (✕ face) while the overlay is up; a pulsing
+           red dot while a stream is playing behind it; a steady amber
+           dot while one is loading or waiting for its first tap. */
+        function syncFab() {
+          if (!fab) return;
+          var open = dockVisible();
+          fab.setAttribute("aria-pressed", open ? "true" : "false");
+          fab.setAttribute("data-play", mode === "playing" ? "playing" : (mode === "loading" || mode === "waiting" ? "busy" : "off"));
+          fab.setAttribute("aria-label", open ? "Close Surf Break" : (mode === "playing" ? "Surf Break is playing — tap to open it" : "Open Surf Break"));
+        }
         function syncDockChrome() {
           syncDockHead();
           syncDockStatus();
           syncSoundBtn();
-          if (showHideBtn) showHideBtn.textContent = dockVisible() ? "Hide player" : "Show player";
+          syncFab();
           syncDockPad();
         }
-        function setDockState(st) {
-          /* The fallback is a text panel and can never be squeezed into
-             the mini grid's 112px column: mini is refused while it shows. */
-          if (st === "mini" && mode === "fallback") st = "expanded";
-          dockState = st;
-          if (st === "mini") exitZoom(); /* no zoom in the mini view — collapsing resets it */
-          dock.setAttribute("data-state", st);
-          collapseBtn.hidden = st !== "expanded" || mode === "fallback";
-          expandBtn.hidden = st !== "mini";
-          syncDockPad();
-        }
-        function showDock(st) {
+        function openOverlay() {
           dock.hidden = false;
-          setDockState(st || (dockState === "mini" ? "mini" : "expanded"));
+          dockState = "open";
+          dock.setAttribute("data-state", "open");
           syncDockChrome();
         }
-        function hideDock() {
+        function closeOverlay() {
           dock.hidden = true;
           dockState = "hidden";
-          exitZoom(); /* Stop (and auto-play off) route through here — zoom never survives the dock closing */
+          dock.setAttribute("data-state", "hidden");
+          exitZoom(); /* closing the overlay resets zoom — it never survives into the next open */
           syncDockChrome();
         }
         function showOnly(which) {
           facade.hidden = which !== "facade";
           playerBox.hidden = which !== "player";
           fallback.hidden = which !== "fallback";
-          if (which === "fallback") showDock("expanded"); /* the fallback + its YouTube link always get full room */
+          if (which === "fallback") openOverlay(); /* the fallback + its YouTube link always open the overlay, so they are always fully readable */
           syncDockChrome();
           syncZoomUI(); /* the gesture layer tracks which stage child is visible */
         }
@@ -10393,10 +10444,10 @@ var STRAIN_SRC_LINKS = {
           /* The gesture layer exists only while zoom mode is on AND the
              player is the visible stage child — with zoom off, touches
              reach the player exactly as before. */
-          if (gesture) gesture.hidden = !(zoomOn && dockState === "expanded" && playerBox && !playerBox.hidden);
+          if (gesture) gesture.hidden = !(zoomOn && dockState === "open" && playerBox && !playerBox.hidden);
           applyZoom();
         }
-        function enterZoom() { if (dockState !== "expanded") return; zoomOn = true; syncZoomUI(); }
+        function enterZoom() { if (dockState !== "open") return; zoomOn = true; syncZoomUI(); }
         function exitZoom() { zoomOn = false; zoomScale = 1; zoomX = 0; zoomY = 0; syncZoomUI(); }
         if (zoomBtn) zoomBtn.addEventListener("click", function () { if (zoomOn) exitZoom(); else enterZoom(); });
         if (zoomInBtn) zoomInBtn.addEventListener("click", function () { zoomScale = Math.min(3, Math.floor(zoomScale * 2) / 2 + 0.5); applyZoom(); });
@@ -10561,13 +10612,13 @@ var STRAIN_SRC_LINKS = {
           var triedTxt = (triedNames && triedNames.length > 1) ? " Tried, in order: " + triedNames.join(" · ") + "." : "";
           if (kind === "ended") {
             fbTitle.textContent = "That live stream has ended";
-            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, watch it on YouTube, or pick another break in the Surf Break card on the Surf tab." + triedTxt;
+            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, watch it on YouTube, or pick another break below." + triedTxt;
           } else if (triedNames && triedNames.length > 1) {
             fbTitle.textContent = "None of the breaks loaded";
-            fbText.textContent = "Every break was tried in Follow the Sun order and none came through — they may have restarted, or the connection hiccuped." + triedTxt + " Try again, or pick a break in the Surf Break card on the Surf tab.";
+            fbText.textContent = "Every break was tried in Follow the Sun order and none came through — they may have restarted, or the connection hiccuped." + triedTxt + " Try again, or pick a break below.";
           } else {
             fbTitle.textContent = "Couldn't load " + spot.name + " just now";
-            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, watch " + spot.name + " on YouTube, or pick another break in the Surf Break card on the Surf tab.";
+            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, watch " + spot.name + " on YouTube, or pick another break below.";
           }
           ytLink.href = "https://www.youtube.com/watch?v=" + spot.id;
           setNow("Stream not playing — nothing is using data." + (triedNames && triedNames.length ? " Tried: " + triedNames.join(", ") + "." : ""));
@@ -10624,7 +10675,11 @@ var STRAIN_SRC_LINKS = {
           if (!keepChain) resetChain();
           currentKey = spot.key;
           bgPaused = false;
-          showDock();
+          /* Starting a stream never forces the overlay open or closed:
+             summons (app open, wave button, fallback) open it themselves,
+             and a Follow the Sun advance or a background resume behind a
+             closed overlay leaves it closed — the wave button's dot
+             carries the playing state. */
           setFacade(spot);
           destroyPlayer();
           showOnly("player");
@@ -10672,8 +10727,8 @@ var STRAIN_SRC_LINKS = {
           bgPaused = false;
           var spot = spotByKey(currentKey);
           unload();
-          hideDock();
-          setNow("Stream stopped — the player is hidden and nothing is using data. Tap Show player here to watch <strong>" + spot.name + "</strong> again.");
+          closeOverlay();
+          setNow("Stream stopped — Surf Break is closed and nothing is using data. Tap the wave button to watch <strong>" + spot.name + "</strong> again.");
         }
         function pickSpot(key) {
           exitZoom(); /* a manual pick is a spot change, with or without a stream start */
@@ -10684,9 +10739,9 @@ var STRAIN_SRC_LINKS = {
           var spot = spotByKey(key);
           if (autoOn) { startStream(spot); }
           else {
-            showDock("expanded");
+            openOverlay();
             unload();
-            setNow("Your pick: <strong>" + spot.name + "</strong> — tap Play in the player dock to watch. Follow the Sun cycling is paused while this is your pick.");
+            setNow("Your pick: <strong>" + spot.name + "</strong> — tap Play in the player above to watch. Follow the Sun cycling is paused while this is your pick.");
           }
         }
         playBtn.addEventListener("click", function () {
@@ -10694,7 +10749,7 @@ var STRAIN_SRC_LINKS = {
           startStream(spotByKey(currentKey));
         });
         dockStopBtn.addEventListener("click", stopStream);
-        /* The dock's Sound button is THE sound control: its tap is a real
+        /* The overlay's Sound button is THE sound control: its tap is a real
            gesture in this document, so the unmute it asks for is the most
            reliable kind. Off is also only here — a mute pressed inside
            YouTube's own controls is indistinguishable from the phone
@@ -10720,45 +10775,26 @@ var STRAIN_SRC_LINKS = {
             } catch (e) { /* ignore */ }
           }
         });
-        collapseBtn.addEventListener("click", function () { setDockState("mini"); syncDockChrome(); });
-        expandBtn.addEventListener("click", function () { setDockState("expanded"); syncDockChrome(); });
-        /* Tapping the mini view itself (its poster/stage area, not a button
-           or link inside it) also expands the dock. */
-        dock.addEventListener("click", function (e) {
-          if (dockState !== "mini") return;
-          var body = document.getElementById("surfDockBody");
-          if (!body || !body.contains(e.target)) return;
-          if (e.target.closest && e.target.closest("button, a")) return;
-          setDockState("expanded");
-          syncDockChrome();
-        });
-        if (showHideBtn) showHideBtn.addEventListener("click", function () {
-          if (dockVisible()) {
-            stopStream();
-          } else {
-            stoppedByUser = false;
-            bgPaused = false;
-            if (!manualHold) {
-              var b = bestKey(new Date());
-              if (b) currentKey = b;
-              renderChips();
-            }
-            showDock("expanded");
-            startStream(spotByKey(currentKey));
-          }
-        });
-        /* Opening the Surf tab IS a request to watch: if no stream is
-           loading or playing, the player loads by itself — the current
-           Follow the Sun daylight pick (or the viewer's manual pick,
-           which still holds) — expanded, with no extra Show/Play tap.
-           Every way of landing on the tab rides this same button's click
-           (tray tap or menu swipe), so one listener covers
-           them all. A stream already loading, waiting for its first
-           gesture, or playing is left exactly as it is. This is also the
-           deliberate exception to Auto-play off and to a previous Stop:
-           the tab tap itself is the summon. */
-        var surfTabBtn = document.getElementById("tab-surf");
-        if (surfTabBtn) surfTabBtn.addEventListener("click", function () {
+        /* The overlay's Close — and the control center's Close player
+           button — put the overlay away and nothing more: the stream
+           keeps playing behind the wave button (its dot shows it), and
+           Stop remains the only manual unload. */
+        if (closeBtn) closeBtn.addEventListener("click", function () { closeOverlay(); });
+        if (showHideBtn) showHideBtn.addEventListener("click", function () { closeOverlay(); });
+        /* The floating wave button is the summon. Tapping it opens the
+           Surf Break overlay over the current tab — the tab underneath
+           keeps its scroll position and place — and tapping it again
+           closes the overlay back down to the button, on demand.
+           Opening IS a request to watch: if no stream is loading or
+           playing, the player loads by itself — the current Follow the
+           Sun daylight pick (or the viewer's manual pick, which still
+           holds) — with no extra Play tap. A stream already loading,
+           waiting for its first gesture, or playing is left exactly as
+           it is. This is also the deliberate exception to Auto-play off
+           and to a previous Stop: the button tap itself is the summon. */
+        if (fab) fab.addEventListener("click", function () {
+          if (dockVisible()) { closeOverlay(); return; }
+          openOverlay();
           if (mode === "playing" || mode === "loading" || mode === "waiting") return;
           stoppedByUser = false;
           bgSuspended = false;
@@ -10768,7 +10804,6 @@ var STRAIN_SRC_LINKS = {
             if (bk) currentKey = bk;
             renderChips();
           }
-          showDock("expanded");
           startStream(spotByKey(currentKey));
         });
         retryBtn.addEventListener("click", function () { stoppedByUser = false; startStream(spotByKey(currentKey)); });
@@ -10783,15 +10818,15 @@ var STRAIN_SRC_LINKS = {
             bgSuspended = false;
             bgPaused = false;
             unload();
-            hideDock();
-            setNow("Auto-play is off — the player dock is hidden and streams now load only when you tap Show player here or Play in the dock.");
+            closeOverlay();
+            setNow("Auto-play is off — Surf Break is closed and streams now load only when you open it with the wave button and tap Play.");
           } else {
             manualHold = false;
             stoppedByUser = false;
             var b = bestKey(new Date());
             if (b) currentKey = b;
             renderChips();
-            showDock("expanded");
+            openOverlay();
             startStream(spotByKey(currentKey));
           }
         });
@@ -10840,13 +10875,16 @@ var STRAIN_SRC_LINKS = {
           }
         }, 2000);
 
-        /* --- Follow the Sun cycle + clock refresh (runs on EVERY tab now —
-           the player lives in the dock, not on the Device tab) --- */
+        /* --- Follow the Sun cycle + clock refresh (runs on EVERY tab —
+           the player lives in the overlay, not on any tab). The cycle
+           also runs while the overlay is closed: a stream playing behind
+           the wave button keeps following the sun exactly as it did
+           while watched. --- */
         setInterval(function () {
           refreshChipTimes();
           syncDockHead();
           if (dockVisible() && facade.hidden === false && mode === "idle" && !bgPaused) setFacade(spotByKey(currentKey));
-          if (mode !== "playing" || !autoOn || manualHold || stoppedByUser || !dockVisible()) return;
+          if (mode !== "playing" || !autoOn || manualHold || stoppedByUser) return;
           var date = new Date();
           var cur = spotInfo(spotByKey(currentKey), date);
           var dwell = dwellStart ? Date.now() - dwellStart : 0;
@@ -10872,12 +10910,15 @@ var STRAIN_SRC_LINKS = {
               bgSuspended = true;
               unload();
               bgPaused = true;
-              setNow("Stream paused — the app went into the background, so nothing is using data. " + (autoOn ? "It picks back up by itself when you return." : "Tap Play in the dock to pick it back up when you return."));
+              setNow("Stream paused — the app went into the background, so nothing is using data. " + (autoOn ? "It picks back up by itself when you return." : "Tap Play in the player to pick it back up when you return."));
               syncDockChrome();
             }
           } else if (bgSuspended) {
             bgSuspended = false;
-            if (!stoppedByUser && dockVisible() && autoOn) {
+            if (!stoppedByUser && autoOn) {
+              /* Resume behind whatever state the overlay is in: if it was
+                 open it still is; if the viewer had closed it to the wave
+                 button, the stream picks back up behind the button. */
               startStream(spotByKey(currentKey));
             } else {
               syncDockChrome();
@@ -10886,30 +10927,28 @@ var STRAIN_SRC_LINKS = {
         });
         window.addEventListener("resize", syncDockPad);
 
-        /* --- init: pre-select the best daylight break before any tap. The
-           dock is visible on the default Session tab, so with Auto-play on
-           the stream starts on app open — no Device-tab visit needed. --- */
+        /* --- init: pre-select the best daylight break before any tap. With
+           Auto-play on, Surf Break opens AUTOMATICALLY on app open — as
+           the overlay over the starting tab (Session), never as a
+           separate screen — and the stream starts by itself. --- */
         autoSwitch.setAttribute("aria-checked", autoOn ? "true" : "false");
         if (zoneSwitch) zoneSwitch.setAttribute("aria-checked", zonesOn ? "true" : "false");
         renderChips();
         setFacade(spotByKey(currentKey));
         var spot0 = spotByKey(currentKey), info0 = spotInfo(spot0, new Date());
-        /* The dock's visibility is governed by Surf state alone (Auto-play /
-           Stop), never by which tab is showing — and not by the Bluetooth
-           support gate either: the streams need no Bluetooth, so the dock
-           rides along even on the unsupported-browser notice, the one screen
-           where the app itself never opens. */
+        /* The overlay's visibility is governed by Surf state alone
+           (Auto-play / the wave button / Stop), never by which tab is
+           showing — and not by the Bluetooth support gate either: the
+           streams need no Bluetooth, so the overlay and its wave button
+           ride along even on the unsupported-browser notice, the one
+           screen where the app itself never opens. */
         if (autoOn) {
-          /* Cold open lands on the MINI dock — the small live view + strip.
-             The full 16:9 state is a deliberate summon (Expand button or a
-             tap on the mini view), never the default. startStream's own
-             showDock() call preserves the mini state set here. */
-          showDock("mini");
+          openOverlay();
           startStream(spot0);
         } else {
-          hideDock();
-          if (info0.day) setNow("Daylight pick right now: <strong>" + spot0.name + "</strong> · " + info0.label + " local · ☀ — Auto-play is off and the player dock is hidden, so tap Show player to watch.");
-          else setNow("No break is in daylight right now — every spot still plays if you pick it; the ☀/☾ badges show each break's local time. Auto-play is off and the player dock is hidden, so tap Show player to watch.");
+          closeOverlay();
+          if (info0.day) setNow("Daylight pick right now: <strong>" + spot0.name + "</strong> · " + info0.label + " local · ☀ — Auto-play is off, so tap the wave button to watch.");
+          else setNow("No break is in daylight right now — every spot still plays if you pick it; the ☀/☾ badges show each break's local time. Auto-play is off, so tap the wave button to watch.");
         }
         syncDockChrome();
         window.__surfDock = {
@@ -10981,7 +11020,7 @@ var STRAIN_SRC_LINKS = {
         if (closeBtn) closeBtn.addEventListener("click", function () { setTray(false); });
         /* Picking a tab: the app's wiring switches the tab; the tray
            auto-closes behind it. */
-        ["tab-session", "tab-temperature", "tab-strains", "tab-terpene", "tab-burnguard", "tab-surf", "tab-device", "tab-info"].forEach(function (id) {
+        ["tab-session", "tab-temperature", "tab-strains", "tab-terpene", "tab-burnguard", "tab-device", "tab-info"].forEach(function (id) {
           var b = document.getElementById(id);
           if (b) b.addEventListener("click", function () { setTray(false); });
         });
@@ -11045,7 +11084,10 @@ var STRAIN_SRC_LINKS = {
       /* ================= Swipe between menus =================
          A TRUE swipe — a finger travelling horizontally across the menu
          content — moves to the neighbouring menu in tray order: Session,
-         Temperature, Strains, Terpenes, Burn Guard, Surf, Device, Info.
+         Temperature, Strains, Terpenes, Burn Guard, Device, Info. (Surf
+         Break is not a menu anymore — it is the floating wave button's
+         overlay, and while that overlay is up, swipes leave the tab
+         underneath exactly where it is.)
          There is NO wraparound: a swipe past the first menu (Session)
          or the last menu (Info) stays put — the ends are clamped. The
          touch may start anywhere on the
@@ -11064,11 +11106,10 @@ var STRAIN_SRC_LINKS = {
          lift-off doesn't undo a full swipe. The switch itself rides the
          app's own tab wiring by clicking the tray's tab button, so aria
          state, the panel entrance, and onTabShown behave exactly as a
-         tray tap — a swipe into Surf is a Surf tab click, player
-         auto-load included. */
+         tray tap. */
       (function () {
         "use strict";
-        var ORDER = ["session", "temperature", "strains", "terpene", "burnguard", "surf", "device", "info"];
+        var ORDER = ["session", "temperature", "strains", "terpene", "burnguard", "device", "info"];
         var app = document.getElementById("app");
         if (!app) return;
         var sx = 0, sy = 0, tracking = false, blocked = false, claimed = false;
@@ -11080,6 +11121,8 @@ var STRAIN_SRC_LINKS = {
         }
         function overlayOpen() {
           if (window.__navTray && window.__navTray.isOpen()) return true;
+          var sd = document.getElementById("surfDock");
+          if (sd && !sd.hidden) return true; /* the Surf Break overlay is up: the tab underneath stays put */
           return document.querySelectorAll(".sheet:not([hidden]), .photo-zoom:not([hidden])").length > 0;
         }
         function startBlocked(t) {
