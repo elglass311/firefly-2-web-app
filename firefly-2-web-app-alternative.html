@@ -2724,8 +2724,69 @@
       }
       .surf-overlay #surfCollapseBtn, .surf-overlay #surfExpandBtn { display: none !important; }
       .surf-overlay .surf-card { margin-bottom: 0; }
-      /* While the sheet is up, the page underneath holds still. */
+      /* While the full sheet is up, the page underneath holds still.
+         (The minimized frame below never takes this lock.) */
       body.surf-overlay-open { overflow: hidden; }
+      /* ---- Stage 1: the minimized stream view ----
+         The SAME overlay, sheet and ONE player node, shrunk to a small
+         floating 16:9 frame that holds ONLY the live player — no sheet
+         head, no dock head or status, no control-center card (no chips,
+         no switches, no credits). The overlay box itself shrinks to the
+         frame (JS sets its left/top/width, anchored to the wave button),
+         so the frame never covers the screen and never blocks touches —
+         or swipes — anywhere outside its own bounds. Its only controls
+         are the two small round buttons floating over its top-right
+         corner: fold away (the stream keeps playing) and expand to the
+         full Surf Break sheet. The player node is never moved between
+         stages, so the stream never reloads on a stage change. */
+      .surf-overlay.is-mini { inset: auto; height: auto; }
+      .surf-overlay.is-mini .surf-overlay-scrim { display: none !important; }
+      .surf-overlay.is-mini .surf-overlay-sheet {
+        position: relative; left: auto; top: auto; bottom: auto; transform: none;
+        width: 100%;
+        border-bottom: 1px solid var(--card-line);
+        border-radius: 14px; overflow: hidden;
+        background: #000;
+        box-shadow: 0 14px 38px rgba(0, 0, 0, 0.55);
+        animation: surfMiniIn var(--dur-2) var(--ease-out);
+      }
+      @keyframes surfMiniIn {
+        from { opacity: 0; transform: translateY(8px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .surf-overlay.is-mini .surf-overlay-head { display: none !important; }
+      .surf-overlay.is-mini .surf-overlay-scroll { flex: none; overflow: visible; padding: 0; }
+      .surf-overlay.is-mini .surf-card { display: none !important; }
+      .surf-overlay.is-mini .surf-dock {
+        margin: 0; padding: 0; border: 0; border-radius: 0;
+        box-shadow: none; background: #000;
+      }
+      .surf-overlay.is-mini .surf-dock-head,
+      .surf-overlay.is-mini .surf-dock-status { display: none !important; }
+      .surf-overlay.is-mini .surf-dock .surf-stage { margin-top: 0; border-radius: 0; }
+      .surf-overlay.is-mini .surf-facade,
+      .surf-overlay.is-mini .surf-player,
+      .surf-overlay.is-mini .surf-fallback { border: 0; border-radius: 0; }
+      .surf-overlay.is-mini .surf-facade-top,
+      .surf-overlay.is-mini .surf-facade-meta { display: none !important; }
+      .surf-overlay.is-mini .surf-play { width: 46px; height: 46px; }
+      .surf-overlay.is-mini .surf-play svg { width: 20px; height: 20px; }
+      .surf-mini-controls { display: none; }
+      .surf-overlay.is-mini .surf-mini-controls {
+        display: flex; gap: 6px;
+        position: absolute; top: 6px; right: 6px; z-index: 9;
+      }
+      .surf-mini-btn {
+        appearance: none; cursor: pointer; font: inherit;
+        width: 34px; height: 34px; border-radius: 50%; flex: none;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(0, 0, 0, 0.55); color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+        touch-action: manipulation; padding: 0;
+      }
+      .surf-mini-btn svg { width: 16px; height: 16px; }
+      .surf-mini-btn:active { transform: scale(0.92); }
 </style>
     <script>
       /* Theme + motion boot — runs before first paint so a saved theme/motion
@@ -2867,6 +2928,13 @@
         <div class="surf-overlay-head">
           <span class="surf-overlay-title"><svg aria-hidden="true"><use href="#i-wave"/></svg>Surf Break</span>
           <button class="surf-overlay-close" id="surfOverlayClose" type="button" aria-label="Close Surf Break"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+        </div>
+        <!-- Stage 1 (minimized) controls: shown only while the overlay is
+             the small floating stream frame — fold away (stream keeps
+             playing) and expand to the full Surf Break sheet. -->
+        <div class="surf-mini-controls" id="surfMiniControls">
+          <button class="surf-mini-btn" id="surfMiniExpand" type="button" aria-label="Expand to the full Surf Break"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg></button>
+          <button class="surf-mini-btn" id="surfMiniClose" type="button" aria-label="Close the minimized stream view"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
         </div>
         <div class="surf-overlay-scroll" id="surfOverlayScroll">
     <div class="surf-dock" id="surfDock" data-state="expanded" hidden role="region" aria-label="Surf Break live player">
@@ -10739,6 +10807,7 @@ var STRAIN_SRC_LINKS = {
         var dwellStart = 0, loadTimer = 0, slowTimer = 0;
         var manualHold = false, stoppedByUser = false, gestureArmed = false;
         var dockState = "hidden"; /* hidden | expanded | mini */
+        var surfStage = "closed"; /* closed | mini | full — the two-stage Surf Break view: the wave button opens "mini" (stream only), its expand control opens "full" (the whole sheet) */
         var bgSuspended = false, bgPaused = false;
         /* Auto-recovery chain: when a stream errors or ends on its own
            (not a manual pick), the player advances through the remaining
@@ -10900,16 +10969,26 @@ var STRAIN_SRC_LINKS = {
           var b = zoomBounds();
           zoomX = Math.max(-b.x, Math.min(b.x, zoomX));
           zoomY = Math.max(-b.y, Math.min(b.y, zoomY));
-          zoomWrap.style.transform = zoomOn ? "translate3d(" + Math.round(zoomX) + "px, " + Math.round(zoomY) + "px, 0) scale(" + zoomScale + ")" : "";
+          /* The transform exists ONLY while a zoom is actually in
+             effect: at 1× with no pan the wrapper carries no transform
+             at all, so the live feed's resting state is always the
+             full frame — the entire 16:9 picture, letterboxed, with
+             no default digital zoom and no fixed crop. */
+          var zoomActive = zoomScale > 1 || zoomX !== 0 || zoomY !== 0;
+          zoomWrap.style.transform = zoomActive ? "translate3d(" + Math.round(zoomX) + "px, " + Math.round(zoomY) + "px, 0) scale(" + zoomScale + ")" : "";
           if (zoomLevel) zoomLevel.textContent = fmtScale(zoomScale);
         }
         function syncZoomUI() {
           if (zoomBtn) zoomBtn.setAttribute("aria-pressed", zoomOn ? "true" : "false");
           if (zoomBar) zoomBar.hidden = !zoomOn;
-          /* The gesture layer exists only while zoom mode is on AND the
-             player is the visible stage child — with zoom off, touches
-             reach the player exactly as before. */
-          if (gesture) gesture.hidden = !(zoomOn && dockState === "expanded" && playerBox && !playerBox.hidden);
+          /* The gesture layer rides over the live player whenever the
+             player is the visible stage child — in BOTH Surf Break
+             stages (the minimized frame and the full sheet) — so pinch,
+             pan and double-tap work identically everywhere, with no
+             zoom mode to switch on first. It never covers the poster
+             facade or the fallback panel, so their own buttons (Play,
+             Try again, YouTube) stay directly tappable. */
+          if (gesture) gesture.hidden = !(dockState === "expanded" && playerBox && !playerBox.hidden);
           applyZoom();
         }
         function enterZoom() { if (dockState !== "expanded") return; zoomOn = true; syncZoomUI(); }
@@ -10919,10 +10998,41 @@ var STRAIN_SRC_LINKS = {
         if (zoomOutBtn) zoomOutBtn.addEventListener("click", function () { zoomScale = Math.max(1, Math.ceil(zoomScale * 2) / 2 - 0.5); applyZoom(); });
         if (zoomResetBtn) zoomResetBtn.addEventListener("click", function () { zoomScale = 1; zoomX = 0; zoomY = 0; applyZoom(); });
         window.addEventListener("resize", applyZoom);
-        /* Gestures on the transparent layer over the stage (the
-           cross-origin iframe swallows touches over the video itself):
-           one finger drags to pan; two fingers pinch to scale. */
+        /* Gestures on the transparent layer over the live player (the
+           cross-origin iframe swallows touches over the video itself,
+           so pinch and pan have to be caught here). The feed always
+           rests at 1× FULL FRAME — the entire video frame visible,
+           letterboxed in portrait — and zoom is entirely the viewer's:
+             · pinch scales 1×–3×;
+             · one finger drags to pan while zoomed, across the ENTIRE
+               frame: applyZoom clamps the pan to ±(scale−1)/2 of the
+               frame per axis, i.e. the zoomed picture's own edges are
+               the only limits — every part of the zone, top to bottom
+               as well as side to side, is reachable, and nothing locks
+               the view to a preset region;
+             · double-tap returns to the 1× full-frame fit;
+             · a plain single tap toggles play/pause through the player
+               API, like tapping the video itself (deferred ~280ms so a
+               double-tap is never also a pause).
+           Every gesture is consumed on this layer, which sits inside
+           .surf-dock / .surf-stage — both already in the swipe pager's
+           exclude list — so a pan can never turn a menu page or drag
+           the wave button, and the minimized frame's close/expand
+           buttons are separate elements above this layer, never part
+           of a pan. Zoom state resets in exitZoom: on every break
+           switch, on Stop, and when the minimized view folds away —
+           a new feed never opens pre-zoomed on a corner. */
         var zPointers = {}, zDrag = null, zPinch = null;
+        var zMoved = false, zPinched = false, zTapTimer = 0, zLastTapAt = 0;
+        function cancelPendingTap() { if (zTapTimer) { clearTimeout(zTapTimer); zTapTimer = 0; } }
+        function tapTogglePlay() {
+          if (!ytPlayer) return;
+          try {
+            var st = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
+            if (st === 1 && ytPlayer.pauseVideo) ytPlayer.pauseVideo(); /* 1 = YT.PlayerState.PLAYING */
+            else if (ytPlayer.playVideo) ytPlayer.playVideo();
+          } catch (e) { /* ignore */ }
+        }
         if (gesture) {
           gesture.addEventListener("pointerdown", function (e) {
             e.preventDefault();
@@ -10931,8 +11041,11 @@ var STRAIN_SRC_LINKS = {
             var ids = Object.keys(zPointers);
             if (ids.length === 1) {
               zDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, px: zoomX, py: zoomY };
+              zMoved = false;
               zPinch = null;
             } else if (ids.length === 2) {
+              cancelPendingTap();
+              zPinched = true;
               var a = zPointers[ids[0]], b = zPointers[ids[1]];
               zPinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: zoomScale, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, px: zoomX, py: zoomY };
               zDrag = null;
@@ -10942,9 +11055,13 @@ var STRAIN_SRC_LINKS = {
             if (!zPointers[e.pointerId]) return;
             zPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
             if (zDrag && e.pointerId === zDrag.id) {
-              zoomX = zDrag.px + (e.clientX - zDrag.sx);
-              zoomY = zDrag.py + (e.clientY - zDrag.sy);
-              applyZoom();
+              var dx = e.clientX - zDrag.sx, dy = e.clientY - zDrag.sy;
+              if (Math.abs(dx) + Math.abs(dy) > 6) zMoved = true;
+              if (zoomScale > 1) {
+                zoomX = zDrag.px + dx;
+                zoomY = zDrag.py + dy;
+                applyZoom();
+              }
             } else if (zPinch) {
               var ids = Object.keys(zPointers);
               if (ids.length !== 2) return;
@@ -10957,16 +11074,41 @@ var STRAIN_SRC_LINKS = {
             }
           });
           var zEnd = function (e) {
+            var wasDrag = !!(zDrag && e.pointerId === zDrag.id);
             delete zPointers[e.pointerId];
             var ids = Object.keys(zPointers);
             if (ids.length === 1) {
               var p = zPointers[ids[0]];
               zDrag = { id: Number(ids[0]), sx: p.x, sy: p.y, px: zoomX, py: zoomY };
               zPinch = null;
-            } else if (ids.length === 0) { zDrag = null; zPinch = null; }
+            } else if (ids.length === 0) {
+              if (wasDrag && !zPinched && !zMoved) {
+                /* A clean single tap. A second one inside 300ms makes
+                   it a double-tap: straight back to the 1× full frame,
+                   and the pending play/pause toggle is cancelled. */
+                var now = Date.now();
+                if (now - zLastTapAt < 300) {
+                  zLastTapAt = 0;
+                  cancelPendingTap();
+                  zoomScale = 1; zoomX = 0; zoomY = 0; applyZoom();
+                } else {
+                  zLastTapAt = now;
+                  cancelPendingTap();
+                  zTapTimer = setTimeout(function () { zTapTimer = 0; tapTogglePlay(); }, 280);
+                }
+              }
+              zDrag = null; zPinch = null; zMoved = false; zPinched = false;
+            }
           };
           gesture.addEventListener("pointerup", zEnd);
           gesture.addEventListener("pointercancel", zEnd);
+          /* Desktop pointers get the same free zoom on the wheel. */
+          gesture.addEventListener("wheel", function (e) {
+            e.preventDefault();
+            zoomScale = Math.max(1, Math.min(3, Math.round((zoomScale + (e.deltaY < 0 ? 0.25 : -0.25)) * 4) / 4));
+            if (zoomScale === 1) { zoomX = 0; zoomY = 0; }
+            applyZoom();
+          }, { passive: false });
         }
 
         function nowText(prefix) {
@@ -11127,6 +11269,10 @@ var STRAIN_SRC_LINKS = {
         }
         function showFallback(kind, triedNames) {
           mode = "fallback";
+          /* The fallback is a reading panel — it can never live inside
+             the minimized frame, so the view steps up to the full sheet
+             (same player node; nothing reloads) to show it. */
+          if (surfStage === "mini") setSurfStage("full");
           destroyPlayer();
           var spot = spotByKey(currentKey);
           showOnly("fallback");
@@ -11290,21 +11436,36 @@ var STRAIN_SRC_LINKS = {
           showDock("expanded");
           startStream(spotByKey(currentKey));
         }
-        /* --- Surf Break overlay + floating wave button ---
+        /* --- Surf Break overlay + floating wave button: TWO STAGES ---
            The wave button (#surfFab) rides on every screen. Tapping it
-           opens Surf Break as a sheet over the current tab; tapping it
-           again, the sheet's Close, the dimmed backdrop, or Escape folds
-           it back down. Opening runs openSurfFromTab — the player loads
-           and starts by itself on whatever tab he is on — and closing
-           only hides the sheet: the tab underneath is never switched,
+           now opens STAGE 1 — the minimized stream view: a small
+           floating 16:9 frame holding ONLY the live player, anchored
+           just above the button. The full Surf Break sheet (STAGE 2 —
+           the player plus the whole control center) is reached only
+           from the minimized frame's expand control. Both stages are
+           the same overlay element and the same ONE player node,
+           restyled by the .is-mini / .is-full classes, so moving
+           between stages never moves, restarts or reloads the stream.
+           Opening Stage 1 runs openSurfFromTab — the player loads and
+           starts by itself on whatever tab he is on, and a stream that
+           is already loading/playing/waiting is never restarted.
+           Closing the full sheet (its Close, the backdrop, Escape, or
+           the wave button) steps back to Stage 1 while a stream is
+           loaded/playing, and folds everything away when nothing was
+           ever loaded; closing Stage 1 folds it away and the stream
+           keeps playing behind the button, whose red dot (syncFab,
+           driven from syncDockChrome on every stream state change)
+           shows it at a glance. The tab underneath is never switched,
            scrolled or reloaded (its scroll position is restored if the
-           browser moved it), and a live stream keeps playing behind the
-           button, whose red dot (syncFab, driven from syncDockChrome on
-           every stream state change) shows it at a glance. --- */
+           browser moved it), and the body scroll lock belongs to the
+           full sheet only — the minimized frame blocks nothing outside
+           its own bounds. --- */
         var overlayEl = document.getElementById("surfOverlay");
         var fabBtn = document.getElementById("surfFab");
         var fabDot = document.getElementById("surfFabDot");
         var overlayScrollEl = document.getElementById("surfOverlayScroll");
+        var miniCloseBtn = document.getElementById("surfMiniClose");
+        var miniExpandBtn = document.getElementById("surfMiniExpand");
         var overlayOpen = false, savedScrollY = 0;
         function syncFab() {
           if (!fabBtn) return;
@@ -11312,26 +11473,84 @@ var STRAIN_SRC_LINKS = {
           fabBtn.classList.toggle("is-playing", live);
           if (fabDot) fabDot.hidden = !live;
         }
-        function setOverlay(open) {
+        function streamActive() { return mode === "loading" || mode === "playing" || mode === "waiting"; }
+        /* Minimized-frame geometry: ~62% of the screen width (capped
+           so it stays a small window on wide screens too), a true 16:9
+           box, right-aligned to the wave button and parked just above
+           it — or just below it when there isn't room above — always
+           clamped fully inside the viewport. */
+        function miniGeom() {
+          var vw = window.innerWidth || 360, vh = window.innerHeight || 640;
+          var w = Math.round(Math.min(vw * 0.62, 440));
+          w = Math.max(180, Math.min(w, vw - 16));
+          return { w: w, h: Math.round(w * 9 / 16), vw: vw, vh: vh };
+        }
+        function positionMini() {
+          if (!overlayEl || surfStage !== "mini" || !fabBtn) return;
+          var g = miniGeom();
+          var fr = fabBtn.getBoundingClientRect();
+          var minTop = fabMinTop();
+          var left = Math.round(fr.right - g.w);
+          var top = Math.round(fr.top - g.h - 10);
+          if (top < minTop) {
+            var below = Math.round(fr.bottom + 10);
+            top = (below + g.h <= g.vh - 8) ? below : minTop;
+          }
+          left = Math.min(Math.max(8, left), Math.max(8, g.vw - g.w - 8));
+          top = Math.min(Math.max(8, top), Math.max(8, g.vh - g.h - 8));
+          overlayEl.style.left = left + "px";
+          overlayEl.style.top = top + "px";
+          overlayEl.style.width = g.w + "px";
+        }
+        function setSurfStage(next) {
           if (!overlayEl) return;
-          overlayOpen = !!open;
+          var prev = surfStage;
+          surfStage = next;
+          overlayOpen = next !== "closed";
           overlayEl.hidden = !overlayOpen;
-          document.body.classList.toggle("surf-overlay-open", overlayOpen);
+          overlayEl.classList.toggle("is-mini", next === "mini");
+          overlayEl.classList.toggle("is-full", next === "full");
+          if (next !== "mini") { overlayEl.style.left = ""; overlayEl.style.top = ""; overlayEl.style.width = ""; }
+          document.body.classList.toggle("surf-overlay-open", next === "full");
           if (fabBtn) {
             fabBtn.setAttribute("aria-expanded", overlayOpen ? "true" : "false");
             fabBtn.setAttribute("aria-label", overlayOpen ? "Close Surf Break" : "Open Surf Break");
             fabBtn.classList.toggle("is-open", overlayOpen);
           }
-          if (overlayOpen) {
+          if (overlayOpen && prev === "closed") {
             savedScrollY = window.scrollY || 0;
-            if (overlayScrollEl) overlayScrollEl.scrollTop = 0;
-            openSurfFromTab();
-          } else if ((window.scrollY || 0) !== savedScrollY) {
+            if (next === "full" && overlayScrollEl) overlayScrollEl.scrollTop = 0;
+          } else if (!overlayOpen && (window.scrollY || 0) !== savedScrollY) {
             window.scrollTo(0, savedScrollY);
           }
+          if (next === "mini") positionMini();
+          applyZoom(); /* re-clamp any live pan to the frame's new size */
           syncFab();
         }
-        if (fabBtn) fabBtn.addEventListener("click", function () { setOverlay(!overlayOpen); });
+        /* Stage 1 — what the wave button (and the Session tab's Open
+           Surf button, and auto-play's open path) opens now. */
+        function openSurfMini() {
+          if (!overlayEl) return;
+          var wasClosed = surfStage === "closed";
+          setSurfStage("mini");
+          if (wasClosed) openSurfFromTab();
+        }
+        /* Stage 2 — only from Stage 1's expand control. */
+        function openSurfFull() {
+          if (!overlayEl || surfStage !== "mini") return;
+          setSurfStage("full");
+          if (overlayScrollEl) overlayScrollEl.scrollTop = 0;
+        }
+        function closeSurf() {
+          if (!overlayEl || surfStage === "closed") return;
+          if (surfStage === "full" && streamActive()) { setSurfStage("mini"); return; }
+          if (surfStage === "mini") exitZoom(); /* folding the mini view away resets its zoom to the 1× full frame */
+          setSurfStage("closed");
+        }
+        if (fabBtn) fabBtn.addEventListener("click", function () {
+          if (surfStage === "closed") openSurfMini(); else closeSurf();
+        });
+        window.addEventListener("resize", positionMini);
         /* --- Draggable wave button ---
            A press that stays within ~8px is a tap and falls through to
            the click above, unchanged. Past that it becomes a drag: the
@@ -11409,6 +11628,7 @@ var STRAIN_SRC_LINKS = {
               fabSuppressClickUntil = Date.now() + 400;
               lsSet(FAB_POS_KEY, JSON.stringify({ left: Math.round(r.left), top: Math.round(r.top) }));
             }
+            positionMini(); /* the minimized frame follows the button to its new resting spot */
           }
           fabBtn.addEventListener("pointerup", fabDragEnd);
           fabBtn.addEventListener("pointercancel", fabDragEnd);
@@ -11416,18 +11636,38 @@ var STRAIN_SRC_LINKS = {
             if (fabBtn.style.left) { var r = fabBtn.getBoundingClientRect(); fabPlace(r.left, r.top); }
           });
         }
+        /* A press that starts on a mini control and slides before it
+           lifts is a drag, not a tap: swallow that click so a pan
+           across the frame can never land on close/expand by accident.
+           (Registered before the buttons' own click handlers below.) */
+        [miniCloseBtn, miniExpandBtn].forEach(function (b) {
+          if (!b) return;
+          var dn = null;
+          b.addEventListener("pointerdown", function (e) { dn = { x: e.clientX, y: e.clientY }; });
+          b.addEventListener("click", function (e) {
+            if (dn && Math.hypot(e.clientX - dn.x, e.clientY - dn.y) > 10) { e.preventDefault(); e.stopImmediatePropagation(); }
+            dn = null;
+          }, true);
+        });
         var overlayCloseEl = document.getElementById("surfOverlayClose");
-        if (overlayCloseEl) overlayCloseEl.addEventListener("click", function () { setOverlay(false); });
+        if (overlayCloseEl) overlayCloseEl.addEventListener("click", closeSurf);
         var overlayScrimEl = document.getElementById("surfOverlayScrim");
-        if (overlayScrimEl) overlayScrimEl.addEventListener("click", function () { setOverlay(false); });
+        if (overlayScrimEl) overlayScrimEl.addEventListener("click", closeSurf);
+        if (miniCloseBtn) miniCloseBtn.addEventListener("click", closeSurf);
+        if (miniExpandBtn) miniExpandBtn.addEventListener("click", openSurfFull);
         document.addEventListener("keydown", function (e) {
-          if (overlayOpen && (e.key === "Escape" || e.key === "Esc")) setOverlay(false);
+          if (surfStage !== "closed" && (e.key === "Escape" || e.key === "Esc")) closeSurf();
         });
         window.__surfOverlay = {
-          open: function () { setOverlay(true); },
-          close: function () { setOverlay(false); },
-          toggle: function () { setOverlay(!overlayOpen); },
-          isOpen: function () { return overlayOpen; }
+          open: openSurfMini,
+          openMini: openSurfMini,
+          openFull: openSurfFull,
+          close: closeSurf,
+          toggle: function () { if (surfStage === "closed") openSurfMini(); else closeSurf(); },
+          isOpen: function () { return surfStage !== "closed"; },
+          isMini: function () { return surfStage === "mini"; },
+          isFull: function () { return surfStage === "full"; },
+          stage: function () { return surfStage; }
         };
         /* Sound button: the tap happens in THIS frame, inside a real user
            gesture — the strongest claim a web page can make on iOS's
@@ -11597,6 +11837,7 @@ var STRAIN_SRC_LINKS = {
               mode: mode,
               dock: dock.hidden ? "hidden" : dockState,
               overlay: overlayOpen,
+              stage: surfStage,
               key: currentKey,
               autoOn: autoOn,
               manualHold: manualHold,
@@ -11617,6 +11858,7 @@ var STRAIN_SRC_LINKS = {
             var b = zoomBounds();
             return {
               on: zoomOn,
+              surfStage: surfStage,
               scale: zoomScale,
               x: Math.round(zoomX), y: Math.round(zoomY),
               maxX: Math.round(b.x), maxY: Math.round(b.y),
