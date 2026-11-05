@@ -1934,9 +1934,11 @@
       .surf-dock-status { margin: 8px 2px 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
       .surf-dock-status[hidden] { display: none !important; }
       /* ---------- Surf Break floating button — follows every screen ----------
-         A small glass wave button pinned to the bottom-right corner: it
-         never covers the status island (top center), the tray handle
-         (left edge) or any tab's primary controls. It opens the Surf
+         A small glass wave button that starts pinned to the bottom-right
+         corner and can be dragged anywhere on screen — where it lands is
+         remembered on this device, and the drag clamp keeps it out from
+         under the status island (top center), the tray handle (left
+         edge) and any tab's primary controls. It opens the Surf
          Break overlay over the current tab and closes it again; its dot
          shows at a glance whether a stream is playing behind it
          (pulsing red) or loading / waiting for a first tap (steady
@@ -1954,13 +1956,15 @@
         border: 1px solid var(--card-line);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 10px 26px rgba(0, 0, 0, 0.45);
         color: var(--ink);
+        /* The button is draggable (see the surf script): the browser must
+           never claim its touch for scrolling or a long-press callout. */
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none; user-select: none;
         transition: transform var(--dur-1) var(--ease-out);
       }
       .surf-fab:active { transform: scale(0.92); }
       .surf-fab svg { width: 26px; height: 26px; flex: none; }
-      .surf-fab .fab-x { display: none; }
-      .surf-fab[aria-pressed="true"] .fab-x { display: block; }
-      .surf-fab[aria-pressed="true"] .fab-wave { display: none; }
       .surf-fab-dot {
         position: absolute; top: 1px; right: 1px;
         width: 11px; height: 11px; border-radius: 50%;
@@ -2627,13 +2631,14 @@
     </div>
 
     <!-- ============ Surf Break floating button: a small wave mark that
-         follows every screen. Tap it to open the Surf Break overlay over
-         the current tab; tap it again (or the overlay's Close) to put the
-         overlay away. Its dot shows at a glance whether a stream is
-         playing behind it. ============ -->
+         follows every screen. Drag it to park it anywhere on the
+         screen — where it lands is remembered on this device. Tap it to
+         open the Surf Break overlay over the current tab; tap it again
+         (or the overlay's Close) to put the overlay away. It wears the
+         wave in both states; its dot shows at a glance whether a stream
+         is playing behind it. ============ -->
     <button class="surf-fab" id="surfFab" type="button" aria-pressed="false" aria-label="Open Surf Break" data-play="off">
       <svg class="fab-wave" aria-hidden="true"><use href="#i-wave"/></svg>
-      <svg class="fab-x" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
       <span class="surf-fab-dot" aria-hidden="true"></span>
     </button>
 
@@ -10221,6 +10226,7 @@ var STRAIN_SRC_LINKS = {
         var ZONE_LS_KEY = "ff2.lineupZones";
         var SOUND_LS_KEY = "ff2.surfSound";
         var VOL_LS_KEY = "ff2.surfVol";
+        var FAB_POS_KEY = "ff2.surfFabPos";
 
         var stage = document.getElementById("surfStage");
         var dock = document.getElementById("surfDock");
@@ -10381,9 +10387,10 @@ var STRAIN_SRC_LINKS = {
           try { p.unMute(); p.setVolume(soundVol); } catch (e) { /* ignore */ }
         }
         /* The floating wave button mirrors the overlay + stream state at
-           a glance: pressed (✕ face) while the overlay is up; a pulsing
-           red dot while a stream is playing behind it; a steady amber
-           dot while one is loading or waiting for its first tap. */
+           a glance: it wears the wave in both states (aria-pressed is
+           what tracks the overlay); a pulsing red dot while a stream is
+           playing behind it; a steady amber dot while one is loading or
+           waiting for its first tap. */
         function syncFab() {
           if (!fab) return;
           var open = dockVisible();
@@ -10824,6 +10831,86 @@ var STRAIN_SRC_LINKS = {
            Stop remains the only manual unload. */
         if (closeBtn) closeBtn.addEventListener("click", function () { closeOverlay(); });
         if (showHideBtn) showHideBtn.addEventListener("click", function () { closeOverlay(); });
+        /* The floating wave button is draggable, in both of its states
+           (overlay open or closed). A press that travels past a small
+           threshold becomes a drag: the button follows the pointer
+           (pointer capture keeps the gesture on the button even off its
+           face), clamped inside the viewport with a small margin and
+           kept clear of the status island, and where it lands is
+           remembered on this device (ff2.surfFabPos) and restored on
+           load. The button node never moves in the DOM, so the spot
+           also survives tab switches untouched. A press that stays
+           within the threshold is a plain tap and keeps the summon
+           behaviour below; a drag's release click is swallowed via
+           fabSuppressClickUntil, so a drag never toggles the overlay.
+           touch-action: none (in the stylesheet) keeps the browser from
+           claiming the gesture for scrolling, and the swipe recognizer
+           exempts #surfFab starts outright, so a drag is never a tab
+           swipe either. */
+        var fabSuppressClickUntil = 0;
+        if (fab) {
+          var FAB_MARGIN = 8, FAB_THRESHOLD = 8;
+          function clampFabPos(x, y) {
+            var w = fab.offsetWidth || 52, h = fab.offsetHeight || 52;
+            var maxX = Math.max(FAB_MARGIN, window.innerWidth - w - FAB_MARGIN);
+            var maxY = Math.max(FAB_MARGIN, window.innerHeight - h - FAB_MARGIN);
+            x = Math.min(Math.max(x, FAB_MARGIN), maxX);
+            y = Math.min(Math.max(y, FAB_MARGIN), maxY);
+            var isl = document.getElementById("island");
+            if (isl) {
+              var ir = isl.getBoundingClientRect();
+              if (ir.width > 0 && x < ir.right && x + w > ir.left && y < ir.bottom + FAB_MARGIN) {
+                y = Math.min(ir.bottom + FAB_MARGIN, maxY);
+              }
+            }
+            return { x: x, y: y };
+          }
+          function placeFab(x, y) {
+            var p = clampFabPos(x, y);
+            fab.style.left = p.x + "px";
+            fab.style.top = p.y + "px";
+            fab.style.right = "auto";
+            fab.style.bottom = "auto";
+          }
+          (function restoreFabPos() {
+            var raw = lsGet(FAB_POS_KEY);
+            if (!raw) return;
+            try {
+              var saved = JSON.parse(raw);
+              if (saved && isFinite(saved.x) && isFinite(saved.y)) placeFab(saved.x, saved.y);
+            } catch (e) { /* a corrupt saved spot just leaves the default corner */ }
+          })();
+          window.addEventListener("resize", function () {
+            if (!fab.style.left) return; /* never dragged: the stylesheet corner stands */
+            var r = fab.getBoundingClientRect();
+            placeFab(r.left, r.top);
+          });
+          var fabDrag = null;
+          fab.addEventListener("pointerdown", function (e) {
+            if (e.button !== undefined && e.button > 0) return; /* primary button, touch or pen only */
+            var r = fab.getBoundingClientRect();
+            fabDrag = { id: e.pointerId, dx: e.clientX - r.left, dy: e.clientY - r.top, sx: e.clientX, sy: e.clientY, moved: false };
+            try { fab.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+          });
+          fab.addEventListener("pointermove", function (e) {
+            if (!fabDrag || e.pointerId !== fabDrag.id) return;
+            if (!fabDrag.moved && Math.hypot(e.clientX - fabDrag.sx, e.clientY - fabDrag.sy) < FAB_THRESHOLD) return;
+            fabDrag.moved = true;
+            e.preventDefault();
+            placeFab(e.clientX - fabDrag.dx, e.clientY - fabDrag.dy);
+          });
+          function endFabDrag(e, suppress) {
+            if (!fabDrag || e.pointerId !== fabDrag.id) return;
+            var moved = fabDrag.moved;
+            fabDrag = null;
+            if (!moved) return;
+            var r = fab.getBoundingClientRect();
+            lsSet(FAB_POS_KEY, JSON.stringify({ x: Math.round(r.left), y: Math.round(r.top) }));
+            if (suppress) fabSuppressClickUntil = Date.now() + 500; /* the release click is the drag's, not a tap */
+          }
+          fab.addEventListener("pointerup", function (e) { endFabDrag(e, true); });
+          fab.addEventListener("pointercancel", function (e) { endFabDrag(e, false); });
+        }
         /* The floating wave button is the summon. Tapping it opens the
            Surf Break overlay over the current tab — the tab underneath
            keeps its scroll position and place — and tapping it again
@@ -10836,6 +10923,7 @@ var STRAIN_SRC_LINKS = {
            it is. This is also the deliberate exception to Auto-play off
            and to a previous Stop: the button tap itself is the summon. */
         if (fab) fab.addEventListener("click", function () {
+          if (Date.now() < fabSuppressClickUntil) return; /* this click is a drag's release, not a tap */
           if (dockVisible()) { closeOverlay(); return; }
           openOverlay();
           if (mode === "playing" || mode === "loading" || mode === "waiting") return;
@@ -11170,7 +11258,7 @@ var STRAIN_SRC_LINKS = {
         }
         function startBlocked(t) {
           if (!t || !t.closest) return true;
-          if (t.closest("#navTray, #trayHandle, .surf-dock, #surfStage, .sheet, .photo-zoom")) return true;
+          if (t.closest("#navTray, #trayHandle, .surf-dock, #surfStage, #surfFab, .sheet, .photo-zoom")) return true;
           if (t.closest(".wheel")) return true;
           if (t.closest('input[type="range"]')) return true;
           return false;
