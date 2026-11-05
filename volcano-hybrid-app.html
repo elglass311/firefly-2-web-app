@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Volcano Hybrid App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f1ec; --surface:#ffffff; --surface2:#efe9e0; --ink:#1c1917; --muted:#6b6259;
+    --line:#ddd3c6; --accent:#c2410c; --accent2:#ea580c; --accent-soft:#ffedd5;
+    --ok:#15803d; --okbg:#dcfce7; --warn:#b45309; --warnbg:#fef3c7; --bad:#b91c1c; --badbg:#fee2e2;
+    --btn:#1c1917; --btn-ink:#fff7ed; --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141110; --surface:#201b18; --surface2:#2a2320; --ink:#f5efe8; --muted:#a89c90;
+      --line:#3d342e; --accent:#fb923c; --accent2:#f97316; --accent-soft:#431407;
+      --ok:#4ade80; --okbg:#052e16; --warn:#fbbf24; --warnbg:#451a03; --bad:#f87171; --badbg:#450a0a;
+      --btn:#f5efe8; --btn-ink:#1c1917;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.45}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+  main{max-width:860px;margin:0 auto;padding:16px 14px 48px}
+  h1{font-size:26px;line-height:1.15;margin:4px 0 2px;font-weight:800;letter-spacing:-.02em}
+  h2{font-size:17px;margin:0 0 4px;font-weight:700;letter-spacing:-.01em}
+  h3{font-size:14px;margin:14px 0 6px;font-weight:700}
+  p{margin:6px 0}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 14px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:0 0 14px}
+  .card p.small,.small{font-size:13px;color:var(--muted)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--line)}
+  .pill.on{background:var(--okbg);color:var(--ok);border-color:transparent}
+  .pill.hot{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+  .pill.err{background:var(--badbg);color:var(--bad);border-color:transparent}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+  .dot.live{background:var(--ok)} .dot.hot{background:var(--accent2)}
+  button{font:inherit;font-weight:700;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:11px 14px;cursor:pointer;min-height:46px}
+  button:active{transform:translateY(1px)}
+  button.primary{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+  button.accent{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+  button.danger{background:var(--bad);color:#fff;border-color:var(--bad)}
+  button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  button.smallbtn{padding:7px 10px;min-height:38px;font-size:13px}
+  input,select{font:inherit;padding:10px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:44px}
+  input[type=range]{padding:0;min-height:32px;width:100%;accent-color:var(--accent2)}
+  label{font-size:13px;font-weight:600;display:block;margin:10px 0 4px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .row>*{flex:0 1 auto}
+  .grow{flex:1 1 auto}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  .temps{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center}
+  @media(max-width:480px){.temps{grid-template-columns:1fr 1fr;gap:8px}}
+  .tempbox{background:var(--surface2);border-radius:12px;padding:14px 8px}
+  .tempbox .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .bignum{font-family:"IBM Plex Mono",monospace;font-size:52px;font-weight:700;line-height:1.05;letter-spacing:-.03em}
+  @media(max-width:480px){.bignum{font-size:40px}}
+  .bignum .unit{font-size:22px;color:var(--muted);font-weight:600}
+  .setrow{display:flex;gap:8px;align-items:stretch;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .setrow input{width:110px;text-align:center;font-size:20px;font-weight:700}
+  .stepbtn{width:52px;font-size:22px;padding:0}
+  .bigctl{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .bigctl button{min-height:64px;font-size:17px;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center}
+  .bigctl button span{font-size:12px;font-weight:600;opacity:.75}
+  .bigctl button.active{background:var(--accent2);border-color:var(--accent2);color:#fff}
+  .bigctl button.active-pump{background:var(--ok);border-color:var(--ok);color:#fff}
+  .notice{border-radius:12px;padding:13px 14px;font-size:14px;margin:0 0 14px;border:1px solid transparent}
+  .notice.warn{background:var(--warnbg);color:var(--warn)}
+  .notice.bad{background:var(--badbg);color:var(--bad)}
+  .notice.info{background:var(--accent-soft);color:var(--accent)}
+  .notice strong{display:block;margin-bottom:2px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  td:last-child{text-align:right;font-weight:600}
+  .bits{font-family:"IBM Plex Mono",monospace;font-size:13px;word-break:break-all;background:var(--surface2);border-radius:8px;padding:8px 10px;margin-top:4px}
+  .log{background:#0c0a09;color:#e7e5e4;border-radius:10px;padding:10px 12px;font-family:"IBM Plex Mono",monospace;font-size:12px;max-height:180px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+  .wf{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:var(--surface)}
+  .wf-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .wf-head strong{font-size:15px}
+  .step{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .step:last-of-type{border-bottom:none}
+  .step input{width:76px;min-height:38px;padding:6px 8px;text-align:center}
+  .step .n{font-weight:800;width:22px;text-align:center;color:var(--muted)}
+  .step.done{background:var(--okbg);border-radius:8px}
+  .step.running{background:var(--accent-soft);border-radius:8px}
+  .switchrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .switchrow:last-child{border-bottom:none}
+  .switchrow .desc{font-size:12px;color:var(--muted);font-weight:500}
+  .tgl{position:relative;width:56px;height:32px;flex:none}
+  .tgl input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .tgl .track{position:absolute;inset:0;background:var(--surface2);border:1px solid var(--line);border-radius:999px;pointer-events:none}
+  .tgl .track::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--muted);transition:all .15s}
+  .tgl input:checked + .track{background:var(--accent2);border-color:var(--accent2)}
+  .tgl input:checked + .track::after{left:27px;background:#fff}
+  .tgl input:disabled + .track{opacity:.4}
+  a{color:var(--accent);font-weight:600}
+  ul.tight{margin:6px 0;padding-left:20px} ul.tight li{margin:3px 0;font-size:14px}
+  .acc-item{padding:10px 0;border-bottom:1px solid var(--line)} .acc-item:last-child{border-bottom:none}
+  .acc-item strong{display:block}
+  .tag{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+  .hidden{display:none !important}
+  .countdown{font-family:"IBM Plex Mono",monospace;font-weight:700}
+  footer{font-size:12px;color:var(--muted);text-align:center;padding:8px 4px 0}
+</style>
+</head>
+<body>
+<main>
+  <h1>Volcano Hybrid</h1>
+  <p class="sub">Personal Bluetooth control for your Storz &amp; Bickel Volcano Hybrid. Built for Bluefy on iPhone (or Chrome / Edge on desktop and Android).</p>
+
+  <!-- Unsupported browser -->
+  <div id="unsupported" class="notice bad hidden">
+    <strong>Web Bluetooth isn’t available in this browser</strong>
+    This page can’t reach the Volcano from here. On iPhone, open this same page in the <strong>Bluefy — Web BLE Browser</strong> app. On desktop or Android, use Chrome or Edge. Safari and Firefox don’t support Web Bluetooth. Your saved workflows below still work — only the live connection needs a Bluetooth-capable browser.
+  </div>
+
+  <div class="notice warn">
+    <strong>One connection at a time</strong>
+    The Volcano accepts a single Bluetooth connection. While this app is connected, the official S&amp;B app is locked out — and if the official app is connected, this one can’t connect. Disconnect here when you’re done.
+  </div>
+  <div class="notice info">
+    <strong>Auto-off always runs</strong>
+    The moment the heater <em>or</em> the pump starts, the device’s auto-off countdown starts too. When it hits zero, both switch off. Watch the countdown below and set your auto-off time in Settings.
+  </div>
+
+  <!-- Connection -->
+  <section class="card" aria-label="Connection">
+    <div class="row">
+      <span class="dot" id="connDot"></span>
+      <div class="grow">
+        <h2 id="connTitle">Not connected</h2>
+        <p class="small" id="connDetail" style="margin:0">Plug the Volcano in and switch it on at the unit, then connect. There’s no pairing code — the device connects directly.</p>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="primary grow" id="btnConnect">Connect to Volcano</button>
+      <button id="btnDisconnect" class="hidden">Disconnect</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <span class="pill" id="pillHeater">Heater: —</span>
+      <span class="pill" id="pillPump">Pump: —</span>
+      <span class="pill" id="pillFault">Faults: —</span>
+      <span class="pill" id="pillTimer">Auto-off: —</span>
+    </div>
+  </section>
+
+  <!-- Live temps -->
+  <section class="card" aria-label="Temperatures">
+    <h2>Temperature</h2>
+    <div class="temps">
+      <div class="tempbox">
+        <div class="lbl">Current</div>
+        <div class="bignum"><span id="curTemp">–––</span><span class="unit" id="curUnit"></span></div>
+        <div class="small" id="heatState">Waiting for connection</div>
+      </div>
+      <div class="tempbox">
+        <div class="lbl">Target</div>
+        <div class="bignum"><span id="tgtTemp">–––</span><span class="unit" id="tgtUnit"></span></div>
+        <div class="small">Range 40–230 °C · 104–446 °F</div>
+      </div>
+    </div>
+    <div class="setrow">
+      <button class="stepbtn" id="btnMinus" aria-label="Decrease target by 5">−</button>
+      <input id="setTempInput" type="number" inputmode="decimal" min="40" max="230" step="1" value="190" aria-label="Target temperature in Celsius" />
+      <button class="stepbtn" id="btnPlus" aria-label="Increase target by 5">+</button>
+      <button class="accent" id="btnSetTemp">Set target</button>
+    </div>
+    <p class="small" style="text-align:center">You can set a temperature even while the heater is off and the unit is cold — the front panel can’t do that, this app can. Display follows the unit set on the device (<span id="unitNote">°C</span>).</p>
+    <div class="row" style="justify-content:center;margin-top:6px">
+      <button class="smallbtn preset" data-c="170">170°</button>
+      <button class="smallbtn preset" data-c="185">185°</button>
+      <button class="smallbtn preset" data-c="195">195°</button>
+      <button class="smallbtn preset" data-c="210">210°</button>
+      <button class="smallbtn preset" data-c="230">230° max</button>
+    </div>
+  </section>
+
+  <!-- Heater / Pump -->
+  <section class="card" aria-label="Heater and pump">
+    <h2>Heater &amp; Pump</h2>
+    <div class="bigctl">
+      <button id="btnHeater">HEATER<span id="heaterSub">tap to turn on — works from cold</span></button>
+      <button id="btnPump">PUMP / AIR<span id="pumpSub">tap to start airflow</span></button>
+    </div>
+    <p class="small">State shown here always comes from the device itself, never from what this app last tapped — the front panel is a second master and can change things at any time. If the device reports a fault, heater and pump are inhibited by the device until the fault clears.</p>
+    <p class="small">Auto-off countdown: <span class="countdown" id="countdownBig">—</span> <span id="countdownNote"></span></p>
+  </section>
+
+  <!-- Workflows -->
+  <section class="card" aria-label="Workflows">
+    <h2>Workflows — your sequences, your rules</h2>
+    <p class="small">A workflow is a sequence of steps. Each step sets a target temperature, waits until the <strong>device itself confirms</strong> it reached that temperature, holds, then runs the pump. Steps never advance on a timer alone — no confirmation, no advance. Workflows live only on this phone (saved in this browser) and are fully editable — unlike the official web app’s fixed presets.</p>
+    <div id="wfRunBanner" class="notice info hidden" style="margin-top:10px"></div>
+    <div id="wfList"></div>
+    <h3>New workflow</h3>
+    <div class="row">
+      <input id="newWfName" class="grow" type="text" placeholder="Workflow name, e.g. Evening balloon" maxlength="60" />
+      <button id="btnNewWf">Create blank</button>
+    </div>
+    <p class="small">Tip: the templates above are yours to edit freely — change any step, add steps, or delete a whole workflow. Edits save on this phone automatically.</p>
+  </section>
+
+  <!-- Settings -->
+  <section class="card" aria-label="Settings">
+    <h2>Settings</h2>
+    <label for="ledRange">Display brightness — <span id="ledVal">—</span></label>
+    <input type="range" id="ledRange" min="0" max="100" step="1" value="80" />
+    <div class="row"><button class="smallbtn" id="btnLedApply">Apply brightness</button></div>
+
+    <label for="autoOffRange">Auto-off timer — <span id="autoOffVal">30 min</span></label>
+    <input type="range" id="autoOffRange" min="0" max="360" step="30" value="30" />
+    <div class="row"><button class="smallbtn" id="btnAutoOffApply">Apply auto-off</button><span class="small">0 = off right away when started · steps of 30 min, up to 6 hours</span></div>
+
+    <div class="switchrow">
+      <div><strong>Temperature unit °F</strong><div class="desc">Off = Celsius. This is the device’s own setting — the front panel and this app stay in sync, and all temperatures on this page follow it.</div></div>
+      <span class="tgl"><input type="checkbox" id="tglFahrenheit" /><span class="track"></span></span>
+    </div>
+    <div class="switchrow">
+      <div><strong>Vibration</strong><div class="desc">Device vibration signal on or off.</div></div>
+      <span class="tgl"><input type="checkbox" id="tglVibration" checked /><span class="track"></span></span>
+    </div>
+    <div class="switchrow">
+      <div><strong>Display stays on while cooling</strong><div class="desc">Keeps the display lit while the unit cools down after the heater switches off.</div></div>
+      <span class="tgl"><input type="checkbox" id="tglCoolDisplay" checked /><span class="track"></span></span>
+    </div>
+    <p class="small">There is deliberately <strong>no firmware update anywhere in this app</strong>. Firmware stays with the official S&amp;B web app, through their channel only.</p>
+  </section>
+
+  <!-- Device info -->
+  <section class="card" aria-label="Device information">
+    <h2>Device information</h2>
+    <table>
+      <tr><td>Model</td><td id="infoModel">—</td></tr>
+      <tr><td>Serial number</td><td id="infoSerial" class="mono">—</td></tr>
+      <tr><td>Device firmware</td><td id="infoFw" class="mono">—</td></tr>
+      <tr><td>Bluetooth module firmware</td><td id="infoBleFw" class="mono">—</td></tr>
+      <tr><td>Bootloader</td><td id="infoBoot" class="mono">—</td></tr>
+      <tr><td>Mains build</td><td id="infoMains">—</td></tr>
+      <tr><td>Lifetime heater time</td><td id="infoHours">—</td></tr>
+    </table>
+    <h3>Fault registers — read-only, raw values</h3>
+    <p class="small">These three status words are shown exactly as the device reports them. This app never writes the first one, and it doesn’t guess at meanings for individual fault bits — S&amp;B decodes detailed fault analysis on their servers. If the fault pill above ever lights up, note the hex values here for support.</p>
+    <div class="small" style="font-weight:700">PRJSTAT1 · live state</div>
+    <div class="bits" id="bits1">—</div>
+    <div class="small" style="font-weight:700;margin-top:8px">PRJSTAT2 · display &amp; fault group</div>
+    <div class="bits" id="bits2">—</div>
+    <div class="small" style="font-weight:700;margin-top:8px">PRJSTAT3 · options &amp; fault group</div>
+    <div class="bits" id="bits3">—</div>
+    <div class="small" style="font-weight:700;margin-top:10px">Fault history (HIST1 / HIST2, as stored on device)</div>
+    <div class="bits" id="histBox">—</div>
+  </section>
+
+  <!-- Activity / pending writes -->
+  <section class="card" aria-label="Activity log">
+    <h2>Activity &amp; safety log</h2>
+    <p class="small">Every command is recorded here <em>before</em> it is sent. If the connection drops, anything still pending is discarded — it is <strong>never replayed</strong> when you reconnect, and a queued “on” command is never replayed under any circumstances.</p>
+    <div class="log" id="logBox">Ready.</div>
+    <div class="row" style="margin-top:10px"><button class="smallbtn" id="btnClearLog">Clear log</button></div>
+  </section>
+
+  <!-- Factory accessories -->
+  <section class="card" aria-label="Factory accessories">
+    <h2>Factory accessories <span class="tag">Storz &amp; Bickel</span></h2>
+    <p class="small">Genuine S&amp;B parts for the Volcano Hybrid, from S&amp;B’s own store. Prices and stock live on their site — nothing is priced or promised here.</p>
+    <p><a href="https://www.storz-bickel.com/en-us/parts-accessories/for-volcano" target="_blank" rel="noopener">Shop all Volcano parts at storz-bickel.com →</a></p>
+    <div class="acc-item"><strong>Filling chamber &amp; dosing capsules</strong><span class="small">Filling Chamber, Filling Chamber Housing, Dosing Capsule Filling Chamber, and the Dosing Capsule Adapter — the factory chamber reducer that takes the ~0.5 g chamber down to ~0.15 g dosing-capsule size. Plus Dosing Capsules (40 pc), Magazine, Capsule Caddy and the Dosing Capsule Filling Set.</span></div>
+    <div class="acc-item"><strong>Balloons &amp; valves</strong><span class="small">EASY VALVE Starter Set, EASY VALVE Replacement Set and XL Replacement Set, Balloon with Adapter, and Balloon Tube (1 × 3 m) for rolling your own.</span></div>
+    <div class="acc-item"><strong>Tubes</strong><span class="small">Tube Kit for Volcano Hybrid, Tube Set 3 × 1 m, Tube Reel 10 m, Tube Flexer, and Mouthpieces for Volcano Hybrid (4 pc).</span></div>
+    <div class="acc-item"><strong>Screens, seals &amp; wear parts</strong><span class="small">Normal and Fine Screen Sets, Air Filter Set / Air Filter (2 pc) / Air Filter Cap for the Hybrid, and the Wear &amp; Tear Set for Volcano Hybrid.</span></div>
+    <div class="acc-item"><strong>Sets &amp; tools</strong><span class="small">Starter Set for Volcano Hybrid, Herb Mill and Herb Mill XL, Cleaning Brushes (3 pc), Spatula, Plunger, S&amp;B Tray, and the Power Cord for Volcano Hybrid.</span></div>
+  </section>
+
+  <!-- Third-party accessories -->
+  <section class="card" aria-label="Third-party accessories">
+    <h2>Third-party accessories <span class="tag">Not S&amp;B</span></h2>
+    <p class="small">Made by independent makers — <strong>not made, sold, or endorsed by Storz &amp; Bickel</strong>. Descriptions are each maker’s own; check fit for the Hybrid on the maker’s page before buying. No prices or stock are claimed here.</p>
+    <div class="acc-item"><strong>Magma Industries — Magma, Obsidian &amp; Sapphire bubblers</strong><span class="small">Hand-blown borosilicate glass water attachments that sit on the Easy Valve or Hybrid Valve chamber and water-cool the vapor before it enters the balloon. Obsidian adds a secondary water trap. Also 14 mm &amp; 18 mm Bag Adapters for your own water pipe. Not for Solid Valve.</span><br><a href="https://www.magma-industries.com/magma-and-obsidian-info" target="_blank" rel="noopener">magma-industries.com →</a></div>
+    <div class="acc-item"><strong>Planet of the Vapes — Volcano Glass Adapter</strong><span class="small">Replaces the black mouthpiece on an Easy Valve bag and bridges it to POTV glass — dimpled dry-cooling stems and the POTV Water Pipe Adapter / Mini Glass Bubblers. Food-grade silicone, PEEK and glass vapor path. Fits Classic and Hybrid bags; not Solid Valve.</span><br><a href="https://www.planetofthevapes.com/blogs/blog/introducing-volcano-glass-adapter" target="_blank" rel="noopener">planetofthevapes.com →</a></div>
+    <div class="acc-item"><strong>Delta 3D Studios — Nearly Universal Waterpipe Adapter (Large)</strong><span class="small">Aquarium-grade silicone press-fit adapter that seals a Volcano mouthpiece (Solid and Easy Valve) to 14 mm and 18 mm female water pipes and bubblers.</span><br><a href="https://delta3dstudios.com/nearly-universal-waterpipe-adapter-large/" target="_blank" rel="noopener">delta3dstudios.com →</a></div>
+    <div class="acc-item"><strong>Delta 3D Studios — Volcano widgets</strong><span class="small">Dust cap for the heater outlet, filling-chamber funnel, high-temp silicone hose by the foot and more small maker accessories. Many are Classic / Solid-Valve-era items — confirm Hybrid compatibility per item.</span><br><a href="https://delta3dstudios.com/plugin-vaporizer-accessories/volcano-vaporizer/?page=2" target="_blank" rel="noopener">Delta 3D Volcano category →</a></div>
+    <div class="acc-item"><strong>Sneaky Pete / Great North — Master Adapter™</strong><span class="small">Two-piece universal silicone water-pipe adapter. Flagged honestly: it’s a universal press-fit adapter, not designed specifically for the Volcano — owners use it to run bags through a bong.</span><br><a href="https://www.sneakypetestore.com/products/the-master-adapter" target="_blank" rel="noopener">sneakypetestore.com →</a></div>
+    <p class="small">Researched and not found, so not listed as products: a third-party chamber reducer for the Hybrid (the real reducer is the S&amp;B factory part above) and a Hybrid-specific third-party stand. If a no-name listing claims either, treat it as unverified.</p>
+  </section>
+
+  <footer>Personal control app for one owner’s Volcano Hybrid. Runs entirely on this phone — workflows are stored in this browser only, nothing is sent anywhere. Control-layer commands only, exactly as documented in the open protocol research; no firmware code of any kind.</footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+/* ============ Protocol constants — copied from volcano-hybrid-research.md / VOLCANO_BLE_SPEC.md. Do not edit without the spec. ============ */
+var SUFFIX = "-5354-4f52-5a26-4249434b454c";
+function U(short){ return short + SUFFIX; }
+var SVC_STATE = U("10100000"), SVC_CTRL = U("10110000");
+var CH = {
+  curTemp:   U("10110001"),
+  tgtTemp:   U("10110003"),
+  led:       U("10110005"),
+  countdown: U("1011000c"),
+  autoOff:   U("1011000d"),
+  heaterOn:  U("1011000f"),
+  heaterOff: U("10110010"),
+  pumpOn:    U("10110013"),
+  pumpOff:   U("10110014"),
+  heatHours: U("10110015"),
+  heatMins:  U("10110016"),
+  boot:      U("10100001"),
+  bleFw:     U("10100004"),
+  appFw:     U("10100005"),
+  mains:     U("10100006"),
+  model:     U("10100007"),
+  serial:    U("10100008"),
+  prj1:      U("1010000c"),
+  prj2:      U("1010000d"),
+  prj3:      U("1010000e"),
+  hist1:     U("10100015"),
+  hist2:     U("10100016")
+};
+/* HARD SAFETY: these must NEVER be written by this app.
+   - PRJSTAT1 (1010000c): writes stop the pump and corrupt reads until a mains power-cycle.
+   - 10110004: undecoded, bound into the pump-driving service.
+   - 10100011: writing 4711 unlocks the bootloader (firmware path).
+   - The 1989-0108 firmware-update UUID family: never touched at all. */
+var FORBIDDEN_WRITE = {};
+FORBIDDEN_WRITE[U("1010000c")] = true;
+FORBIDDEN_WRITE[U("10110004")] = true;
+FORBIDDEN_WRITE[U("10100011")] = true;
+function isForbidden(uuid){
+  if (FORBIDDEN_WRITE[uuid]) return true;
+  if (uuid.indexOf("1989-0108") !== -1) return true;
+  return false;
+}
+
+/* ============ State ============ */
+var device=null, server=null, chars={};
+var state = {
+  connected:false, curC:null, tgtC:null, fahrenheit:false,
+  prj1:null, prj2:null, prj3:null, countdownSec:null, autoOffMin:30,
+  heaterHours:null, heaterMins:null, led:null
+};
+var pending = {}; /* id -> {label, uuid, isOn, t} — recorded BEFORE send, dropped (never replayed) on disconnect */
+var pendingSeq = 0;
+var tempWaiters = [], prjWaiters = [];
+var pollTimer = null;
+
+/* ============ Helpers ============ */
+function $(id){ return document.getElementById(id); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function fmtTemp(c){
+  if (c===null || c===undefined || isNaN(c)) return "–––";
+  if (state.fahrenheit) return String(Math.round(c*9/5+32));
+  return String(Math.round(c));
+}
+function unitSym(){ return state.fahrenheit ? "°F" : "°C"; }
+function inputToC(v){ return state.fahrenheit ? (v-32)*5/9 : v; }
+function log(msg){
+  var box = $("logBox"); if(!box) return;
+  var t = new Date(); var hh = ("0"+t.getHours()).slice(-2), mm=("0"+t.getMinutes()).slice(-2), ss=("0"+t.getSeconds()).slice(-2);
+  box.textContent += "\n["+hh+":"+mm+":"+ss+"] " + msg;
+  box.scrollTop = box.scrollHeight;
+}
+function u16le(v){ var b=new Uint8Array(2); new DataView(b.buffer).setUint16(0, v, true); return b; }
+function u32le(v){ var b=new Uint8Array(4); new DataView(b.buffer).setUint32(0, v>>>0, true); return b; }
+function readU16(dv){ return dv.getUint16(0, true); }
+function decodeAscii(dv){
+  var s=""; for (var i=0;i<dv.byteLength;i++){ var c=dv.getUint8(i); if(c===0) break; s+=String.fromCharCode(c); }
+  return s.replace(/\s+$/,"");
+}
+function hex16(v){ return "0x"+("0000"+(v>>>0).toString(16)).slice(-4).toUpperCase(); }
+function bits16(v){ var s=""; for (var i=15;i>=0;i--){ s += ((v>>i)&1) ? "1":"0"; if(i%4===0 && i!==0) s+=" "; } return s; }
+function fmtDur(sec){
+  if (sec===null || sec===undefined) return "—";
+  var m = Math.floor(sec/60), s = sec%60;
+  if (m>=60) return Math.floor(m/60)+"h "+("0"+(m%60)).slice(-2)+"m";
+  return m+"m "+("0"+s).slice(-2)+"s";
+}
+
+/* ============ Pending-write discipline (spec §5) ============ */
+function recordPending(label, uuid, isOn){
+  var id = ++pendingSeq;
+  pending[id] = { label:label, uuid:uuid, isOn:!!isOn, t:Date.now() };
+  log("PENDING #" + id + " recorded BEFORE send: " + label);
+  return id;
+}
+function resolvePending(id, how){
+  if (pending[id]){ log("Pending #" + id + " (" + pending[id].label + ") " + how + "."); delete pending[id]; }
+}
+function dropAllPending(reason){
+  var ids = Object.keys(pending);
+  if (!ids.length) return;
+  ids.forEach(function(id){
+    log("DROPPED pending #" + id + " (" + pending[id].label + ") — " + reason + ". NEVER replayed.");
+    delete pending[id];
+  });
+}
+/* The ONLY write path in the app. Refuses forbidden characteristics outright. */
+function safeWrite(uuid, data, label, isOn){
+  if (isForbidden(uuid)){
+    log("REFUSED: write to " + uuid + " is forbidden by the safety rules. Nothing sent.");
+    return Promise.reject(new Error("Forbidden characteristic"));
+  }
+  var ch = chars[uuid];
+  if (!ch || !state.connected){
+    log("Write NOT sent (not connected): " + label + ". Dropped, not queued.");
+    return Promise.reject(new Error("Not connected"));
+  }
+  var id = recordPending(label, uuid, isOn);
+  var p;
+  try { p = ch.writeValue(data); } catch(e){ resolvePending(id, "failed to send"); return Promise.reject(e); }
+  return Promise.resolve(p).then(function(){
+    /* Device confirms via notification, which may arrive before this resolves.
+       Keep the record briefly so the confirmation can be matched, then clear. */
+    setTimeout(function(){ resolvePending(id, "sent; awaiting/awaited device confirmation via notification"); }, 600);
+  }).catch(function(err){
+    resolvePending(id, "send failed (" + err.message + ")");
+    throw err;
+  });
+}
+function safeRead(uuid){
+  var ch = chars[uuid];
+  if (!ch) return Promise.reject(new Error("Characteristic unavailable: "+uuid));
+  return ch.readValue();
+}
+
+/* ============ UI rendering (always from device notifications/reads) ============ */
+function render(){
+  $("curTemp").textContent = fmtTemp(state.curC);
+  $("tgtTemp").textContent = fmtTemp(state.tgtC);
+  $("curUnit").textContent = state.curC===null ? "" : unitSym();
+  $("tgtUnit").textContent = state.tgtC===null ? "" : unitSym();
+  $("unitNote").textContent = unitSym();
+  var heaterReq = state.prj1!==null ? !!(state.prj1 & 0x0001) : null;
+  var pumpReq   = state.prj1!==null ? !!(state.prj1 & 0x1000) : null;
+  var pumpFet   = state.prj1!==null ? !!(state.prj1 & 0x2000) : null;
+  var err1 = state.prj1!==null ? (state.prj1 & 0x4018) : 0;
+  var err2 = state.prj2!==null ? (state.prj2 & 0x003b) : 0;
+  var fault = (err1!==0 || err2!==0);
+
+  $("pillHeater").textContent = "Heater: " + (heaterReq===null ? "—" : (heaterReq ? "ON" : "OFF"));
+  $("pillHeater").className = "pill" + (heaterReq ? " hot" : "");
+  $("pillPump").textContent = "Pump: " + (pumpReq===null ? "—" : ((pumpReq||pumpFet) ? "ON" : "OFF"));
+  $("pillPump").className = "pill" + ((pumpReq||pumpFet) ? " on" : "");
+  $("pillFault").textContent = state.prj1===null ? "Faults: —" : (fault ? "Fault bits set — see registers" : "Faults: none");
+  $("pillFault").className = "pill" + (fault ? " err" : (state.prj1!==null ? " on" : ""));
+  $("pillTimer").textContent = "Auto-off: " + (state.countdownSec===null ? "—" : fmtDur(state.countdownSec));
+
+  var hb = $("btnHeater"), pb = $("btnPump");
+  hb.className = heaterReq ? "active" : "";
+  hb.innerHTML = "HEATER<span>" + (heaterReq===null ? "state unknown" : heaterReq ? "ON — tap to turn off" : "OFF — tap to turn on, works from cold") + "</span>";
+  pb.className = (pumpReq||pumpFet) ? "active-pump" : "";
+  pb.innerHTML = "PUMP / AIR<span>" + (pumpReq===null ? "state unknown" : ((pumpReq||pumpFet) ? "ON — tap to stop" : "OFF — tap to start airflow")) + "</span>";
+  hb.disabled = !state.connected; pb.disabled = !state.connected;
+  $("btnSetTemp").disabled = !state.connected;
+  $("btnMinus").disabled = !state.connected; $("btnPlus").disabled = !state.connected;
+
+  var hs = $("heatState");
+  if (state.curC===null) hs.textContent = "Waiting for connection";
+  else if (fault) hs.textContent = "Fault bits set — device inhibits heater/pump";
+  else if (!heaterReq) hs.textContent = state.curC >= 40 ? "Heater off — still warm (inferred from temperature; the device reports no cooldown state)" : "Heater off";
+  else if (state.tgtC!==null && Math.abs(state.curC-state.tgtC) <= 2) hs.textContent = "At temperature";
+  else if (state.tgtC!==null && state.curC < state.tgtC) hs.textContent = "Heating up…";
+  else hs.textContent = "Cooling toward target…";
+
+  $("countdownBig").textContent = state.countdownSec===null ? "—" : fmtDur(state.countdownSec);
+  $("countdownNote").textContent = state.countdownSec===null ? "" :
+    (state.countdownSec===0 ? "(idle — starts the moment heater or pump starts)" : "until heater + pump switch off automatically");
+
+  if (state.prj1!==null) $("bits1").textContent = hex16(state.prj1) + "  ·  " + bits16(state.prj1) + "  ·  heater requested: " + (heaterReq?"yes":"no") + " · pump requested: " + (pumpReq?"yes":"no") + " · raw bits shown unlabelled beyond these documented state bits";
+  if (state.prj2!==null) $("bits2").textContent = hex16(state.prj2) + "  ·  " + bits16(state.prj2) + "  ·  unit: " + (state.fahrenheit?"°F":"°C");
+  if (state.prj3!==null) $("bits3").textContent = hex16(state.prj3) + "  ·  " + bits16(state.prj3) + "  ·  vibration: " + ((state.prj3 & 0x0400) ? "off" : "on");
+  if (state.prj2!==null && (state.prj2 & 0x0040)) logOnceBurnIn();
+
+  if (state.heaterHours!==null){
+    var tot = state.heaterHours*60 + (state.heaterMins||0);
+    $("infoHours").textContent = state.heaterHours + " h " + (state.heaterMins||0) + " min  (" + tot + " min total)";
+  }
+  if (state.led!==null){ $("ledRange").value = state.led; $("ledVal").textContent = state.led + "%"; }
+  /* Settings toggles follow the device, not local taps */
+  $("tglFahrenheit").checked = state.fahrenheit;
+  if (state.prj3!==null) $("tglVibration").checked = !(state.prj3 & 0x0400);
+  if (state.prj2!==null) $("tglCoolDisplay").checked = !(state.prj2 & 0x1000);
+}
+var burnInLogged = false;
+function logOnceBurnIn(){
+  if (burnInLogged) return; burnInLogged = true;
+  log("WARNING: PRJSTAT2 bit 6 is set — the device appears to be in service/burn-in mode (front-panel HEAT+AIR hold), which forces 230 °C for 10 minutes. Shown loudly per the protocol notes; this app did not set it.");
+}
+
+/* ============ Notification handlers ============ */
+function onTempWaiters(){
+  tempWaiters = tempWaiters.filter(function(w){
+    if (state.curC!==null && Math.abs(state.curC - w.targetC) <= w.tol){ w.resolve(true); return false; }
+    return true;
+  });
+}
+function onPrjWaiters(){
+  prjWaiters = prjWaiters.filter(function(w){
+    if (state.prj1!==null && ((state.prj1 & w.mask) !== 0) === w.wantSet){ w.resolve(true); return false; }
+    return true;
+  });
+}
+function handleNotify(uuid, dv){
+  if (uuid===CH.curTemp){ state.curC = readU16(dv)/10; onTempWaiters(); }
+  else if (uuid===CH.tgtTemp){
+    state.tgtC = readU16(dv)/10;
+    var inp = $("setTempInput");
+    if (document.activeElement !== inp) inp.value = state.fahrenheit ? Math.round(state.tgtC*9/5+32) : Math.round(state.tgtC);
+  }
+  else if (uuid===CH.countdown){ state.countdownSec = readU16(dv); }
+  else if (uuid===CH.prj1){ state.prj1 = readU16(dv); onPrjWaiters(); }
+  else if (uuid===CH.prj2){ state.prj2 = readU16(dv); state.fahrenheit = !!(state.prj2 & 0x0200); }
+  else if (uuid===CH.prj3){ state.prj3 = readU16(dv); }
+  else if (uuid===CH.heatHours){ state.heaterHours = readU16(dv); }
+  else if (uuid===CH.heatMins){ state.heaterMins = readU16(dv); }
+  render();
+}
+function waitForTemp(targetC, tol, timeoutMs){
+  return new Promise(function(resolve, reject){
+    if (state.curC!==null && Math.abs(state.curC-targetC) <= tol) return resolve(true);
+    var w = { targetC:targetC, tol:tol, resolve:resolve };
+    tempWaiters.push(w);
+    setTimeout(function(){
+      var i = tempWaiters.indexOf(w);
+      if (i>=0){ tempWaiters.splice(i,1); reject(new Error("No device confirmation within " + Math.round(timeoutMs/1000) + "s (current: " + (state.curC===null?"—":state.curC+" °C") + ", target: " + targetC + " °C)")); }
+    }, timeoutMs);
+  });
+}
+function waitForPrjBit(mask, wantSet, timeoutMs, label){
+  return new Promise(function(resolve, reject){
+    if (state.prj1!==null && ((state.prj1 & mask)!==0)===wantSet) return resolve(true);
+    var w = { mask:mask, wantSet:wantSet, resolve:resolve };
+    prjWaiters.push(w);
+    setTimeout(function(){
+      var i = prjWaiters.indexOf(w);
+      if (i>=0){ prjWaiters.splice(i,1); reject(new Error("Device did not confirm " + label + " within " + Math.round(timeoutMs/1000) + "s")); }
+    }, timeoutMs);
+  });
+}
+
+/* ============ Connect / disconnect ============ */
+function onDisconnected(){
+  state.connected = false;
+  dropAllPending("connection lost");
+  tempWaiters.forEach(function(w){}); tempWaiters = [];
+  prjWaiters = []; 
+  if (pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  if (wf.running) stopWorkflow("connection lost — workflow stopped; nothing was replayed");
+  chars = {}; server = null;
+  $("connDot").className = "dot";
+  $("connTitle").textContent = "Disconnected";
+  $("connDetail").textContent = "Any command still pending was discarded — reconnect and tap again. Nothing is ever resent automatically.";
+  $("btnConnect").classList.remove("hidden");
+  $("btnDisconnect").classList.add("hidden");
+  log("Disconnected. All pending writes dropped, none replayed.");
+  render(); renderWorkflows();
+}
+function subscribe(uuid){
+  var ch = chars[uuid]; if (!ch || !ch.startNotifications) return Promise.resolve();
+  return ch.startNotifications().then(function(){
+    ch.addEventListener("characteristicvaluechanged", function(ev){ handleNotify(uuid, ev.target.value); });
+  }).catch(function(e){ log("Could not subscribe to " + uuid + " (" + e.message + ") — polling will cover it."); });
+}
+function readInto(uuid, apply){
+  return safeRead(uuid).then(function(dv){ apply(dv); }).catch(function(){});
+}
+function refreshAll(){
+  if (!state.connected) return;
+  readInto(CH.curTemp, function(dv){ state.curC = readU16(dv)/10; onTempWaiters(); render(); });
+  readInto(CH.tgtTemp, function(dv){ handleNotify(CH.tgtTemp, dv); });
+  readInto(CH.countdown, function(dv){ state.countdownSec = readU16(dv); render(); });
+  readInto(CH.prj1, function(dv){ state.prj1 = readU16(dv); onPrjWaiters(); render(); });
+  readInto(CH.prj2, function(dv){ handleNotify(CH.prj2, dv); });
+  readInto(CH.prj3, function(dv){ handleNotify(CH.prj3, dv); });
+}
+function connect(){
+  if (!navigator.bluetooth){ $("unsupported").classList.remove("hidden"); return; }
+  log("Requesting device… pick your VOLCANO H in the chooser.");
+  navigator.bluetooth.requestDevice({
+    filters: [{ namePrefix: "VOLCANO" }, { namePrefix: "S&B" }],
+    optionalServices: [SVC_STATE, SVC_CTRL]
+  }).then(function(dev){
+    device = dev;
+    device.addEventListener("gattserverdisconnected", onDisconnected);
+    log("Connecting to " + (dev.name || "Volcano") + "…");
+    return device.gatt.connect();
+  }).then(function(srv){
+    server = srv;
+    return Promise.all([server.getPrimaryService(SVC_CTRL), server.getPrimaryService(SVC_STATE)]);
+  }).then(function(svcs){
+    var all = [CH.curTemp,CH.tgtTemp,CH.led,CH.countdown,CH.autoOff,CH.heaterOn,CH.heaterOff,CH.pumpOn,CH.pumpOff,CH.heatHours,CH.heatMins,
+               CH.boot,CH.bleFw,CH.appFw,CH.mains,CH.model,CH.serial,CH.prj1,CH.prj2,CH.prj3,CH.hist1,CH.hist2];
+    var bySvc = {};
+    svcs.forEach(function(s){ bySvc[s.uuid]=s; });
+    return all.reduce(function(p, uuid){
+      return p.then(function(){
+        var svc = (uuid.indexOf("1011")===0) ? bySvc[SVC_CTRL] : bySvc[SVC_STATE];
+        return svc.getCharacteristic(uuid).then(function(c){ chars[uuid]=c; }).catch(function(){ log("Characteristic not present on this unit (skipped): " + uuid); });
+      });
+    }, Promise.resolve());
+  }).then(function(){
+    state.connected = true;
+    $("connDot").className = "dot live";
+    $("connTitle").textContent = "Connected" + (device && device.name ? " — " + device.name : "");
+    $("connDetail").textContent = "Live. This app now holds the Volcano’s only Bluetooth slot — the official app can’t connect until you disconnect here.";
+    $("btnConnect").classList.add("hidden");
+    $("btnDisconnect").classList.remove("hidden");
+    log("Connected. Enumerated services defensively; reading identity and subscribing to notifications.");
+    /* Identity + settings reads */
+    readInto(CH.serial, function(dv){ $("infoSerial").textContent = decodeAscii(dv) || "—"; });
+    readInto(CH.model, function(dv){ $("infoModel").textContent = decodeAscii(dv) || "—"; });
+    readInto(CH.appFw, function(dv){ $("infoFw").textContent = decodeAscii(dv) || "—"; });
+    readInto(CH.bleFw, function(dv){ $("infoBleFw").textContent = decodeAscii(dv) || "—"; });
+    readInto(CH.boot, function(dv){ $("infoBoot").textContent = decodeAscii(dv) || "—"; });
+    readInto(CH.mains, function(dv){ $("infoMains").textContent = decodeAscii(dv) || "—"; });
+    readInto(CH.hist1, function(dv){ var a=decodeAscii(dv); readInto(CH.hist2, function(dv2){ $("histBox").textContent = "HIST1: " + (a||"—") + "   ·   HIST2: " + (decodeAscii(dv2)||"—"); }); });
+    readInto(CH.led, function(dv){ state.led = readU16(dv); render(); });
+    readInto(CH.autoOff, function(dv){ state.autoOffMin = Math.round(readU16(dv)/60); $("autoOffRange").value = clamp(state.autoOffMin,0,360); $("autoOffVal").textContent = state.autoOffMin + " min"; });
+    readInto(CH.heatHours, function(dv){ state.heaterHours = readU16(dv); render(); });
+    readInto(CH.heatMins, function(dv){ state.heaterMins = readU16(dv); render(); });
+    return Promise.all([subscribe(CH.curTemp), subscribe(CH.tgtTemp), subscribe(CH.countdown), subscribe(CH.prj1), subscribe(CH.prj2), subscribe(CH.prj3), subscribe(CH.heatHours), subscribe(CH.heatMins)]);
+  }).then(function(){
+    refreshAll(); renderWorkflows();
+    pollTimer = setInterval(refreshAll, 5000);
+    log("Live. Current/target temperature, state registers and countdown are streaming from the device.");
+  }).catch(function(err){
+    log("Connect failed: " + err.message);
+    if (device && device.gatt && device.gatt.connected) device.gatt.disconnect();
+  });
+}
+function disconnect(){
+  dropAllPending("you disconnected");
+  if (wf.running) stopWorkflow("disconnected by you — workflow stopped");
+  if (device && device.gatt && device.gatt.connected) device.gatt.disconnect();
+  else onDisconnected();
+}
+
+/* ============ Controls ============ */
+function setTargetC(c){
+  c = clamp(Math.round(c), 40, 230);
+  return safeWrite(CH.tgtTemp, u16le(c*10), "Set target temperature " + c + " °C (uint16, tenths)", false)
+    .then(function(){
+      return safeRead(CH.tgtTemp).then(function(dv){
+        handleNotify(CH.tgtTemp, dv);
+        if (state.tgtC!==null && Math.round(state.tgtC)!==c) log("Note: device reports target " + state.tgtC + " °C after write — showing the device’s value, as always.");
+        else log("Device confirmed target " + c + " °C.");
+      }).catch(function(){});
+    });
+}
+function heaterToggle(){
+  var on = state.prj1!==null && !!(state.prj1 & 0x0001);
+  if (on) return safeWrite(CH.heaterOff, new Uint8Array([0x00]), "Heater OFF", false)
+    .then(function(){ return waitForPrjBit(0x0001, false, 5000, "heater off"); })
+    .then(function(){ log("Device confirmed heater OFF."); }).catch(function(e){ log(e.message + " — display follows the device register."); refreshAll(); });
+  return safeWrite(CH.heaterOn, new Uint8Array([0x01]), "Heater ON", true)
+    .then(function(){ return waitForPrjBit(0x0001, true, 5000, "heater on"); })
+    .then(function(){ log("Device confirmed heater ON."); }).catch(function(e){ log(e.message + " — display follows the device register."); refreshAll(); });
+}
+function pumpToggle(){
+  var on = state.prj1!==null && !!((state.prj1 & 0x1000) || (state.prj1 & 0x2000));
+  if (on) return safeWrite(CH.pumpOff, new Uint8Array([0x00]), "Pump OFF", false)
+    .then(function(){ return waitForPrjBit(0x1000, false, 5000, "pump off"); })
+    .then(function(){ log("Device confirmed pump OFF."); }).catch(function(e){ log(e.message); refreshAll(); });
+  return safeWrite(CH.pumpOn, new Uint8Array([0x01]), "Pump ON", true)
+    .then(function(){ return waitForPrjBit(0x1000, true, 5000, "pump on"); })
+    .then(function(){ log("Device confirmed pump ON."); }).catch(function(e){ log(e.message); refreshAll(); });
+}
+/* Settings register writes: 4-byte LE mask word — mask sets bits, 0x10000+mask clears (vendor convention, spec §2.4). PRJSTAT1 is never written. */
+function writeSetting(uuid, mask, set, label){
+  var word = set ? mask : (0x10000 + mask);
+  return safeWrite(uuid, u32le(word), label + " (mask word " + hex16(word & 0xffff) + (set?", set":", clear") + ")", false);
+}
+function applyLed(){
+  var v = clamp(parseInt($("ledRange").value,10)||0, 0, 100);
+  safeWrite(CH.led, u16le(v), "Set LED brightness " + v + "%", false)
+    .then(function(){ return safeRead(CH.led); }).then(function(dv){ state.led = readU16(dv); render(); log("Device reports brightness " + state.led + "%."); })
+    .catch(function(e){ log("Brightness failed: " + e.message); });
+}
+function applyAutoOff(){
+  var mins = clamp(parseInt($("autoOffRange").value,10)||0, 0, 360);
+  safeWrite(CH.autoOff, u16le(mins*60), "Set auto-off timer " + mins + " min", false)
+    .then(function(){ return safeRead(CH.autoOff); }).then(function(dv){ state.autoOffMin = Math.round(readU16(dv)/60); log("Device reports auto-off setting " + state.autoOffMin + " min."); })
+    .catch(function(e){ log("Auto-off failed: " + e.message); });
+}
+
+/* ============ Workflows ============ */
+var LS_KEY = "volcano-workflows-v1";
+var templates = [
+  { id:"tpl-balloon-classic", name:"Classic Balloon (template)", steps:[
+    {t:185,h:30,p:35},{t:195,h:15,p:35},{t:205,h:15,p:30} ]},
+  { id:"tpl-stepup", name:"Step-Up Ladder 175 → 190 → 210 (template)", steps:[
+    {t:175,h:30,p:10},{t:190,h:20,p:20},{t:210,h:10,p:25} ]},
+  { id:"tpl-tube", name:"Tube Session — slow iteration (template)", steps:[
+    {t:170,h:120,p:0},{t:180,h:120,p:0},{t:190,h:120,p:0},{t:200,h:90,p:0} ]}
+];
+var workflows = [];
+function loadWorkflows(){
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (raw){ workflows = JSON.parse(raw); if (!Array.isArray(workflows)) workflows = []; }
+  } catch(e){ workflows = []; }
+  if (!workflows.length){
+    workflows = JSON.parse(JSON.stringify(templates));
+    saveWorkflows();
+  }
+}
+function saveWorkflows(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(workflows)); }
+  catch(e){ log("Could not save workflows in this browser (" + e.message + "). They’ll last for this session only."); }
+}
+function renderWorkflows(){
+  var host = $("wfList"); host.innerHTML = "";
+  workflows.forEach(function(w, wi){
+    var card = document.createElement("div"); card.className = "wf";
+    var head = document.createElement("div"); head.className = "wf-head";
+    head.innerHTML = "<strong></strong>";
+    head.querySelector("strong").textContent = w.name;
+    var runBtn = document.createElement("button"); runBtn.className="smallbtn accent"; runBtn.textContent="▶ Run";
+    runBtn.disabled = !state.connected || wf.running;
+    runBtn.addEventListener("click", function(){ runWorkflow(wi); });
+    var addBtn = document.createElement("button"); addBtn.className="smallbtn"; addBtn.textContent="+ Step";
+    addBtn.addEventListener("click", function(){ w.steps.push({t:190,h:20,p:15}); saveWorkflows(); renderWorkflows(); });
+    var delBtn = document.createElement("button"); delBtn.className="smallbtn"; delBtn.textContent="Delete";
+    delBtn.addEventListener("click", function(){ if (wf.running && wf.wfIndex===wi) stopWorkflow("workflow deleted"); workflows.splice(wi,1); saveWorkflows(); renderWorkflows(); });
+    head.appendChild(runBtn); head.appendChild(addBtn); head.appendChild(delBtn);
+    card.appendChild(head);
+    w.steps.forEach(function(s, si){
+      var row = document.createElement("div"); row.className = "step";
+      if (wf.running && wf.wfIndex===wi){ if (si < wf.stepIndex) row.className += " done"; else if (si===wf.stepIndex) row.className += " running"; }
+      row.innerHTML = '<span class="n">'+(si+1)+'</span><label style="margin:0">Temp °C <input type="number" min="40" max="230" step="1"></label><label style="margin:0">Hold s <input type="number" min="0" max="3600" step="5"></label><label style="margin:0">Pump s <input type="number" min="0" max="600" step="5"></label>';
+      var inputs = row.querySelectorAll("input");
+      inputs[0].value = s.t; inputs[1].value = s.h; inputs[2].value = s.p;
+      inputs[0].addEventListener("change", function(){ s.t = clamp(parseInt(inputs[0].value,10)||190,40,230); inputs[0].value=s.t; saveWorkflows(); });
+      inputs[1].addEventListener("change", function(){ s.h = clamp(parseInt(inputs[1].value,10)||0,0,3600); inputs[1].value=s.h; saveWorkflows(); });
+      inputs[2].addEventListener("change", function(){ s.p = clamp(parseInt(inputs[2].value,10)||0,0,600); inputs[2].value=s.p; saveWorkflows(); });
+      var x = document.createElement("button"); x.className="smallbtn"; x.textContent="✕"; x.title="Remove step";
+      x.addEventListener("click", function(){ w.steps.splice(si,1); saveWorkflows(); renderWorkflows(); });
+      row.appendChild(x);
+      card.appendChild(row);
+    });
+    if (!w.steps.length){
+      var p = document.createElement("p"); p.className="small"; p.textContent="No steps yet — add one with + Step."; card.appendChild(p);
+    }
+    host.appendChild(card);
+  });
+}
+var wf = { running:false, wfIndex:-1, stepIndex:-1, aborted:false };
+function wfBanner(msg){
+  var b = $("wfRunBanner");
+  if (!msg){ b.classList.add("hidden"); b.innerHTML=""; return; }
+  b.classList.remove("hidden");
+  b.innerHTML = "";
+  var s = document.createElement("strong"); s.textContent = "Workflow running"; b.appendChild(s);
+  b.appendChild(document.createTextNode(" " + msg + " "));
+  var stop = document.createElement("button"); stop.className="smallbtn danger"; stop.textContent="Stop workflow";
+  stop.addEventListener("click", function(){ stopWorkflow("stopped by you"); });
+  b.appendChild(stop);
+}
+function stopWorkflow(reason){
+  if (!wf.running) { wfBanner(null); return; }
+  wf.aborted = true; wf.running = false;
+  log("Workflow stopped: " + reason + ".");
+  /* Best-effort pump off — a fresh command, never a replay. If we're disconnected it is dropped, not queued. */
+  if (state.connected) safeWrite(CH.pumpOff, new Uint8Array([0x00]), "Pump OFF (workflow stop)", false).catch(function(){});
+  wfBanner(null); renderWorkflows();
+}
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+function runWorkflow(wi){
+  if (!state.connected){ log("Connect first — workflows need a live device."); return; }
+  var w = workflows[wi];
+  if (!w || !w.steps.length){ log("That workflow has no steps."); return; }
+  wf.running = true; wf.aborted = false; wf.wfIndex = wi; wf.stepIndex = 0;
+  renderWorkflows();
+  log("Workflow started: “" + w.name + "” — " + w.steps.length + " steps. Each step advances only on device confirmation.");
+  (function nextStep(){
+    if (wf.aborted || !wf.running) return;
+    if (wf.stepIndex >= w.steps.length){
+      wf.running = false; wfBanner(null); renderWorkflows();
+      log("Workflow complete: “" + w.name + "”. Heater stays as-is — turn it off when you’re done.");
+      return;
+    }
+    var i = wf.stepIndex, s = w.steps[i];
+    renderWorkflows();
+    wfBanner("“" + w.name + "” · step " + (i+1) + " of " + w.steps.length + ": heating to " + s.t + " °C and waiting for the device to confirm…");
+    /* Ensure heater is on (fresh command, confirmed via PRJSTAT1) */
+    var ensureHeat = (state.prj1!==null && (state.prj1 & 0x0001))
+      ? Promise.resolve()
+      : safeWrite(CH.heaterOn, new Uint8Array([0x01]), "Heater ON (workflow)", true).then(function(){ return waitForPrjBit(0x0001, true, 8000, "heater on"); });
+    ensureHeat.then(function(){
+      if (wf.aborted) throw new Error("aborted");
+      return setTargetC(s.t);
+    }).then(function(){
+      if (wf.aborted) throw new Error("aborted");
+      wfBanner("“" + w.name + "” · step " + (i+1) + ": target " + s.t + " °C set — waiting for the device to confirm it reached temperature…");
+      return waitForTemp(s.t, 2, 240000);
+    }).then(function(){
+      if (wf.aborted) throw new Error("aborted");
+      log("Step " + (i+1) + ": device confirmed " + s.t + " °C reached (" + state.curC + " °C). Holding " + s.h + "s.");
+      wfBanner("“" + w.name + "” · step " + (i+1) + ": at " + s.t + " °C — holding " + s.h + "s" + (s.p>0 ? ", then pumping " + s.p + "s" : "") + ".");
+      return sleep(Math.max(0, s.h)*1000);
+    }).then(function(){
+      if (wf.aborted) throw new Error("aborted");
+      if (!s.p) return null;
+      return safeWrite(CH.pumpOn, new Uint8Array([0x01]), "Pump ON (workflow step " + (i+1) + ")", true)
+        .then(function(){ return waitForPrjBit(0x1000, true, 8000, "pump on"); })
+        .then(function(){
+          log("Step " + (i+1) + ": pump confirmed ON for " + s.p + "s.");
+          return sleep(s.p*1000);
+        })
+        .then(function(){
+          if (wf.aborted) throw new Error("aborted");
+          return safeWrite(CH.pumpOff, new Uint8Array([0x00]), "Pump OFF (workflow step " + (i+1) + ")", false);
+        })
+        .then(function(){ return waitForPrjBit(0x1000, false, 8000, "pump off"); })
+        .then(function(){ log("Step " + (i+1) + ": pump confirmed OFF."); });
+    }).then(function(){
+      if (wf.aborted) return;
+      wf.stepIndex++;
+      nextStep();
+    }).catch(function(err){
+      if (wf.aborted) return;
+      stopWorkflow("step " + (i+1) + " failed — " + err.message + " The workflow does NOT advance without device confirmation.");
+    });
+  })();
+}
+
+/* ============ Wiring ============ */
+$("btnConnect").addEventListener("click", connect);
+$("btnDisconnect").addEventListener("click", disconnect);
+$("btnHeater").addEventListener("click", function(){ heaterToggle().catch(function(e){ log("Heater command failed: " + e.message); }); });
+$("btnPump").addEventListener("click", function(){ pumpToggle().catch(function(e){ log("Pump command failed: " + e.message); }); });
+$("btnSetTemp").addEventListener("click", function(){
+  var v = parseFloat($("setTempInput").value);
+  if (isNaN(v)){ log("Enter a temperature first."); return; }
+  setTargetC(inputToC(v)).catch(function(e){ log("Set temperature failed: " + e.message); });
+});
+$("btnMinus").addEventListener("click", function(){ var v=parseFloat($("setTempInput").value)||190; $("setTempInput").value = state.fahrenheit ? v-9 : v-5; });
+$("btnPlus").addEventListener("click", function(){ var v=parseFloat($("setTempInput").value)||190; $("setTempInput").value = state.fahrenheit ? v+9 : v+5; });
+document.querySelectorAll(".preset").forEach(function(b){
+  b.addEventListener("click", function(){
+    var c = parseInt(b.getAttribute("data-c"),10);
+    $("setTempInput").value = state.fahrenheit ? Math.round(c*9/5+32) : c;
+    if (state.connected) setTargetC(c).catch(function(e){ log("Preset failed: " + e.message); });
+  });
+});
+$("ledRange").addEventListener("input", function(){ $("ledVal").textContent = $("ledRange").value + "%"; });
+$("btnLedApply").addEventListener("click", applyLed);
+$("autoOffRange").addEventListener("input", function(){ $("autoOffVal").textContent = $("autoOffRange").value + " min"; });
+$("btnAutoOffApply").addEventListener("click", applyAutoOff);
+$("tglFahrenheit").addEventListener("change", function(){
+  var wantF = $("tglFahrenheit").checked;
+  writeSetting(CH.prj2, 0x0200, wantF, "Set unit to " + (wantF?"°F":"°C"))
+    .then(function(){ return safeRead(CH.prj2); }).then(function(dv){ handleNotify(CH.prj2, dv); log("Device reports unit: " + unitSym() + "."); })
+    .catch(function(e){ log("Unit change failed: " + e.message); render(); });
+});
+$("tglVibration").addEventListener("change", function(){
+  var enabled = $("tglVibration").checked; /* PRJSTAT3 bit10: 0 = enabled, so enabling = CLEAR the bit */
+  writeSetting(CH.prj3, 0x0400, !enabled, "Vibration " + (enabled?"ON":"OFF"))
+    .then(function(){ return safeRead(CH.prj3); }).then(function(dv){ handleNotify(CH.prj3, dv); log("Device confirmed vibration setting."); })
+    .catch(function(e){ log("Vibration change failed: " + e.message); render(); });
+});
+$("tglCoolDisplay").addEventListener("change", function(){
+  var enabled = $("tglCoolDisplay").checked; /* PRJSTAT2 bit12: 0 = enabled, so enabling = CLEAR the bit */
+  writeSetting(CH.prj2, 0x1000, !enabled, "Display-on-while-cooling " + (enabled?"ON":"OFF"))
+    .then(function(){ return safeRead(CH.prj2); }).then(function(dv){ handleNotify(CH.prj2, dv); log("Device confirmed display setting."); })
+    .catch(function(e){ log("Display setting failed: " + e.message); render(); });
+});
+$("btnNewWf").addEventListener("click", function(){
+  var name = ($("newWfName").value || "").trim() || "My workflow";
+  workflows.push({ id:"wf-"+Date.now(), name:name, steps:[{t:190,h:20,p:15}] });
+  $("newWfName").value = "";
+  saveWorkflows(); renderWorkflows();
+});
+$("btnClearLog").addEventListener("click", function(){ $("logBox").textContent = "Log cleared."; });
+
+/* ============ Init ============ */
+if (!navigator.bluetooth){
+  $("unsupported").classList.remove("hidden");
+  $("btnConnect").disabled = true;
+  $("btnConnect").textContent = "Connect (needs Bluefy / Chrome)";
+  log("Web Bluetooth is not available in this browser. Open this page in Bluefy on iPhone, or Chrome/Edge, to connect. Workflows below are still editable and saved on this device.");
+} else {
+  log("Web Bluetooth is available. Connect when the Volcano is plugged in and switched on.");
+}
+loadWorkflows();
+renderWorkflows();
+render();
+/* Keep Run buttons in sync with connection state */
+setInterval(function(){ if (!wf.running) renderWorkflows(); }, 4000);
+})();
+</script>
+</body>
+</html>
