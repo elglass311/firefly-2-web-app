@@ -2170,7 +2170,7 @@
 <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="M5 9.4l7 7 7-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="M9.4 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
-<symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7"/></g></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7"/></g></symbol><symbol id="i-wave" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9.5c2-2.4 4-2.4 6 0 2 2.4 4 2.4 6 0 2-2.4 4-2.4 6 0"/><path d="M2.5 15.5c2-2.4 4-2.4 6 0 2 2.4 4 2.4 6 0 2-2.4 4-2.4 6 0"/></g></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 13.6A8.2 8.2 0 1 1 10.4 4 6.6 6.6 0 0 0 20 13.6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </defs></svg>
 
@@ -2236,6 +2236,7 @@
       <button type="button" role="tab" id="tab-strains" aria-selected="false" aria-controls="panel-strains"><svg class="tab-ic" aria-hidden="true"><use href="#ff-leaf-sm"/></svg><span class="tab-txt">Strains<small>Guide · picker · log</small></span></button>
       <button type="button" role="tab" id="tab-terpene" aria-selected="false" aria-controls="panel-terpene"><svg class="tab-ic" aria-hidden="true"><use href="#i-drop"/></svg><span class="tab-txt">Terpenes<small>What heat releases</small></span></button>
       <button type="button" role="tab" id="tab-burnguard" aria-selected="false" aria-controls="panel-burnguard"><svg class="tab-ic" aria-hidden="true"><use href="#i-shield"/></svg><span class="tab-txt">Burn Guard<small>Ceiling &amp; calibration</small></span></button>
+      <button type="button" role="tab" id="tab-surf" aria-selected="false" aria-controls="panel-surf"><svg class="tab-ic" aria-hidden="true"><use href="#i-wave"/></svg><span class="tab-txt">Surf<small>Live cams · Follow the Sun</small></span></button>
       <button type="button" role="tab" id="tab-device" aria-selected="false" aria-controls="panel-device"><svg class="tab-ic" aria-hidden="true"><use href="#i-device"/></svg><span class="tab-txt">Device<small>Details &amp; log</small></span></button>
       <button type="button" role="tab" id="tab-info" aria-selected="false" aria-controls="panel-info"><svg class="tab-ic" aria-hidden="true"><use href="#i-info"/></svg><span class="tab-txt">Info<small>Device, app &amp; sources</small></span></button>
     </nav>
@@ -3045,7 +3046,7 @@
       <h2 class="tab-title">Device</h2>
 
       <!-- Device / battery -->
-            <div class="seg-control seg-tabs" data-segtabs="device" role="group" aria-label="Device views"><button type="button" data-seg="device" aria-pressed="true">Device</button><button type="button" data-seg="battery" aria-pressed="false">Battery</button><button type="button" data-seg="charges" aria-pressed="false">Charges</button><button type="button" data-seg="surf" aria-pressed="false">Surf</button><button type="button" data-seg="help" aria-pressed="false">Help</button></div>
+            <div class="seg-control seg-tabs" data-segtabs="device" role="group" aria-label="Device views"><button type="button" data-seg="device" aria-pressed="true">Device</button><button type="button" data-seg="battery" aria-pressed="false">Battery</button><button type="button" data-seg="charges" aria-pressed="false">Charges</button><button type="button" data-seg="help" aria-pressed="false">Help</button></div>
       <div class="seg-view" data-segtab="device" data-segview="device">
 <section class="card" aria-labelledby="device-h">
         <h2 id="device-h">Your Firefly right now</h2>
@@ -3205,38 +3206,6 @@
         <ul class="bh-runs" id="bhChargeList"></ul>
       </section>
       </div>
-      <div class="seg-view" data-segtab="device" data-segview="surf" hidden>
-<section class="card surf-card" aria-labelledby="surf-h">
-        <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button in the player dock</strong>, or the speaker inside the player. Turn sound on once and the app <strong style="color:var(--ink);">remembers</strong>: phones sometimes drop a stream's sound on their own a little way in, and when that happens the app notices and puts the sound back by itself within a couple of seconds — no need to touch the volume buttons. Your sound also comes back by itself when Follow the Sun moves to the next break and when you return to the app. To turn sound off, use the dock's Sound button (the player's own speaker is treated as a dropped signal and gets restored). The player itself lives in a dock pinned to the bottom of the screen, so it rides along on <strong style="color:var(--ink);">every tab</strong> — this card is its control center: pick a break, show or hide the player, and set auto-play here.</p>
-
-        <div class="surf-nowrow">
-          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
-          <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
-        </div>
-
-        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Auto-play streams</div>
-            <div class="sw-sub">On (the usual): the best daylight break starts by itself, muted, as soon as you open the app — on whichever tab you're on — and Follow the Sun keeps cycling. Off: the player dock stays hidden and nothing loads until you tap Show player here or Play in the dock — kinder to your data plan. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
-        </div>
-
-        <div class="switch-row" style="margin-top:16px;">
-          <div>
-            <div class="sw-label">Lineup zones</div>
-            <div class="sw-sub">On: each spot's poster still in the player dock carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
-          </div>
-          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
-        </div>
-
-        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
-        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. The player dock rides along on every tab and switching tabs never stops the stream; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen — and when it picks back up, your sound choice comes back with it.</p>
-        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
-      </section>      </div>
       <div class="seg-view" data-segtab="device" data-segview="help" hidden>
 <section class="card" aria-labelledby="tut-h">
         <h2 id="tut-h">Tutorial</h2>
@@ -3316,6 +3285,43 @@
       </div>
       </div><!-- /panel-device -->
 
+      <!-- ================= Tab: Surf ================= -->
+      <div id="panel-surf" role="tabpanel" aria-labelledby="tab-surf" hidden>
+      <h2 class="tab-title">Surf</h2>
+
+<section class="card surf-card" aria-labelledby="surf-h">
+        <h2 id="surf-h">Surf Break — live cams</h2>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button in the player dock</strong>, or the speaker inside the player. Turn sound on once and the app <strong style="color:var(--ink);">remembers</strong>: phones sometimes drop a stream's sound on their own a little way in, and when that happens the app notices and puts the sound back by itself within a couple of seconds — no need to touch the volume buttons. Your sound also comes back by itself when Follow the Sun moves to the next break and when you return to the app. To turn sound off, use the dock's Sound button (the player's own speaker is treated as a dropped signal and gets restored). The player itself lives in a dock pinned to the bottom of the screen, so it rides along on <strong style="color:var(--ink);">every tab</strong> — this card is its control center: pick a break, show or hide the player, and set auto-play here.</p>
+
+        <div class="surf-nowrow">
+          <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
+          <button class="btn-small" id="surfShowHideBtn" type="button">Hide player</button>
+        </div>
+
+        <div class="surf-chips" id="surfChips" role="group" aria-label="Surf spots"></div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Auto-play streams</div>
+            <div class="sw-sub">On (the usual): the best daylight break starts by itself, muted, as soon as you open the app — on whichever tab you're on — and Follow the Sun keeps cycling. Off: the player dock stays hidden and nothing loads until you tap Show player here or Play in the dock — kinder to your data plan. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfAutoSwitch" type="button" role="switch" aria-checked="true" aria-label="Auto-play streams"></button>
+        </div>
+
+        <div class="switch-row" style="margin-top:16px;">
+          <div>
+            <div class="sw-label">Lineup zones</div>
+            <div class="sw-sub">On: each spot's poster still in the player dock carries a soft marker over its usual lineup zone. Zones are drawn on the poster stills — where the pack usually sits at each break. They are not live positions, and they never appear on the live video. Off: the posters stay clean. Your pick is remembered on this device.</div>
+          </div>
+          <button class="switch" id="surfZoneSwitch" type="button" role="switch" aria-checked="true" aria-label="Lineup zones"></button>
+        </div>
+
+        <p class="muted" id="surfCredit" style="margin:12px 0 0;"></p>
+        <p class="muted" style="margin:6px 0 0;">“Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break — an approximation, not an exact sunset calculation. The streams are public live cams carried on YouTube; if one ends, its channel usually restarts it under the same link. The player dock rides along on every tab and switching tabs never stops the stream; it unloads only when you tap Stop, or when the app goes into the background, so nothing keeps eating data unseen — and when it picks back up, your sound choice comes back with it.</p>
+        <p class="muted" style="margin:6px 0 0;"><strong style="color:var(--ink-soft);">About this lineup:</strong> every break here is a live cam whose channel allows YouTube embedding — checked when this app was built, and the cam credit above names each source. Malibu's cams aren't published that way (the only Surfrider Beach video on YouTube is pre-recorded drone footage), so Santa Monica — the next break down the same coast — stands in for it. Bondi, Jeffreys Bay and Hossegor were checked too: their cams run inside their own networks' players (Surfline, Swellnet and the like), not as embeddable YouTube streams, so they can't ride along here — Bali covers those daylight hours instead.</p>
+      </section>
+      </div><!-- /panel-surf -->
+
       <!-- ================= Tab: Info ================= -->
       <div id="panel-info" role="tabpanel" aria-labelledby="tab-info" hidden>
       <h2 class="tab-title">Info</h2>
@@ -3367,7 +3373,6 @@
         <h2 id="info-sources-h">Sources</h2>
         <p class="src-line" style="margin-top:0;"><strong>Sources</strong> — strain data compiled 2026-11-04 from:</p>
         <div class="src-line" id="strainSources"></div>
-        <p class="src-line" style="margin-top:14px;"><strong>Temperature science</strong> — the boiling points in the Terpenes chart marked “NIST, normal pressure” are NIST measurements, cited inline on each compound's line. The famous 157°C “THC boiling point” is a vacuum value (0.05 Torr — Adams 1941; Gaoni &amp; Mechoulam 1964), not an atmospheric boiling point; the full note lives under “How the numbers are made” on the Strains tab and “How solid is this?” on the Terpenes tab.</p>
         <details class="src-group"><summary>Surf cams</summary><div class="src-line" style="margin-top:14px;">
         <div style="margin:3px 0;">[Surf cams] <a href="https://www.youtube.com/watch?v=Fp7l8XASb9Y" target="_blank" rel="noopener">Banzai Pipeline</a> — Cam by Explore.org — “Explore Big Surf, Beaches and Sunsets” on YouTube.</div>
         <div style="margin:3px 0;">[Surf cams] <a href="https://www.youtube.com/watch?v=drckaPuBNws" target="_blank" rel="noopener">Waimea Bay</a> — Cam by AfarTV — 24/7 North Shore 4K cam over the mouth of Waimea Bay, on YouTube.</div>
@@ -3480,6 +3485,13 @@
             var items = byCat[cat].map(function (r) {
               return '<div style="margin:3px 0;"><a href="' + strEsc(r[2]) + '" target="_blank" rel="noopener">' + strEsc(r[1]) + '</a></div>';
             }).join("");
+            /* The NIST / THC boiling-point note belongs to this category, so
+               it renders inside the Temperature science group rather than as
+               a loose paragraph below the whole list. The group's summary
+               already names the category, so the note opens with its subject. */
+            if (cat === "Temperature science") {
+              items += '<p class="src-line" style="margin-top:10px;">The boiling points in the Terpenes chart marked “NIST, normal pressure” are NIST measurements, cited inline on each compound\u2019s line. The famous 157\u00B0C “THC boiling point” is a vacuum value (0.05 Torr — Adams 1941; Gaoni &amp; Mechoulam 1964), not an atmospheric boiling point; the full note lives under “How the numbers are made” on the Strains tab and “How solid is this?” on the Terpenes tab.</p>';
+            }
             return '<details class="src-group"' + (gi === 0 ? " open" : "") + '><summary>' + strEsc(cat) + ' (' + byCat[cat].length + ')</summary>' + items + "</details>";
           }).join("");
         }
@@ -6064,6 +6076,7 @@
           strains: document.getElementById("tab-strains"),
           terpene: document.getElementById("tab-terpene"),
           burnguard: document.getElementById("tab-burnguard"),
+          surf: document.getElementById("tab-surf"),
           device: document.getElementById("tab-device"),
           info: document.getElementById("tab-info")
         };
@@ -6073,6 +6086,7 @@
           strains: document.getElementById("panel-strains"),
           terpene: document.getElementById("panel-terpene"),
           burnguard: document.getElementById("panel-burnguard"),
+          surf: document.getElementById("panel-surf"),
           device: document.getElementById("panel-device"),
           info: document.getElementById("panel-info")
         };
@@ -10301,13 +10315,13 @@ var STRAIN_SRC_LINKS = {
           var triedTxt = (triedNames && triedNames.length > 1) ? " Tried, in order: " + triedNames.join(" · ") + "." : "";
           if (kind === "ended") {
             fbTitle.textContent = "That live stream has ended";
-            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, watch it on YouTube, or pick another break in the Surf Break card on the Device tab." + triedTxt;
+            fbText.textContent = spot.name + "'s cam stream isn't running right now. The channel usually restarts it under the same link — try again in a bit, watch it on YouTube, or pick another break in the Surf Break card on the Surf tab." + triedTxt;
           } else if (triedNames && triedNames.length > 1) {
             fbTitle.textContent = "None of the breaks loaded";
-            fbText.textContent = "Every break was tried in Follow the Sun order and none came through — they may have restarted, or the connection hiccuped." + triedTxt + " Try again, or pick a break in the Surf Break card on the Device tab.";
+            fbText.textContent = "Every break was tried in Follow the Sun order and none came through — they may have restarted, or the connection hiccuped." + triedTxt + " Try again, or pick a break in the Surf Break card on the Surf tab.";
           } else {
             fbTitle.textContent = "Couldn't load " + spot.name + " just now";
-            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, watch " + spot.name + " on YouTube, or pick another break in the Surf Break card on the Device tab.";
+            fbText.textContent = spot.name + "'s live stream didn't come through — it may have restarted, or the connection hiccuped. Try again, watch " + spot.name + " on YouTube, or pick another break in the Surf Break card on the Surf tab.";
           }
           ytLink.href = "https://www.youtube.com/watch?v=" + spot.id;
           setNow("Stream not playing — nothing is using data." + (triedNames && triedNames.length ? " Tried: " + triedNames.join(", ") + "." : ""));
