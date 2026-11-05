@@ -2657,11 +2657,10 @@
         color: var(--ember);
         box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
         cursor: pointer; font: inherit; padding: 0;
-        touch-action: none; /* the button drags itself (see its script); the browser must not take the touch over for scrolling */
+        touch-action: none; /* tap-only: the button never drags, and a press on it must not pan or scroll the page underneath — a drag that starts here simply does nothing */
         user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
       }
       .surf-fab:active { transform: scale(0.93); }
-      .surf-fab.is-dragging { transform: none; cursor: grabbing; }
       .surf-fab svg { width: 26px; height: 26px; }
       .surf-fab.is-open {
         background: linear-gradient(180deg, var(--btn-a) 0%, var(--btn-b) 45%, var(--btn-c) 100%);
@@ -2788,6 +2787,17 @@
         display: flex; gap: 6px;
         position: absolute; top: 6px; right: 6px; z-index: 9;
       }
+      /* While the dock itself is in fullscreen presentation — the
+         native fullscreen element, or the fill-viewport fallback —
+         the mini controls are NOT part of the fullscreen subtree, so
+         they would sit visible-but-dead over/under the dock (taps land
+         on the dock, never on them). Hide the whole row for exactly
+         that state; it returns on its own when fullscreen exits,
+         because neither selector matches anymore. (The surf script's
+         syncFsBtns does the same toggle inline for engines without
+         :has support.) */
+      .surf-overlay-sheet:has(.surf-dock:fullscreen) .surf-mini-controls,
+      .surf-overlay-sheet:has(.surf-dock.surf-fs-fake) .surf-mini-controls { display: none !important; }
       .surf-mini-btn {
         appearance: none; cursor: pointer; font: inherit;
         width: 34px; height: 34px; border-radius: 50%; flex: none;
@@ -4476,20 +4486,48 @@
         }
 
         /* Populate the Info → Sources listing up front: it is static
-           reference content, so it renders here — before the Bluetooth
-           gate below, which stops the rest of app init in browsers
-           without Web Bluetooth. strInit() re-renders it identically. */
+           reference content, so it renders here, before the feature
+           detection below. strInit() re-renders it identically. */
         renderSources();
 
-        /* ================= Feature detection ================= */
+        /* ================= Feature detection =================
+           The gate gates ONLY the Bluetooth function. In a browser
+           without Web Bluetooth the unsupported notice still shows on
+           the Connect screen and the app still opens, and every
+           non-Bluetooth part of init below runs exactly as it does in
+           a supported browser (tab navigation, strains + Owned + Vibe,
+           terpenes, Burn Guard, Device and Info content, settings,
+           tutorial). Only the Bluetooth entry points — Connect,
+           Reconnect, Authenticate, and the device-write actions — are
+           guarded (see showUnsupportedNotice), so in an unsupported
+           browser they surface that same notice instead of throwing
+           or silently doing nothing. */
         var supported = "bluetooth" in navigator && !!navigator.bluetooth;
         var unsupportedEl = document.getElementById("unsupported");
         var appEl = document.getElementById("app");
         if (!supported) {
           unsupportedEl.hidden = false;
-          return; // Never wire up a dead Connect button in an unsupported browser.
+          /* Marker for the standalone navigation scripts (More /
+             Forecast): the notice belongs to the Connect screen, so
+             those screens hide it while they are showing, exactly as
+             switchTab does for the tab panels. */
+          unsupportedEl.setAttribute("data-bt-unsupported", "1");
         }
         appEl.hidden = false;
+        function showUnsupportedNotice() {
+          if (unsupportedEl) unsupportedEl.hidden = false;
+          if (typeof setConnectMsg === "function") {
+            setConnectMsg("err", "This browser doesn't support Web Bluetooth — there's no way to connect from here. Open this page in Bluefy on iPhone, or Chrome / Edge on desktop or Android, then tap Connect.");
+          }
+          if (typeof log === "function") {
+            log("Web Bluetooth isn't available in this browser — the Connect, Reconnect, Authenticate and device-write actions can't run here. Open this page in Bluefy (iPhone) or Chrome / Edge (desktop / Android) to use them; everything else in the app works as usual.", "err");
+          }
+          return true;
+        }
+        function btUnsupported() {
+          if (supported) return false;
+          return showUnsupportedNotice();
+        }
 
         /* ================= Elements ================= */
         var statusPill = document.getElementById("statusPill");
@@ -5547,6 +5585,7 @@
           writeFrame([0x00, 0x0A, 0x01].concat(digest), "authentication answer");
         }
         function sendAuthRequest(source) {
+          if (!supported) { if (source === "manual") showUnsupportedNotice(); return; }
           if (!isConnected || !rxChar) return;
           if (authState === "authenticated") return;
           authState = "authenticating";
@@ -5779,6 +5818,7 @@
 
         setTempBtn.addEventListener("click", function () {
           haptics.tick();
+          if (!supported) { showUnsupportedNotice(); setSetStatus("err", "This browser doesn't support Web Bluetooth, so nothing can be sent to your Firefly from here — open this page in Bluefy (iPhone) or Chrome / Edge (desktop / Android) to set the temperature."); return; }
           if (!isConnected || !rxChar) return;
           if (typeof guided !== "undefined" && guided && guided.active && typeof endGuidedSession === "function") {
             endGuidedSession("manual");
@@ -6000,6 +6040,7 @@
           }
         }
         function startPulse() {
+          if (!supported) { showUnsupportedNotice(); setPulseStatus("err", "This browser doesn't support Web Bluetooth, so a pulse can't be sent from here — open this page in Bluefy (iPhone) or Chrome / Edge (desktop / Android) to run one."); return; }
           if (!isConnected || !rxChar) return;
           if (authState !== "authenticated") {
             setPulseStatus("err", "Not authenticated — your Firefly ignores temperature changes until you tap Authenticate on the Connect tab.");
@@ -6296,6 +6337,7 @@
         }
         guidedStartBtn.addEventListener("click", function () {
           haptics.tick();
+          if (!supported) { showUnsupportedNotice(); setGuidedStatus("err", "This browser doesn't support Web Bluetooth, so a guided session can't be sent from here — open this page in Bluefy (iPhone) or Chrome / Edge (desktop / Android) to run one."); return; }
           if (!isConnected || !rxChar) return;
           if (authState !== "authenticated") { setGuidedStatus("err", "Not authenticated — tap Authenticate on the Connect tab first."); return; }
           if (pulseBusy()) { setGuidedStatus("err", "A pulse is running — stop it first, then start the guided session."); return; }
@@ -6367,6 +6409,11 @@
         actBtns.forEach(function (b) {
           b.addEventListener("click", function () {
             var v = parseInt(b.getAttribute("data-act"), 10);
+            if (!supported) {
+              showUnsupportedNotice();
+              setActStatus("err", "This browser doesn't support Web Bluetooth, so the sensor mode can't be sent from here — open this page in Bluefy (iPhone) or Chrome / Edge (desktop / Android) to change it.");
+              return;
+            }
             if (!isConnected || !rxChar) {
               setActStatus("err", "Not connected — connect your Firefly first, then tap a sensor mode to send it.");
               return;
@@ -6516,6 +6563,11 @@
           coilValueEl.textContent = coilSlider.value + "%";
         });
         coilApplyBtn.addEventListener("click", function () {
+          if (!supported) {
+            showUnsupportedNotice();
+            setCoilStatus("err", "This browser doesn't support Web Bluetooth, so coil calibration can't be sent from here — open this page in Bluefy (iPhone) or Chrome / Edge (desktop / Android) to change it.");
+            return;
+          }
           if (!isConnected || !rxChar) {
             setCoilStatus("err", "Not connected — connect your Firefly first. (Coil calibration is the one device setting that applies without authentication.)");
             return;
@@ -7011,6 +7063,7 @@
         var connecting = false;
         connectBtn.addEventListener("click", function () {
           haptics.tick();
+          if (btUnsupported()) return;
           if (connecting) return;
           connecting = true;
           var myGeneration = ++connectGeneration;
@@ -7035,6 +7088,7 @@
 
         reconnectBtn.addEventListener("click", function () {
           haptics.tick();
+          if (btUnsupported()) return;
           if (connecting || !grantedDevice) return;
           connecting = true;
           var myGeneration = ++connectGeneration;
@@ -7084,6 +7138,13 @@
             tabPanels[k].hidden = !on;
             tabPanels[k].classList.toggle("panel-enter", on);
           });
+          /* The unsupported notice lives on the Connect screen only:
+             in a browser without Web Bluetooth it shows while Connect
+             is the current screen and steps aside for every other
+             screen, so the rest of the app is actually reachable —
+             and it is waiting again when the user comes back to
+             Connect. In a supported browser it never appears. */
+          if (!supported) unsupportedEl.hidden = name !== "connect";
           window.scrollTo(0, 0);
           if (typeof onTabShown === "function") onTabShown(name);
         }
@@ -11065,7 +11126,7 @@ var STRAIN_SRC_LINKS = {
           log("MD2 self-test FAILED — authentication answers would be wrong. Temperature read-back still works; don't rely on Set until this is fixed.", "err");
         }
 
-        if (navigator.bluetooth.getAvailability) {
+        if (supported && navigator.bluetooth.getAvailability) {
           navigator.bluetooth.getAvailability().then(function (available) {
             if (!available) {
               log("Web Bluetooth is supported here, but Bluetooth appears to be off or unavailable on this device. Turn Bluetooth on, then tap Connect.", "err");
@@ -11080,7 +11141,7 @@ var STRAIN_SRC_LINKS = {
            gatt.connect() alone, no picker at all. That makes the picker a
            one-time hurdle instead of an every-session gate. Best-effort:
            browsers without getDevices() simply keep the picker flow. */
-        if (typeof navigator.bluetooth.getDevices === "function") {
+        if (supported && typeof navigator.bluetooth.getDevices === "function") {
           navigator.bluetooth.getDevices().then(function (devs) {
             if (isConnected || connecting) return;
             var match = null;
@@ -11462,18 +11523,50 @@ var STRAIN_SRC_LINKS = {
            a new feed never opens pre-zoomed on a corner. */
         var zPointers = {}, zDrag = null, zPinch = null;
         var zMoved = false, zPinched = false, zTapTimer = 0, zLastTapAt = 0;
-        /* --- Swipe-to-cycle + hold-to-move state ---
-           At 1× only: a horizontal swipe released on the player cycles
-           to the next (left) / previous (right) break in SPOTS order,
-           wrapping — through pickSpot's own path (a manual pick: Follow
-           the Sun pauses, dwell restarts when the new stream plays).
-           Zoomed past 1×, the same drag pans and never cycles. In the
-           mini stage, a ~250ms hold with little movement arms window
-           move: the drag then moves the mini frame itself (clamped
-           fully on screen, persisted) and suppresses tap, pan and
-           cycle for that gesture. Hold takes precedence over swipe. */
-        var zHoldTimer = 0, zHoldArmed = false, zHoldOrigin = null;
+        /* --- Swipe-to-cycle + window-move state ---
+           Disambiguation on this layer, in order: a two-finger pinch
+           zooms; zoomed past 1×, a one-finger drag pans and never
+           cycles; at 1× a fast short flick cycles to the next (left) /
+           previous (right) break in SPOTS order, wrapping — through
+           pickSpot's own path (a manual pick: Follow the Sun pauses,
+           dwell restarts when the new stream plays); at 1× a SUSTAINED
+           drag in the mini stage moves the mini window itself — the
+           window is grabbed on its own surface and follows the finger,
+           clamped fully on screen, and its spot persists. A drag
+           counts as sustained once it has clearly outlasted a flick:
+           still going ~200ms after touchdown, or moving slowly from
+           the start; a ~250ms nearly-still hold arms the same move
+           sooner. While the move is engaged it suppresses tap, pan
+           and cycle for that gesture, and a flick — over before
+           either test passes — never moves the window at all. */
+        var zHoldTimer = 0, zMoveOn = false, zMoveOrigin = null;
         function clearZHold() { if (zHoldTimer) { clearTimeout(zHoldTimer); zHoldTimer = 0; } }
+        /* The mini window itself is what a sustained drag moves.
+           zEngageMove grabs it where it currently sits; from then on
+           pointermove feeds the finger's total travel into miniPlace
+           (clamped fully inside the viewport). zSettleMove sets it
+           down: outline off, spot persisted under MINI_POS_KEY so the
+           mini stage opens there next time. */
+        function zCanMoveWin() { return surfStage === "mini" && zoomScale <= 1 && !surfFsOn() && !!overlayEl; }
+        function zEngageMove() {
+          if (zMoveOn || !zCanMoveWin()) return false;
+          var r = overlayEl.getBoundingClientRect();
+          zMoveOn = true;
+          zMoveOrigin = { left: r.left, top: r.top };
+          clearZHold();
+          cancelPendingTap();
+          overlayEl.classList.add("is-moving");
+          return true;
+        }
+        function zSettleMove() {
+          if (!zMoveOn) return;
+          zMoveOn = false; zMoveOrigin = null;
+          if (!overlayEl) return;
+          overlayEl.classList.remove("is-moving");
+          var rr = overlayEl.getBoundingClientRect();
+          miniPos = { left: Math.round(rr.left), top: Math.round(rr.top) };
+          lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+        }
         function cycleSurf(dir) {
           var idx = -1;
           for (var i = 0; i < SPOTS.length; i++) if (SPOTS[i].key === currentKey) idx = i;
@@ -11502,34 +11595,29 @@ var STRAIN_SRC_LINKS = {
             zPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
             var ids = Object.keys(zPointers);
             if (ids.length === 1) {
-              zDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, px: zoomX, py: zoomY };
+              zDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, px: zoomX, py: zoomY, t: Date.now() };
               zMoved = false;
               zPinch = null;
-              /* Hold-to-move arming (mini stage, 1×, not fullscreen):
-                 ~250ms nearly still arms the window drag. Any real
-                 movement before the timer fires cancels it (that
-                 gesture is a pan, a swipe or a tap instead). */
-              clearZHold(); zHoldArmed = false; zHoldOrigin = null;
-              if (surfStage === "mini" && zoomScale <= 1 && !surfFsOn()) {
-                var hr = overlayEl ? overlayEl.getBoundingClientRect() : null;
-                if (hr) {
-                  zHoldOrigin = { left: hr.left, top: hr.top };
-                  zHoldTimer = setTimeout(function () {
-                    zHoldTimer = 0;
-                    if (!zDrag || zPinched) return;
-                    var p0 = zPointers[zDrag.id];
-                    if (!p0) return;
-                    if (Math.hypot(p0.x - zDrag.sx, p0.y - zDrag.sy) > 10) return;
-                    if (zoomScale > 1 || surfStage !== "mini") return;
-                    zHoldArmed = true;
-                    cancelPendingTap();
-                    if (overlayEl) overlayEl.classList.add("is-moving");
-                    try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ }
-                  }, 250);
-                }
+              /* Window-move arming (mini stage, 1×, not fullscreen):
+                 a ~250ms nearly-still hold engages the window drag
+                 early; a sustained moving drag engages it on its own
+                 in pointermove below — no secret hold is ever required.
+                 Any real movement before the timer fires cancels the
+                 hold path (that gesture is a pan, a flick or a tap). */
+              clearZHold(); zMoveOn = false; zMoveOrigin = null;
+              if (zCanMoveWin()) {
+                zHoldTimer = setTimeout(function () {
+                  zHoldTimer = 0;
+                  if (!zDrag || zPinched || zMoveOn) return;
+                  var p0 = zPointers[zDrag.id];
+                  if (!p0) return;
+                  if (Math.hypot(p0.x - zDrag.sx, p0.y - zDrag.sy) > 10) return;
+                  if (zEngageMove()) { try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ } }
+                }, 250);
               }
             } else if (ids.length === 2) {
               cancelPendingTap();
+              zSettleMove(); /* a second finger ends any window move: the pinch takes over */
               zPinched = true;
               var a = zPointers[ids[0]], b = zPointers[ids[1]];
               zPinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: zoomScale, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, px: zoomX, py: zoomY };
@@ -11542,9 +11630,21 @@ var STRAIN_SRC_LINKS = {
             if (zDrag && e.pointerId === zDrag.id) {
               var dx = e.clientX - zDrag.sx, dy = e.clientY - zDrag.sy;
               if (Math.abs(dx) + Math.abs(dy) > 6) zMoved = true;
-              if (!zHoldArmed && Math.hypot(dx, dy) > 10) clearZHold(); /* moved too soon: no hold-move for this gesture */
-              if (zHoldArmed && zHoldOrigin) {
-                miniPlace(zHoldOrigin.left + dx, zHoldOrigin.top + dy);
+              if (!zMoveOn && Math.hypot(dx, dy) > 10) {
+                clearZHold(); /* moved too soon: the hold path is off the table */
+                /* Sustained-drag window move: still going ~200ms
+                   after touchdown, or moving slowly from the start
+                   (under ~0.3px/ms) — either way it is no flick, so
+                   the window itself takes the drag and follows the
+                   finger. A fast flick is released before either
+                   test can pass, so it never moves the window. */
+                if (zCanMoveWin()) {
+                  var zEl = Date.now() - zDrag.t, zDist = Math.hypot(dx, dy);
+                  if (zEl >= 200 || zDist / Math.max(1, zEl) < 0.3) zEngageMove();
+                }
+              }
+              if (zMoveOn && zMoveOrigin) {
+                miniPlace(zMoveOrigin.left + dx, zMoveOrigin.top + dy);
               } else if (zoomScale > 1) {
                 zoomX = zDrag.px + dx;
                 zoomY = zDrag.py + dy;
@@ -11568,21 +11668,16 @@ var STRAIN_SRC_LINKS = {
             var ids = Object.keys(zPointers);
             if (ids.length === 1) {
               var p = zPointers[ids[0]];
-              zDrag = { id: Number(ids[0]), sx: p.x, sy: p.y, px: zoomX, py: zoomY };
+              zSettleMove(); /* down to one finger: any window move is set down here; the rest is a fresh drag */
+              zDrag = { id: Number(ids[0]), sx: p.x, sy: p.y, px: zoomX, py: zoomY, t: Date.now() };
               zPinch = null;
             } else if (ids.length === 0) {
               clearZHold();
-              if (zHoldArmed) {
-                /* Hold-drag release: set the mini window down where it
-                   is and remember the spot across sessions. No tap, no
-                   cycle, no pan comes out of this gesture. */
-                zHoldArmed = false; zHoldOrigin = null;
-                if (overlayEl) {
-                  overlayEl.classList.remove("is-moving");
-                  var rr = overlayEl.getBoundingClientRect();
-                  miniPos = { left: Math.round(rr.left), top: Math.round(rr.top) };
-                  lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
-                }
+              if (zMoveOn) {
+                /* Window-move release: set the mini window down where
+                   it is and remember the spot across sessions. No tap,
+                   no cycle, no pan comes out of this gesture. */
+                zSettleMove();
                 cancelPendingTap();
                 zDrag = null; zPinch = null; zMoved = false; zPinched = false;
                 return;
@@ -11985,6 +12080,7 @@ var STRAIN_SRC_LINKS = {
         var overlayScrollEl = document.getElementById("surfOverlayScroll");
         var miniCloseBtn = document.getElementById("surfMiniClose");
         var miniExpandBtn = document.getElementById("surfMiniExpand");
+        var miniControlsEl = document.getElementById("surfMiniControls");
         var overlayOpen = false, savedScrollY = 0;
         function syncFab() {
           if (!fabBtn) return;
@@ -12004,9 +12100,11 @@ var STRAIN_SRC_LINKS = {
           w = Math.max(180, Math.min(w, vw - 16));
           return { w: w, h: Math.round(w * 9 / 16), vw: vw, vh: vh };
         }
-        /* The mini window's own dragged position (hold-to-move on the
-           player): once set it takes precedence over the wave-button
-           anchor in positionMini, and it persists across sessions. */
+        /* The mini window's own dragged position (the window itself is
+           what gets grabbed and dragged, on its own surface — see the
+           gesture layer and the poster facade): once set it takes
+           precedence over the wave-button anchor in positionMini, and
+           it persists across sessions. */
         var MINI_POS_KEY = "ff2alt.surfMiniPos.v1";
         var miniPos = null;
         try {
@@ -12060,6 +12158,16 @@ var STRAIN_SRC_LINKS = {
           var lbl = surfFs ? "Exit fullscreen" : "Fullscreen";
           if (dockFsBtn) dockFsBtn.textContent = lbl;
           if (miniExpandBtn) miniExpandBtn.setAttribute("aria-label", surfFs ? "Exit fullscreen" : "Watch the stream fullscreen");
+          /* No visible-but-dead controls in fullscreen: the mini
+             controls row lives outside the fullscreen dock, so while
+             the dock is in fullscreen presentation (native element or
+             the fill-viewport fallback alike — both set surfFs) its
+             buttons can be seen but taps land on the dock instead.
+             Hide the row for exactly that state, and restore it
+             exactly as before (inline display cleared, so the
+             stylesheet's mini-stage rule owns it again) when
+             fullscreen exits. */
+          if (miniControlsEl) miniControlsEl.style.display = surfFs ? "none" : "";
         }
         function fakeFsEnter() {
           surfFs = true; surfFsFake = true;
@@ -12154,26 +12262,19 @@ var STRAIN_SRC_LINKS = {
           if (surfStage === "closed") openSurfMini(); else closeSurf();
         });
         window.addEventListener("resize", positionMini);
-        /* --- Draggable wave button ---
-           A press that stays within ~8px is a tap and falls through to
-           the click above, unchanged. Past that it becomes a drag: the
-           button follows the finger, clamped inside the viewport with a
-           small margin and always below the status island, and the
-           release's click is swallowed so a drag never toggles the
-           sheet. Touches starting on the button never reach the swipe
-           pager (.surf-fab is in its SWIPE_EXCLUDE list). The resting
-           spot is saved under ff2alt.surfFabPos.v1 and restored on
-           load; the inline left/top then rides through menu switches
-           untouched, in both overlay states. --- */
-        var FAB_POS_KEY = "ff2alt.surfFabPos.v1";
-        var fabDrag = null, fabDragMoved = false, fabSuppressClickUntil = 0;
-        document.addEventListener("click", function (e) {
-          if (fabBtn && Date.now() < fabSuppressClickUntil && e.target && fabBtn.contains(e.target)) {
-            e.preventDefault();
-            e.stopPropagation();
-            fabSuppressClickUntil = 0;
-          }
-        }, true);
+        /* --- Wave button: tap-only, fixed home ---
+           The wave button never travels. It rests at its standard
+           bottom-right home above the bottom bar (the .surf-fab CSS
+           position), and tapping it only opens/folds the stream (the
+           click handler above). There is deliberately NO drag
+           handling on it: a press that slides off it does nothing at
+           all, and no saved button position is applied or updated
+           anymore (an old ff2alt.surfFabPos.v1 value may still sit
+           in storage; it is simply ignored). What moves is the
+           stream window itself, grabbed directly on its own surface
+           — see the gesture layer and the poster facade. fabMinTop
+           stays: positionMini still anchors the mini window above
+           the button without sliding under the status island. --- */
         function fabMinTop() {
           var minTop = 76;
           var isl = document.querySelector(".island");
@@ -12182,62 +12283,6 @@ var STRAIN_SRC_LINKS = {
             if (ir.height) minTop = Math.max(minTop, Math.ceil(ir.bottom) + 8);
           }
           return minTop;
-        }
-        function fabPlace(left, top) {
-          var w = fabBtn.offsetWidth || 52, h = fabBtn.offsetHeight || 52;
-          var minTop = fabMinTop();
-          var maxL = Math.max(8, window.innerWidth - w - 8);
-          var maxT = Math.max(minTop, window.innerHeight - h - 8);
-          var p = {
-            left: Math.min(Math.max(8, left), maxL),
-            top: Math.min(Math.max(minTop, top), maxT)
-          };
-          fabBtn.style.left = p.left + "px";
-          fabBtn.style.top = p.top + "px";
-          fabBtn.style.right = "auto";
-          fabBtn.style.bottom = "auto";
-          return p;
-        }
-        if (fabBtn) {
-          try {
-            var fabSaved = JSON.parse(lsGet(FAB_POS_KEY) || "null");
-            if (fabSaved && isFinite(fabSaved.left) && isFinite(fabSaved.top)) fabPlace(fabSaved.left, fabSaved.top);
-          } catch (e) { /* ignore: stay at the default corner */ }
-          fabBtn.addEventListener("pointerdown", function (e) {
-            if (e.button != null && e.button > 0) return;
-            var r = fabBtn.getBoundingClientRect();
-            fabDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, left: r.left, top: r.top };
-            fabDragMoved = false;
-          });
-          fabBtn.addEventListener("pointermove", function (e) {
-            if (!fabDrag || e.pointerId !== fabDrag.id) return;
-            var dx = e.clientX - fabDrag.sx, dy = e.clientY - fabDrag.sy;
-            if (!fabDragMoved) {
-              if (Math.sqrt(dx * dx + dy * dy) < 8) return; /* still a tap */
-              fabDragMoved = true;
-              fabBtn.classList.add("is-dragging");
-              try { fabBtn.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-            }
-            if (e.cancelable) e.preventDefault();
-            fabPlace(fabDrag.left + dx, fabDrag.top + dy);
-          });
-          function fabDragEnd(e) {
-            if (!fabDrag || (e && e.pointerId !== fabDrag.id)) return;
-            var wasDrag = fabDragMoved;
-            fabDrag = null; fabDragMoved = false;
-            fabBtn.classList.remove("is-dragging");
-            if (wasDrag) {
-              var r = fabBtn.getBoundingClientRect();
-              fabSuppressClickUntil = Date.now() + 400;
-              lsSet(FAB_POS_KEY, JSON.stringify({ left: Math.round(r.left), top: Math.round(r.top) }));
-            }
-            positionMini(); /* the minimized frame follows the button to its new resting spot */
-          }
-          fabBtn.addEventListener("pointerup", fabDragEnd);
-          fabBtn.addEventListener("pointercancel", fabDragEnd);
-          window.addEventListener("resize", function () {
-            if (fabBtn.style.left) { var r = fabBtn.getBoundingClientRect(); fabPlace(r.left, r.top); }
-          });
         }
         var miniFullBtn = document.getElementById("surfMiniFull");
         /* A press that starts on a mini control and slides before it
@@ -12269,50 +12314,65 @@ var STRAIN_SRC_LINKS = {
           if (surfFsFake) { fakeFsExit(); return; } /* native fullscreen: the browser exits it itself */
           if (surfStage !== "closed") closeSurf();
         });
-        /* Poster facade gestures: the same swipe-to-cycle and (in the
-           mini stage) hold-to-move as the live player, for the moments
-           the poster — not the stream — is what fills the frame. Taps
-           keep their meaning (Play stays a button; the poster itself
-           does nothing on tap). */
+        /* Poster facade gestures: the same disambiguation as the live
+           player, for the moments the poster — not the stream — is
+           what fills the frame: a fast short flick cycles streams, and
+           in the mini stage a sustained drag (or a ~250ms hold) moves
+           the window itself. Taps keep their meaning (Play stays a
+           button; the poster itself does nothing on tap). */
         if (facade) {
-          var fDown = null, fHoldTimer = 0, fHoldArmed = false, fHoldOrigin = null;
+          var fDown = null, fHoldTimer = 0, fMoveOn = false, fMoveOrigin = null;
+          function fCanMove() { return surfStage === "mini" && !surfFs && !!overlayEl; }
+          function fEngageMove() {
+            if (fMoveOn || !fDown || !fCanMove()) return false;
+            var r = overlayEl.getBoundingClientRect();
+            fMoveOn = true;
+            fMoveOrigin = { left: r.left, top: r.top };
+            if (fHoldTimer) { clearTimeout(fHoldTimer); fHoldTimer = 0; }
+            overlayEl.classList.add("is-moving");
+            return true;
+          }
+          function fSettleMove() {
+            if (!fMoveOn) return;
+            fMoveOn = false; fMoveOrigin = null;
+            if (!overlayEl) return;
+            overlayEl.classList.remove("is-moving");
+            var rr = overlayEl.getBoundingClientRect();
+            miniPos = { left: Math.round(rr.left), top: Math.round(rr.top) };
+            lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+          }
           facade.addEventListener("pointerdown", function (e) {
             if (e.target.closest && e.target.closest("button, a")) return;
-            var r = overlayEl ? overlayEl.getBoundingClientRect() : null;
-            fDown = { x: e.clientX, y: e.clientY };
-            fHoldArmed = false;
-            if (surfStage === "mini" && !surfFs && r) {
-              fHoldOrigin = { left: r.left, top: r.top };
+            fDown = { x: e.clientX, y: e.clientY, t: Date.now() };
+            fMoveOn = false; fMoveOrigin = null;
+            if (fCanMove()) {
               fHoldTimer = setTimeout(function () {
                 fHoldTimer = 0;
-                if (!fDown) return;
-                fHoldArmed = true;
-                if (overlayEl) overlayEl.classList.add("is-moving");
-                try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ }
+                if (fEngageMove()) { try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ } }
               }, 250);
             }
           });
           facade.addEventListener("pointermove", function (e) {
             if (!fDown) return;
             var dx = e.clientX - fDown.x, dy = e.clientY - fDown.y;
-            if (!fHoldArmed && Math.hypot(dx, dy) > 10 && fHoldTimer) { clearTimeout(fHoldTimer); fHoldTimer = 0; }
-            if (fHoldArmed && fHoldOrigin) miniPlace(fHoldOrigin.left + dx, fHoldOrigin.top + dy);
+            if (!fMoveOn && Math.hypot(dx, dy) > 10) {
+              if (fHoldTimer) { clearTimeout(fHoldTimer); fHoldTimer = 0; }
+              /* Sustained drag (same tests as the live player):
+                 still going ~200ms in, or moving slowly — the
+                 window takes the drag. A fast flick never engages. */
+              if (fCanMove()) {
+                var fEl = Date.now() - fDown.t, fDist = Math.hypot(dx, dy);
+                if (fEl >= 200 || fDist / Math.max(1, fEl) < 0.3) fEngageMove();
+              }
+            }
+            if (fMoveOn && fMoveOrigin) miniPlace(fMoveOrigin.left + dx, fMoveOrigin.top + dy);
           });
           var fEnd = function (e) {
             if (fHoldTimer) { clearTimeout(fHoldTimer); fHoldTimer = 0; }
-            if (!fDown) { fHoldArmed = false; return; }
+            if (!fDown) { fMoveOn = false; fMoveOrigin = null; return; }
             var dx = e.clientX - fDown.x, dy = e.clientY - fDown.y;
             fDown = null;
-            if (fHoldArmed) {
-              fHoldArmed = false; fHoldOrigin = null;
-              if (overlayEl) {
-                overlayEl.classList.remove("is-moving");
-                var rr = overlayEl.getBoundingClientRect();
-                miniPos = { left: Math.round(rr.left), top: Math.round(rr.top) };
-                lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
-              }
-              return;
-            }
+            if (fMoveOn) { fSettleMove(); return; }
             if (Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.4) cycleSurf(dx < 0 ? 1 : -1);
           };
           facade.addEventListener("pointerup", fEnd);
@@ -12803,6 +12863,12 @@ var STRAIN_SRC_LINKS = {
           moreOpen = false;
         }
         function showPseudo(which) {
+          /* More / Forecast are screens of their own, not the Connect
+             screen: in a browser without Web Bluetooth the unsupported
+             notice steps aside for them too (the main script's
+             switchTab brings it back when Connect is shown again). */
+          var unsEl = document.getElementById("unsupported");
+          if (unsEl && unsEl.getAttribute("data-bt-unsupported") === "1") unsEl.hidden = true;
           Array.prototype.forEach.call(document.querySelectorAll("#app [role='tabpanel']"), function (p) { p.hidden = true; p.classList.remove("panel-enter"); });
           ["tab-connect", "tab-temperature", "tab-session", "tab-strains", "tab-terpene", "tab-forecast", "tab-burnguard", "tab-device", "tab-info"].forEach(function (id) {
             var b = document.getElementById(id);
