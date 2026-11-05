@@ -113,8 +113,8 @@ details[open ]>summary::after{content:" –";}
 .pl-zoom-note{flex:1 1 100%; margin:0; font-size:12px; color:var(--muted);}
 /* Facade: poster first — nothing streams until the player is activated. */
 .pl-facade, .pl-player, .pl-fallback{position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#000;}
-.pl-facade{aspect-ratio:16/9;}
-.pl-poster{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;}
+.pl-facade{aspect-ratio:16/9; touch-action:none;}
+.pl-poster{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; -webkit-user-drag:none; user-select:none; -webkit-user-select:none;}
 .pl-facade-blank{position:absolute; inset:0; background:radial-gradient(120% 130% at 20% 0%, #0d3049 0%, #061c2e 55%, #04101a 100%);}
 .pl-shade{position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,0) 34%, rgba(0,0,0,0) 52%, rgba(0,0,0,.66) 100%);}
 .pl-facade-top{position:absolute; top:10px; left:10px; right:10px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px; pointer-events:none;}
@@ -141,6 +141,8 @@ details[open ]>summary::after{content:" –";}
 .pl-fallback-title{font-size:16px; font-weight:800; margin:0 0 6px;}
 .pl-fallback-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
 .pl-fallback-actions .btn{text-decoration:none; display:inline-flex; align-items:center;}
+.pl-title.replay{background:#4a3a10; border-color:#77652a; color:#ffe9b0;}
+.feedwrap[hidden]{display:none !important;}
 .pl-status{margin:8px 2px 0; font-size:13px; font-weight:700; color:var(--muted);}
 .pl-status[hidden]{display:none !important;}
 .pl-nowrow{display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:20px; flex-wrap:wrap;}
@@ -314,54 +316,11 @@ details[open ]>summary::after{content:" –";}
   <h1>Contests</h1>
   <p class="sub">World Surf League Championship Tour — watch, and the 2026 season windows.</p>
   <div class="card">
-    <h2>WSL Live Player</h2>
-    <p class="small" style="margin-top:0;">This player carries the World Surf League's official YouTube live stream, through the same player core as the Cams tab. <b>It only shows surfing while an event is actually live</b> — between events it rests on the channel's offline screen. No fake “live” here.</p>
-    <div class="pl-dock pl-inset" id="wslDock">
-      <div class="pl-head">
-        <span class="pl-title"><span class="dotlive"></span>WSL · Live</span>
-        <span class="pl-spot">World Surf League</span>
-        <span class="pl-btns">
-          <button class="btn pl-sound" id="wslSound" type="button" aria-pressed="false" aria-label="Turn the stream sound on"><span id="wslSoundLbl">Sound off</span></button>
-          <button class="btn" id="wslFull" type="button">Fullscreen</button>
-          <button class="btn" id="wslStop" type="button">Stop</button>
-        </span>
-      </div>
-      <div class="pl-stage" id="wslStage">
-        <div class="pl-facade" id="wslFacade">
-          <div class="pl-facade-blank"></div>
-          <div class="pl-shade"></div>
-          <div class="pl-facade-top">
-            <span class="pl-live-tag"><span class="dotlive"></span>Live stream</span>
-            <span class="pl-badge">Resting between events</span>
-          </div>
-          <button class="pl-play" id="wslPlayBtn" type="button" aria-label="Play the WSL live stream">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor"/></svg>
-          </button>
-          <div class="pl-facade-meta">
-            <div class="pl-spot-name">World Surf League — Live</div>
-            <div class="pl-spot-sub">Official YouTube channel · live only while an event is on</div>
-          </div>
-        </div>
-        <div class="pl-zoomwrap" id="wslZoomWrap">
-          <div class="pl-player" id="wslPlayerBox" hidden>
-            <div class="pl-frame-wrap" id="wslFrameWrap"></div>
-            <div class="pl-loading" id="wslLoading"><span class="pl-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
-          </div>
-        </div>
-        <div class="pl-gesture" id="wslGesture" hidden aria-hidden="true"></div>
-        <div class="pl-fallback" id="wslFallback" hidden>
-          <p class="pl-fallback-title">The live stream is resting</p>
-          <p class="small" style="margin:0;">No WSL event is live right now — the channel's stream only runs while a contest is on. When the next event in the calendar below is in its waiting period, check back here at the dawn call. Nothing is faked or looped in the meantime.</p>
-          <div class="pl-fallback-actions">
-            <a class="btn primary" href="https://www.youtube.com/channel/UChuLeaTGRcfzo0UjL-2qSbQ" target="_blank" rel="noopener">WSL on YouTube</a>
-            <button class="btn" id="wslRetryBtn" type="button">Try again</button>
-            <button class="btn" id="wslBackBtn" type="button">Back to poster</button>
-          </div>
-        </div>
-      </div>
-      <p class="pl-status" id="wslStatus" role="status" aria-live="polite" hidden></p>
-    </div>
-    <p class="tiny" style="margin-top:8px;">Channel ID UChuLeaTGRcfzo0UjL-2qSbQ — the World Surf League's official YouTube channel (@wsl), verified against the channel's public channel page during this app's build (Nov 5, 2026).</p>
+    <h2>Live contest feeds</h2>
+    <p class="small" style="margin-top:0;">Pick a feed — each one is an official contest channel's YouTube live stream, through the same player core as the Cams tab. A feed is <b>live only while that organization is actually streaming an event</b>. When nothing is live, the player switches by itself to that channel's most recent contest footage, clearly labeled as a replay — it never sits on a dead screen, and a replay is never dressed up as live.</p>
+    <div class="chips" id="feedChips" role="group" aria-label="Choose a contest feed" style="margin-bottom:10px;"></div>
+    <div id="feedHost"></div>
+    <p class="tiny" style="margin-top:8px;">Channels verified from each organization's official pages at build time (Nov 5, 2026): World Surf League @wsl (UChuLeaTGRcfzo0UjL-2qSbQ) · ISA @ISAsurfing (UCZhixj2QS9WzrluwSc9iCzA) · Red Bull Surfing @RedBullSurfing (UC--3c8RqSfAqYBdDjIG3UNA) · Surfing Australia TV, linked from surfing.org.au (UCpfLlUWzh8YQw0XsNW4-DiQ). Every replay video below was verified embeddable through YouTube's oEmbed endpoint the same day.</p>
   </div>
   <div class="card">
     <h2>The dawn call</h2>
@@ -1106,6 +1065,35 @@ function attachGestures(layer, zoom, hooks){
   }, { passive:false });
 }
 
+/* --- shared: poster-facade flicks (ported from the reference's
+   facade handler: while the poster — not the stream — is what
+   fills the frame, the poster itself is a gesture surface with
+   the same disambiguation as the live layer: a horizontal flick
+   of 48px+ that clearly beats the vertical drift cycles, judged
+   at release from the gesture's own start point; taps keep their
+   meaning — the Play button stays a button and is never a flick
+   start; the flick's synthesized click is swallowed whole). The
+   surface carries touch-action:none (the .pl-facade rule) and
+   takes pointer capture on pointerdown, like the live layer, so
+   a flick that ends past the poster's edge still completes. --- */
+function attachFacadeGestures(surface, hooks){
+  if(!surface) return;
+  var fDown = null;
+  surface.addEventListener("pointerdown", function(e){
+    if(e.target.closest && e.target.closest("button, a")) return;
+    try{ surface.setPointerCapture(e.pointerId); }catch(err){}
+    fDown = { x:e.clientX, y:e.clientY };
+  });
+  function fEnd(e){
+    if(!fDown) return;
+    var dx = e.clientX - fDown.x, dy = e.clientY - fDown.y;
+    fDown = null;
+    if(Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy)*1.4){ swallowNextClick(); hooks.onFlick(dx < 0 ? 1 : -1); }
+  }
+  surface.addEventListener("pointerup", fEnd);
+  surface.addEventListener("pointercancel", fEnd);
+}
+
 /* --- shared: fullscreen on the player dock node itself (the proven
    target), with a fixed-position fake-fullscreen fallback for
    webviews that refuse the Fullscreen API --- */
@@ -1290,7 +1278,7 @@ camZoomBtn.addEventListener("click", function(){
 $('#camZoomIn').addEventListener("click", function(){ camZoom.step(1); });
 $('#camZoomOut').addEventListener("click", function(){ camZoom.step(-1); });
 $('#camZoomReset').addEventListener("click", function(){ camZoom.reset(); });
-window.addEventListener("resize", function(){ camZoom.apply(); wslZoom.apply(); });
+window.addEventListener("resize", function(){ camZoom.apply(); });
 
 function cycleSurf(dir){
   var idx = -1;
@@ -1318,6 +1306,7 @@ function tapToggleCam(){
   }catch(e){}
 }
 attachGestures(camGesture, camZoom, { onFlick: cycleSurf, onTapToggle: tapToggleCam });
+attachFacadeGestures(camFacade, { onFlick: cycleSurf });
 
 function nowText(prefix){
   var spot = spotByKey(currentKey), info = spotInfo(spot, new Date());
@@ -1636,7 +1625,7 @@ function armGesture(){
     try{ applySoundTo(camPlayer, soundWanted, soundVolume); camPlayer.playVideo(); }catch(e){}
     camLoadTimer = setTimeout(function(){ if(camMode === "waiting") handleStreamFailure("error"); }, 6000);
   }
-  wslArmGesture();
+  feedsArmGesture();
 }
 ["pointerdown","touchstart","keydown","wheel"].forEach(function(ev){
   window.addEventListener(ev, armGesture, { capture:true, passive:true });
@@ -1685,7 +1674,7 @@ document.addEventListener("visibilitychange", function(){
       setNow("Stream paused — the app went into the background, so nothing is using data. " + (autoOn ? "It picks back up by itself when you return." : "Tap Play in the player to pick it back up when you return."));
       syncDockChrome();
     }
-    wslUnloadForBackground();
+    feedsUnloadForBackground();
   } else if(bgSuspended){
     bgSuspended = false;
     if(!stoppedByUser && autoOn){ startStream(spotByKey(currentKey)); }
@@ -1704,192 +1693,387 @@ startStream(spotByKey(currentKey));
 if(autoMode === "best" && !loaded.forecast){ loaded.forecast = true; loadAll(F_SPOTS,'fc'); }
 
 /* ============================================================
-   CONTESTS — the WSL live player through the SAME core: facade
-   first, IFrame-API player (enablejsapi) built on the channel's
-   live_stream embed, muted autoplay attempt + explicit Play,
-   sound intent + 2s watchdog, load-failure funnel ending at the
-   "resting between events" fallback (a single stream has no next
-   candidate to advance to — Try again is its retry).
+   CONTESTS — a roster of official live contest feeds. Every feed
+   has its OWN player through the SAME core as the cams: facade
+   first, IFrame-API player (enablejsapi) on the channel's
+   live_stream embed, page-owned sound intent + ~2s watchdog,
+   gesture layer over the player, fullscreen on the dock itself.
+   A feed has exactly two end states:
+     · LIVE — the channel is really streaming an event now;
+     · REPLAY — the channel's most recent contest footage,
+       labeled as a replay, never as live.
+   When the live attempt fails (API error, stream ended, or the
+   load timeout — i.e. no contest is live), the player switches
+   to the verified replay BY ITSELF. There is no dead or resting
+   error screen. Channel IDs were verified from each
+   organization's official channel pages at build time
+   (Nov 5, 2026); every replay video ID was verified embeddable
+   the same day through YouTube's oEmbed endpoint (HTTP 200,
+   author = the organization):
+     · WSL Q57k9L7udOU — "Highlights: MEO Rip Curl Pro Portugal
+       presented by Corona Cero 2026 - End of Event" (World Surf
+       League). Portugal (Oct 22 – Nov 1) is the most recent
+       COMPLETED Championship Tour event in the calendar below
+       as of Nov 5, 2026 — Abu Dhabi was reported cancelled.
+     · ISA hanPbWxm904 — Finals Day highlights, 2026 Surf City
+       El Salvador ISA World Longboard Championship (ISAsurfing).
+     · Red Bull Pl4cpSrybgg — "NST Live in Africa" (Red Bull
+       Surfing).
+     · Surfing Australia gSm0EGlPfhM — Australian Junior Surfing
+       Titles 2025, Finals Day Livestream (Surfing Australia TV).
    ============================================================ */
-var WSL_CHANNEL = "UChuLeaTGRcfzo0UjL-2qSbQ";
-var wslFacade = $('#wslFacade'), wslPlayerBox = $('#wslPlayerBox'), wslFrameWrap = $('#wslFrameWrap'),
-    wslLoading = $('#wslLoading'), wslFallback = $('#wslFallback'), wslStatus = $('#wslStatus'),
-    wslSoundBtn = $('#wslSound'), wslSoundLbl = $('#wslSoundLbl'),
-    wslGesture = $('#wslGesture'), wslZoomWrap = $('#wslZoomWrap');
-var wslMode = "idle"; /* idle | loading | playing | waiting | fallback */
-var wslPlayer = null, wslPlain = false;
-var wslLoadTimer = 0, wslHardTimer = 0, wslWaitTimer = 0;
-var wslSoundWanted = false, wslSoundVolume = 100;
-var wslLastResumeAt = 0, wslWatchdogStandDown = false, wslStopped = false, wslBgPaused = false;
+var FEEDS = [
+  { key:"wsl", org:"World Surf League", short:"WSL", channel:"UChuLeaTGRcfzo0UjL-2qSbQ",
+    channelUrl:"https://www.youtube.com/@wsl",
+    covers:"Championship Tour, Challenger Series, Qualifying Series and the Longboard Tour — every WSL event streams on this one channel.",
+    chipSub:"CT · Challenger · QS · Longboard",
+    replay:{ id:"Q57k9L7udOU",
+      status:"Most recent contest — MEO Rip Curl Pro Portugal · replay footage, not live" } },
+  { key:"isa", org:"ISA — International Surfing Association", short:"ISA", channel:"UCZhixj2QS9WzrluwSc9iCzA",
+    channelUrl:"https://www.youtube.com/@ISAsurfing",
+    covers:"ISA world championships — the World Surfing Games, plus junior, longboard, SUP and para surfing titles, webcast live by the federation itself.",
+    chipSub:"World Surfing Games · ISA titles",
+    replay:{ id:"hanPbWxm904",
+      status:"Latest ISA championship — 2026 World Longboard Championship finals, Surf City El Salvador · replay footage, not live" } },
+  { key:"redbull", org:"Red Bull Surfing", short:"Red Bull", channel:"UC--3c8RqSfAqYBdDjIG3UNA",
+    channelUrl:"https://www.youtube.com/@RedBullSurfing",
+    covers:"Red Bull's own surf events and live shows — specialty and big-wave events (NST, Volcom Pipe Pro replays) streamed on Red Bull's surfing channel.",
+    chipSub:"Red Bull events · live shows",
+    replay:{ id:"Pl4cpSrybgg",
+      status:"Latest Red Bull surf stream — NST Live in Africa · replay footage, not live" } },
+  { key:"surfingaus", org:"Surfing Australia TV", short:"Surfing Australia", channel:"UCpfLlUWzh8YQw0XsNW4-DiQ",
+    channelUrl:"https://www.youtube.com/@SurfingAustraliaVids",
+    covers:"Australia's national federation channel — Australian titles and junior championships, the Australian Boardriders Battle and federation events, streamed live.",
+    chipSub:"Australian titles · Boardriders Battle",
+    replay:{ id:"gSm0EGlPfhM",
+      status:"Latest Surfing Australia stream — Australian Junior Surfing Titles 2025 finals · replay footage, not live" } }
+];
+var feedChipsEl = $('#feedChips'), feedHost = $('#feedHost');
+var feedInstances = {}, selectedFeedKey = null;
 
-var wslZoom = makeZoom(wslZoomWrap, null);
-function wslShowOnly(which){
-  wslFacade.hidden = which !== "facade";
-  wslPlayerBox.hidden = which !== "player";
-  wslFallback.hidden = which !== "fallback";
-  wslGesture.hidden = wslPlayerBox.hidden;
-  wslZoom.apply();
-}
-function wslSetStatus(t){
-  if(t){ wslStatus.hidden = false; wslStatus.textContent = t; }
-  else { wslStatus.hidden = true; wslStatus.textContent = ""; }
-}
-function wslClearTimers(){
-  if(wslLoadTimer){ clearTimeout(wslLoadTimer); wslLoadTimer = 0; }
-  if(wslHardTimer){ clearTimeout(wslHardTimer); wslHardTimer = 0; }
-  if(wslWaitTimer){ clearTimeout(wslWaitTimer); wslWaitTimer = 0; }
-}
-function wslDestroy(){
-  wslClearTimers();
-  if(wslPlayer){ try{ wslPlayer.destroy(); }catch(e){} wslPlayer = null; }
-  wslPlain = false;
-  wslFrameWrap.innerHTML = "";
-}
-function wslSyncSoundBtn(){
-  wslSoundBtn.setAttribute("aria-pressed", wslSoundWanted ? "true" : "false");
-  wslSoundBtn.setAttribute("aria-label", wslSoundWanted ? "Turn the stream sound off" : "Turn the stream sound on");
-  wslSoundLbl.textContent = wslSoundWanted ? "Sound on" : "Sound off";
-}
-function wslOnPlaying(){
-  wslMode = "playing";
-  wslBgPaused = false;
-  wslLoading.hidden = true;
-  wslSetStatus("");
-}
-function wslOnWaiting(){
-  if(wslMode === "playing" || wslMode === "fallback") return;
-  wslMode = "waiting";
-  wslLoading.hidden = true;
-  wslSetStatus("Tap or scroll anywhere once — then the stream starts by itself.");
-}
-function wslResting(){
-  wslMode = "fallback";
-  wslDestroy();
-  wslShowOnly("fallback");
-  wslSetStatus("");
-}
-function wslBuildPlain(){
-  wslPlain = true;
-  var f = document.createElement("iframe");
-  f.src = "https://www.youtube.com/embed/live_stream?channel=" + WSL_CHANNEL + "&autoplay=1&mute=" + (wslSoundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
-  f.title = "World Surf League official YouTube live stream";
-  f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
-  f.setAttribute("allowfullscreen", "");
-  f.addEventListener("load", function(){ if(wslMode === "loading") wslOnPlaying(); });
-  wslFrameWrap.appendChild(f);
-  setTimeout(function(){ if(wslMode === "loading") wslOnPlaying(); }, 4000);
-}
-function wslStart(){
-  wslZoom.exit();
-  wslWatchdogStandDown = false;
-  wslLastResumeAt = 0;
-  wslStopped = false;
-  wslBgPaused = false;
-  wslDestroy();
-  wslShowOnly("player");
-  wslLoading.hidden = false;
-  wslMode = "loading";
-  wslSetStatus("");
-  ensureApi(function(ok){
-    if(wslMode !== "loading") return; /* superseded */
-    if(!ok){ wslBuildPlain(); return; }
-    var f = document.createElement("iframe");
-    f.src = "https://www.youtube.com/embed/live_stream?channel=" + WSL_CHANNEL + "&enablejsapi=1&autoplay=1&mute=" + (wslSoundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
-    f.title = "World Surf League official YouTube live stream";
-    f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
-    f.setAttribute("allowfullscreen", "");
-    wslFrameWrap.appendChild(f);
-    try{
-      wslPlayer = new YT.Player(f, {
-        events: {
-          onReady: function(e){ try{ applySoundTo(e.target, wslSoundWanted, wslSoundVolume); e.target.playVideo(); }catch(err){} },
-          onStateChange: function(e){
-            if(e.data === YT.PlayerState.PLAYING || e.data === YT.PlayerState.BUFFERING) wslOnPlaying();
-            else if(e.data === YT.PlayerState.ENDED) wslResting();
-            else if((e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) && wslMode === "loading") wslOnWaiting();
-          },
-          onError: function(){ wslResting(); }
+function makeFeed(f){
+  var wrap = document.createElement("div");
+  wrap.className = "feedwrap";
+  wrap.hidden = true;
+  var p = "fd-" + f.key + "-";
+  wrap.innerHTML =
+    '<div class="pl-dock pl-inset" id="' + p + 'dock">' +
+      '<div class="pl-head">' +
+        '<span class="pl-title" id="' + p + 'tag">' + f.short + ' · feed</span>' +
+        '<span class="pl-spot">' + f.org + '</span>' +
+        '<span class="pl-btns">' +
+          '<button class="btn pl-sound" id="' + p + 'sound" type="button" aria-pressed="false" aria-label="Turn the stream sound on"><span id="' + p + 'soundlbl">Sound off</span></button>' +
+          '<button class="btn" id="' + p + 'full" type="button">Fullscreen</button>' +
+          '<button class="btn" id="' + p + 'stop" type="button">Stop</button>' +
+        '</span>' +
+      '</div>' +
+      '<p class="small" style="margin:0 2px 8px;">' + f.covers + ' <a href="' + f.channelUrl + '" target="_blank" rel="noopener">Channel on YouTube ↗</a></p>' +
+      '<div class="pl-stage">' +
+        '<div class="pl-facade" id="' + p + 'facade">' +
+          '<div class="pl-facade-blank"></div>' +
+          '<div class="pl-shade"></div>' +
+          '<div class="pl-facade-top">' +
+            '<span class="pl-live-tag">' + f.short + ' · Live feed</span>' +
+            '<span class="pl-badge">Replay if nothing is live</span>' +
+          '</div>' +
+          '<button class="pl-play" id="' + p + 'play" type="button" aria-label="Play the ' + f.org + ' feed">' +
+            '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor"/></svg>' +
+          '</button>' +
+          '<div class="pl-facade-meta">' +
+            '<div class="pl-spot-name">' + f.org + '</div>' +
+            '<div class="pl-spot-sub" id="' + p + 'facadesub"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="pl-zoomwrap" id="' + p + 'zoomwrap">' +
+          '<div class="pl-player" id="' + p + 'playerbox" hidden>' +
+            '<div class="pl-frame-wrap" id="' + p + 'framewrap"></div>' +
+            '<div class="pl-loading" id="' + p + 'loading"><span class="pl-spinner" aria-hidden="true"></span><span>Loading…</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="pl-gesture" id="' + p + 'gesture" hidden aria-hidden="true"></div>' +
+      '</div>' +
+      '<p class="pl-status" id="' + p + 'status" role="status" aria-live="polite" hidden></p>' +
+    '</div>';
+  feedHost.appendChild(wrap);
+  var el = {
+    wrap: wrap,
+    dock: document.getElementById(p + "dock"),
+    tag: document.getElementById(p + "tag"),
+    facade: document.getElementById(p + "facade"),
+    facadeSub: document.getElementById(p + "facadesub"),
+    playBtn: document.getElementById(p + "play"),
+    playerBox: document.getElementById(p + "playerbox"),
+    frameWrap: document.getElementById(p + "framewrap"),
+    loading: document.getElementById(p + "loading"),
+    gesture: document.getElementById(p + "gesture"),
+    zoomWrap: document.getElementById(p + "zoomwrap"),
+    status: document.getElementById(p + "status"),
+    soundBtn: document.getElementById(p + "sound"),
+    soundLbl: document.getElementById(p + "soundlbl")
+  };
+  var DEFAULT_SUB = "Live while an event is streaming. If nothing is live, the latest contest footage plays instead — labeled as a replay, never as live.";
+  el.facadeSub.textContent = DEFAULT_SUB;
+
+  var zoom = makeZoom(el.zoomWrap, null);
+  var mode = "idle"; /* idle | loading | playing | waiting */
+  var kind = "live"; /* what the current attempt targets: live | replay */
+  var player = null, plain = false, gen = 0;
+  var loadTimer = 0, hardTimer = 0, waitTimer = 0;
+  var soundWanted = false, soundVolume = 100;
+  var lastResumeAt = 0, watchdogStandDown = false, stopped = false, bgPaused = false;
+
+  function showOnly(which){
+    el.facade.hidden = which !== "facade";
+    el.playerBox.hidden = which !== "player";
+    el.gesture.hidden = el.playerBox.hidden;
+    zoom.apply();
+  }
+  function setStatus(t){
+    if(t){ el.status.hidden = false; el.status.textContent = t; }
+    else { el.status.hidden = true; el.status.textContent = ""; }
+  }
+  function setTag(){
+    var live = mode === "playing" && kind === "live";
+    var replay = mode === "playing" && kind === "replay";
+    el.tag.classList.toggle("replay", replay);
+    el.tag.innerHTML = live ? '<span class="dotlive"></span>Live'
+      : replay ? "Replay — not live"
+      : f.short + " · feed";
+  }
+  function clearTimers(){
+    if(loadTimer){ clearTimeout(loadTimer); loadTimer = 0; }
+    if(hardTimer){ clearTimeout(hardTimer); hardTimer = 0; }
+    if(waitTimer){ clearTimeout(waitTimer); waitTimer = 0; }
+  }
+  function destroy(){
+    clearTimers();
+    gen++;
+    if(player){ try{ player.destroy(); }catch(e){} player = null; }
+    plain = false;
+    el.frameWrap.innerHTML = "";
+  }
+  function syncSoundBtn(){
+    el.soundBtn.setAttribute("aria-pressed", soundWanted ? "true" : "false");
+    el.soundBtn.setAttribute("aria-label", soundWanted ? "Turn the stream sound off" : "Turn the stream sound on");
+    el.soundLbl.textContent = soundWanted ? "Sound on" : "Sound off";
+  }
+  function onPlaying(){
+    mode = "playing";
+    bgPaused = false;
+    el.loading.hidden = true;
+    setTag();
+    setStatus(kind === "live" ? "" : f.replay.status);
+  }
+  function onWaiting(){
+    if(mode === "playing") return;
+    mode = "waiting";
+    el.loading.hidden = true;
+    setTag();
+    setStatus("Tap or scroll anywhere once — then the " + (kind === "live" ? "stream" : "replay") + " starts by itself.");
+  }
+  /* The live attempt failed: switch to the replay by itself.
+     The replay failing too is the only path back to the facade,
+     and it lands there with an honest note — never an error
+     screen, and Play always retries the live stream first. */
+  function liveFailed(){ if(kind === "live" && mode !== "idle") startReplay(); }
+  function replayFailed(msg){
+    destroy();
+    mode = "idle"; kind = "live";
+    showOnly("facade");
+    setTag();
+    el.facadeSub.textContent = msg;
+    setStatus("");
+  }
+  function buildPlain(){
+    plain = true;
+    var fr = document.createElement("iframe");
+    fr.src = kind === "live"
+      ? "https://www.youtube.com/embed/live_stream?channel=" + f.channel + "&autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1"
+      : "https://www.youtube.com/embed/" + f.replay.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
+    fr.title = f.org + (kind === "live" ? " live stream" : " replay footage");
+    fr.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
+    fr.setAttribute("allowfullscreen", "");
+    fr.addEventListener("load", function(){ if(mode === "loading") onPlaying(); });
+    el.frameWrap.appendChild(fr);
+    setTimeout(function(){ if(mode === "loading") onPlaying(); }, 4000);
+  }
+  function buildPlayer(){
+    var myGen = gen;
+    ensureApi(function(ok){
+      if(myGen !== gen || mode !== "loading") return; /* superseded */
+      if(!ok){ buildPlain(); return; }
+      var events = {
+        onReady: function(e){ try{ applySoundTo(e.target, soundWanted, soundVolume); e.target.playVideo(); }catch(err){} },
+        onStateChange: function(e){
+          if(e.data === YT.PlayerState.PLAYING || e.data === YT.PlayerState.BUFFERING) onPlaying();
+          else if(e.data === YT.PlayerState.ENDED){
+            if(kind === "live") liveFailed();
+            else replayFailed("That was the replay — " + f.replay.status.replace(" · replay footage, not live", "") + ". Tap Play to check the live stream again; if nothing is on, the replay starts again.");
+          }
+          else if((e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) && mode === "loading") onWaiting();
+        },
+        onError: function(){ if(kind === "live") liveFailed(); else replayFailed("The replay wouldn't load just now. Tap Play to check the live stream — and if nothing is live, the replay will be tried again."); }
+      };
+      try{
+        if(kind === "live"){
+          var fr = document.createElement("iframe");
+          fr.src = "https://www.youtube.com/embed/live_stream?channel=" + f.channel + "&enablejsapi=1&autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
+          fr.title = f.org + " live stream";
+          fr.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
+          fr.setAttribute("allowfullscreen", "");
+          el.frameWrap.appendChild(fr);
+          player = new YT.Player(fr, { events: events });
+        } else {
+          var target = document.createElement("div");
+          el.frameWrap.appendChild(target);
+          player = new YT.Player(target, {
+            videoId: f.replay.id,
+            playerVars: { autoplay:1, mute: soundWanted ? 0 : 1, playsinline:1, rel:0, modestbranding:1 },
+            events: events
+          });
         }
-      });
-    }catch(err){ wslBuildPlain(); return; }
-    wslLoadTimer = setTimeout(function(){ if(wslMode === "loading") wslOnWaiting(); }, 6000);
-    /* Load-timeout end of the funnel: a stream that never starts
-       (channel offline between events) lands on the resting panel. */
-    wslHardTimer = setTimeout(function(){ if(wslMode === "loading" || wslMode === "waiting") wslResting(); }, 25000);
+      }catch(err){ buildPlain(); return; }
+      loadTimer = setTimeout(function(){ if(mode === "loading") onWaiting(); }, 6000);
+    });
+  }
+  function attempt(){
+    destroy();
+    showOnly("player");
+    el.loading.hidden = false;
+    mode = "loading";
+    setTag();
+    buildPlayer();
+    /* Load timeout: a stream that never starts means no contest
+       is live (or the replay is unreachable) — land accordingly. */
+    hardTimer = setTimeout(function(){
+      if(mode !== "loading" && mode !== "waiting") return;
+      if(kind === "live") liveFailed();
+      else replayFailed("The replay took too long to load. Tap Play to check the live stream — and if nothing is live, the replay will be tried again.");
+    }, 25000);
+  }
+  function startReplay(){
+    kind = "replay";
+    setStatus(f.org + " isn't streaming live right now — starting the latest contest footage instead.");
+    attempt();
+  }
+  function start(){
+    zoom.exit();
+    watchdogStandDown = false;
+    lastResumeAt = 0;
+    stopped = false;
+    bgPaused = false;
+    kind = "live";
+    setStatus("");
+    attempt();
+  }
+  function toFacade(){
+    destroy();
+    mode = "idle"; kind = "live";
+    showOnly("facade");
+    setTag();
+    el.facadeSub.textContent = DEFAULT_SUB;
+  }
+  function unload(){ toFacade(); setStatus(""); }
+  function tapToggle(){
+    if(!player) return;
+    try{
+      var st = player.getPlayerState ? player.getPlayerState() : -1;
+      if(st === 1 && player.pauseVideo) player.pauseVideo();
+      else if(player.playVideo) player.playVideo();
+    }catch(e){}
+  }
+  el.playBtn.addEventListener("click", start);
+  document.getElementById(p + "stop").addEventListener("click", function(){
+    stopped = true;
+    unload();
+    setStatus("Stream stopped — nothing is using data. Tap Play in the player to check the live stream again.");
   });
-}
-function wslUnload(){
-  wslDestroy();
-  wslMode = "idle";
-  wslShowOnly("facade");
-}
-function wslUnloadForBackground(){
-  if(wslMode === "loading" || wslMode === "playing" || wslMode === "waiting"){
-    wslUnload();
-    wslBgPaused = true;
-    wslSetStatus("Paused while the app was in the background — tap Play to check the live stream again.");
-  }
-}
-function wslArmGesture(){
-  if(wslMode === "waiting" && wslPlayer && wslPlayer.playVideo){
-    try{ applySoundTo(wslPlayer, wslSoundWanted, wslSoundVolume); wslPlayer.playVideo(); }catch(e){}
-    if(wslWaitTimer) clearTimeout(wslWaitTimer);
-    wslWaitTimer = setTimeout(function(){ if(wslMode === "waiting") wslResting(); }, 8000);
-  }
-}
-/* WSL watchdog: the same ~2s sound/pause guard as the cams player. */
-setInterval(function(){
-  if(!wslPlayer || wslMode !== "playing" || wslStopped || document.hidden) return;
-  try{
-    if(!wslSoundWanted && wslPlayer.isMuted && !wslPlayer.isMuted()){ wslSoundWanted = true; wslSyncSoundBtn(); }
-    if(wslSoundWanted && wslPlayer.isMuted && wslPlayer.isMuted()){
-      applySoundTo(wslPlayer, true, wslSoundVolume);
-    } else if(wslSoundWanted && wslPlayer.getVolume){
-      var v = wslPlayer.getVolume();
-      if(typeof v === "number" && v > 0) wslSoundVolume = v;
+  el.soundBtn.addEventListener("click", function(){
+    soundWanted = !soundWanted;
+    watchdogStandDown = false;
+    if(player){
+      applySoundTo(player, soundWanted, soundVolume);
+      if(soundWanted && player.playVideo){ try{ player.playVideo(); }catch(e){} }
+    } else if(plain && (mode === "playing" || mode === "loading")){
+      attempt(); /* plain embeds can't change sound in place: rebuild the same target with the new intent */
     }
-    var st = wslPlayer.getPlayerState ? wslPlayer.getPlayerState() : -1;
-    if(st === 2 && !wslWatchdogStandDown){
-      var now = Date.now();
-      if(wslLastResumeAt && now - wslLastResumeAt < 5000){ wslWatchdogStandDown = true; return; }
-      wslLastResumeAt = now;
-      if(wslPlayer.playVideo) wslPlayer.playVideo();
-      if(wslSoundWanted) applySoundTo(wslPlayer, true, wslSoundVolume);
+    syncSoundBtn();
+  });
+  var fs = makeFullscreen(el.dock);
+  document.getElementById(p + "full").addEventListener("click", function(){ fs.toggle(); });
+  attachGestures(el.gesture, zoom, { onFlick: function(){ /* one feed — nowhere to cycle to */ }, onTapToggle: tapToggle });
+  /* Watchdog: the same ~2s sound/pause guard as the cams player. */
+  setInterval(function(){
+    if(!player || mode !== "playing" || stopped || document.hidden) return;
+    try{
+      if(!soundWanted && player.isMuted && !player.isMuted()){ soundWanted = true; syncSoundBtn(); }
+      if(soundWanted && player.isMuted && player.isMuted()){
+        applySoundTo(player, true, soundVolume);
+      } else if(soundWanted && player.getVolume){
+        var v = player.getVolume();
+        if(typeof v === "number" && v > 0) soundVolume = v;
+      }
+      var st = player.getPlayerState ? player.getPlayerState() : -1;
+      if(st === 2 && !watchdogStandDown){
+        var now = Date.now();
+        if(lastResumeAt && now - lastResumeAt < 5000){ watchdogStandDown = true; return; }
+        lastResumeAt = now;
+        if(player.playVideo) player.playVideo();
+        if(soundWanted) applySoundTo(player, true, soundVolume);
+      }
+    }catch(e){}
+  }, 2000);
+  syncSoundBtn();
+  showOnly("facade");
+  setTag();
+  window.addEventListener("resize", function(){ zoom.apply(); });
+  return {
+    key: f.key, wrap: wrap,
+    start: start,
+    unload: unload,
+    isActive: function(){ return mode === "loading" || mode === "playing" || mode === "waiting"; },
+    armGesture: function(){
+      if(mode === "waiting" && player && player.playVideo){
+        try{ applySoundTo(player, soundWanted, soundVolume); player.playVideo(); }catch(e){}
+        if(waitTimer) clearTimeout(waitTimer);
+        waitTimer = setTimeout(function(){
+          if(mode !== "waiting") return;
+          if(kind === "live") liveFailed();
+          else replayFailed("The replay is waiting on a first touch that never came. Tap Play to try again.");
+        }, 8000);
+      }
+    },
+    unloadForBackground: function(){
+      if(mode === "loading" || mode === "playing" || mode === "waiting"){
+        toFacade();
+        bgPaused = true;
+        setStatus("Paused while the app was in the background — tap Play to check the live stream again.");
+      }
     }
-  }catch(e){}
-}, 2000);
-$('#wslPlayBtn').addEventListener("click", function(){ wslStart(); });
-$('#wslRetryBtn').addEventListener("click", function(){ wslStart(); });
-$('#wslBackBtn').addEventListener("click", function(){ wslUnload(); wslSetStatus(""); });
-$('#wslStop').addEventListener("click", function(){
-  wslStopped = true;
-  wslUnload();
-  wslSetStatus("Stream stopped — nothing is using data. Tap Play in the player to check the live stream again.");
-});
-wslSoundBtn.addEventListener("click", function(){
-  wslSoundWanted = !wslSoundWanted;
-  wslWatchdogStandDown = false;
-  if(wslPlayer){
-    applySoundTo(wslPlayer, wslSoundWanted, wslSoundVolume);
-    if(wslSoundWanted && wslPlayer.playVideo){ try{ wslPlayer.playVideo(); }catch(e){} }
-  } else if(wslPlain && (wslMode === "playing" || wslMode === "loading")){
-    wslStart();
-  }
-  wslSyncSoundBtn();
-});
-var wslFs = makeFullscreen($('#wslDock'));
-$('#wslFull').addEventListener("click", function(){ wslFs.toggle(); });
-function wslTapToggle(){
-  if(!wslPlayer) return;
-  try{
-    var st = wslPlayer.getPlayerState ? wslPlayer.getPlayerState() : -1;
-    if(st === 1 && wslPlayer.pauseVideo) wslPlayer.pauseVideo();
-    else if(wslPlayer.playVideo) wslPlayer.playVideo();
-  }catch(e){}
+  };
 }
-attachGestures(wslGesture, wslZoom, { onFlick: function(){ /* one stream — nowhere to cycle to */ }, onTapToggle: wslTapToggle });
-wslSyncSoundBtn();
-wslShowOnly("facade");
+FEEDS.forEach(function(f){
+  feedInstances[f.key] = makeFeed(f);
+  var b = document.createElement("button");
+  b.type = "button";
+  b.className = "chip";
+  b.setAttribute("data-feed", f.key);
+  b.setAttribute("aria-pressed", "false");
+  b.setAttribute("aria-label", f.org + " — " + f.covers);
+  b.innerHTML = '<span class="sc-name">' + f.org + '</span><span class="sc-sub">' + f.chipSub + '</span>';
+  b.addEventListener("click", function(){ selectFeed(f.key); });
+  feedChipsEl.appendChild(b);
+});
+function selectFeed(key){
+  if(selectedFeedKey === key) return;
+  if(selectedFeedKey && feedInstances[selectedFeedKey]) feedInstances[selectedFeedKey].unload();
+  selectedFeedKey = key;
+  FEEDS.forEach(function(f){ feedInstances[f.key].wrap.hidden = f.key !== key; });
+  $$('#feedChips .chip').forEach(function(c){ c.setAttribute("aria-pressed", c.getAttribute("data-feed") === key ? "true" : "false"); });
+}
+function feedsArmGesture(){ for(var k in feedInstances) feedInstances[k].armGesture(); }
+function feedsUnloadForBackground(){ for(var k in feedInstances) feedInstances[k].unloadForBackground(); }
+selectFeed("wsl");
 })();
 </script>
 </body>
