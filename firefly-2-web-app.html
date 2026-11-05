@@ -1384,6 +1384,19 @@
       .tag.hot { border-color: var(--ember-deep); color: var(--ember); }
       .src-line { font-size: 12.5px; color: var(--ink-faint); margin: 10px 0 0; }
       .src-line a { color: var(--ink-soft); }
+      /* ---------- Accessories (Info tab, Device view) ---------- */
+      a.acc-btn { display: block; text-align: center; text-decoration: none; }
+      .acc-list { list-style: none; margin: 6px 0 0; padding: 0; }
+      .acc-list li {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+        font-size: 14px; color: var(--ink-soft);
+      }
+      .acc-list li:first-child { border-top: 0; }
+      .acc-list strong { color: var(--ink); }
+      .acc-list a, .acc-note a { color: var(--ember); font-weight: 700; }
+      .acc-note { margin: 12px 0 0; font-size: 13.5px; color: var(--ink-soft); }
+      .acc-note strong { color: var(--ink); }
       .grade {
         display: inline-block; min-width: 30px; text-align: center;
         font-size: 12px; font-weight: 800; border-radius: 7px;
@@ -3623,6 +3636,36 @@
           <div class="kv-row"><span class="k">Touch sensors</span>The sensors start a draw, in the mode you pick on the Device tab: <span class="v">Left, Right, Both, or Either</span>. Holding both sensors until the LED blinks green puts the Firefly in pairing mode; a blue blink means you're connected.</div>
           <div class="kv-row"><span class="k">What this app can and can't do</span>The app sets the <span class="v">temperature, the touch-sensor mode, and the coil calibration</span> — and a change only counts when your Firefly reads the new setting back. It <span class="v">cannot start the heater</span>: only your fingers on the Firefly's touch sensors do that.</div>
         </div>
+      </section><section class="card acc-card" aria-labelledby="acc-factory-h">
+        <h2 id="acc-factory-h">Factory accessories</h2>
+        <p class="card-sub">Genuine Firefly parts and add-ons, sold through Firefly's own store — which is still operating.</p>
+        <a class="btn btn-primary acc-btn" href="https://thefirefly.com/collections/accessories" target="_blank" rel="noopener">Firefly accessories — official store</a>
+        <p class="acc-note"><strong>One thing to know:</strong> Firefly's own mobile and desktop apps are discontinued — the store lives on, but temperature control now happens in this app or on the device itself.</p>
+        <p class="acc-note">Firefly's documented factory catalog. Check the official store for current availability.</p>
+        <ul class="acc-list">
+          <li><strong>Replacement battery (770 mAh)</strong> — swappable Li-ion spare; fits the Firefly 1, 2 and 2+.</li>
+          <li><strong>Charging dock (USB)</strong> — replacement cradle; the Firefly sits in it to charge.</li>
+          <li><strong>Quickcharge Wall Adapter</strong> — Firefly's own wall adapter for the dock; a full charge in about 45 minutes.</li>
+          <li><strong>External battery charger</strong> — charges a spare battery outside the device, so one pack can charge while you use the other.</li>
+          <li><strong>Mouthpieces (2-pack)</strong> — replacement removable mouthpieces with micro-particulate filter screen; Firefly 2 / 2+ only.</li>
+          <li><strong>Concentrate pads (3-pack)</strong> — stainless mesh pads for wax and liquid concentrates.</li>
+          <li><strong>Cleaning kit</strong> — picks, brush and wipes for the heating chamber and vapor path.</li>
+          <li><strong>Magnetic lids in alternate colors</strong> — replacement top lids, to swap the device's look.</li>
+          <li><strong>Cases</strong> — a zipper case, a leather case, and a hard case, all made for the Firefly 2 / 2+.</li>
+          <li><strong>Car charger</strong> — 12 V car-outlet charger for the dock.</li>
+          <li><strong>Replacement battery door</strong> — the aluminum door on the back of the device.</li>
+        </ul>
+      </section><section class="card acc-card" aria-labelledby="acc-third-h">
+        <h2 id="acc-third-h">Third-party accessories</h2>
+        <p class="card-sub">The honest picture: the Firefly aftermarket is genuinely thin. The mouthpiece and magnetic lid are proprietary designs, so most “Firefly accessories” sold online are genuine factory parts sold by retailers — not aftermarket inventions. The verified sources:</p>
+        <ul class="acc-list">
+          <li><strong>Planet of the Vapes</strong> — <em>retailer</em> of genuine factory parts. Its <a href="https://www.planetofthevapes.com/collections/firefly-2-parts-accessories" target="_blank" rel="noopener">Firefly 2 Accessories &amp; Parts collection</a> is a dedicated shelf of Firefly 2 / 2+ parts.</li>
+          <li><strong>DankGeek</strong> — <em>retailer</em> of factory parts; an alternate source for items like the <a href="https://dankgeek.com/products/firefly-2-charging-dock" target="_blank" rel="noopener">charging dock</a>.</li>
+          <li><strong>Vape Store ZA</strong> — <em>retailer</em> of factory parts (South Africa); its <a href="https://vapestore.co.za/firefly-brand/" target="_blank" rel="noopener">Firefly brand page</a> carries the OEM line.</li>
+          <li><strong>Delta 3D Studios</strong> — <em>maker</em>. The <a href="https://delta3dstudios.com/mini-scoop-n-poke-tool/" target="_blank" rel="noopener">Mini Scoop-N-Poke Tool</a> is a universal loading and stirring scoop that works with the Firefly's bowl — handy, since the Firefly benefits from a mid-session stir. It is a universal tool, <strong>not</strong> a Firefly-specific product.</li>
+          <li><strong>Delta 3D Studios</strong> — <em>maker</em>. The <a href="https://delta3dstudios.com/nearly-universal-wpa-medium/" target="_blank" rel="noopener">Nearly Universal WPA (Medium)</a> is a <strong>universal</strong> silicone water-pipe adapter — <strong>not</strong> a Firefly-specific part. Delta 3D's own confirmed-fit list includes the Firefly 2, noting it fits the mouthpiece with a tight fit.</li>
+        </ul>
+        <p class="acc-note"><strong>What doesn't exist:</strong> no Firefly-<em>specific</em> water-pipe adapter and no dosing capsules for the Firefly are made by any established maker — the Firefly loads loose into its glass bowl. The one exception on water is the universal Delta 3D adapter above, which its maker confirms fits the mouthpiece. Listings claiming a dedicated Firefly adapter or dosing capsules should be treated with suspicion.</p>
       </section>      </div>
       <div class="seg-view" data-segtab="info" data-segview="app" hidden>
 <section class="card" aria-labelledby="info-app-h">
