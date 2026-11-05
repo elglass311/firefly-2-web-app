@@ -9,29 +9,29 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        --bg: #0d1119;
-        --bg-deep: #060b09;
-        --surface: #131a17;
-        --surface-2: #1a231f;
-        --line: #33513a;
-        --ink: #f0f6e7;
-        --ink-soft: #c2d6b2;
-        --ink-faint: #8aa87e;
-        --ember: #f5a83c;
-        --ember-deep: #e07f16;
-        --ember-soft: rgba(245, 168, 60, 0.14);
-        --leaf: #6fce62;
-        --leaf-deep: #2f8f46;
-        --leaf-soft: rgba(111, 206, 98, 0.14);
-        --green: #6fce62;
-        --blue: #5aa9e6;
-        --red: #e06c5a;
-        --radius: 22px;
+        --bg: #04060d;
+        --bg-deep: #010204;
+        --surface: #0a101d;
+        --surface-2: #0e1626;
+        --line: #1d3350;
+        --ink: #eaf6ff;
+        --ink-soft: #aec6de;
+        --ink-faint: #68819e;
+        --ember: #3fd8ff;
+        --ember-deep: #0ea5d8;
+        --ember-soft: rgba(63, 216, 255, 0.13);
+        --leaf: #3dffa0;
+        --leaf-deep: #0fbf74;
+        --leaf-soft: rgba(61, 255, 160, 0.12);
+        --green: #3dffa0;
+        --blue: #54a8ff;
+        --red: #ff5d47;
+        --radius: 10px;
         --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
         --leaf-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50.0 86.0 L48.8 81.7 L47.0 77.3 L46.4 73.0 L43.9 68.7 L44.5 64.3 L42.7 60.0 L44.2 55.7 L42.7 51.3 L44.5 47.0 L43.4 42.7 L45.3 38.3 L44.7 34.0 L46.6 29.7 L46.5 25.3 L48.2 21.0 L48.7 16.7 L50.2 12.3 L51.5 8.0 L52.5 12.3 L53.7 16.7 L53.9 21.0 L55.3 25.3 L55.0 29.7 L56.6 34.0 L55.8 38.3 L57.5 42.7 L56.3 47.0 L57.9 51.3 L56.3 55.7 L57.6 60.0 L55.8 64.3 L56.2 68.7 L53.7 73.0 L53.0 77.3 L51.2 81.7 L50.0 86.0 Z M50.0 86.0 L47.1 83.0 L43.6 80.3 L41.2 77.0 L37.2 74.6 L36.0 70.7 L32.8 67.8 L32.0 63.7 L29.0 60.8 L28.5 56.6 L25.8 53.4 L25.3 49.2 L23.1 45.8 L22.5 41.7 L20.7 38.1 L19.8 34.0 L18.7 30.1 L21.8 33.0 L25.1 35.8 L27.4 39.2 L30.8 41.9 L32.6 45.5 L36.1 48.2 L37.4 52.0 L40.8 54.8 L41.7 58.8 L44.8 61.7 L45.4 65.9 L48.0 69.1 L47.8 73.7 L49.0 77.5 L49.3 81.9 L50.0 86.0 Z M50.0 86.0 L50.8 82.1 L51.2 77.9 L52.5 74.3 L52.4 69.9 L55.0 67.0 L55.7 63.0 L58.8 60.3 L59.7 56.5 L63.1 54.0 L64.5 50.4 L67.9 48.0 L69.7 44.6 L73.1 42.1 L75.4 39.1 L78.7 36.5 L81.8 33.9 L80.6 37.6 L79.7 41.4 L77.8 44.8 L77.1 48.7 L74.8 51.8 L74.2 55.8 L71.6 58.7 L70.9 62.7 L68.0 65.4 L67.1 69.3 L63.9 71.9 L62.7 75.6 L58.8 77.8 L56.3 80.8 L52.9 83.2 L50.0 86.0 Z M50.0 86.0 L46.4 84.8 L42.4 84.2 L39.1 82.7 L35.1 82.1 L32.7 79.3 L28.9 78.3 L26.8 75.3 L23.3 74.0 L21.2 70.8 L18.0 69.1 L15.9 66.0 L13.0 63.9 L10.7 61.0 L8.3 58.3 L12.0 59.3 L15.9 60.0 L19.1 61.7 L23.1 62.3 L26.0 64.5 L29.9 65.2 L32.4 67.8 L36.2 68.8 L38.4 71.8 L41.8 73.1 L43.6 76.7 L46.1 79.3 L47.9 82.9 L50.0 86.0 Z M50.0 86.0 L52.1 83.1 L53.9 79.8 L56.4 77.4 L58.2 74.1 L61.5 73.1 L63.7 70.3 L67.3 69.7 L69.8 67.3 L73.6 66.9 L76.4 65.0 L80.2 64.7 L83.3 63.3 L87.0 62.8 L90.6 62.2 L88.2 64.6 L86.0 67.3 L83.1 69.1 L81.0 71.9 L77.9 73.3 L75.8 76.3 L72.5 77.3 L70.3 80.1 L66.7 80.8 L64.4 83.3 L60.5 83.5 L57.3 84.8 L53.5 85.1 L50.0 86.0 Z M50.0 86.0 L46.4 86.5 L42.5 87.8 L39.2 87.3 L35.5 87.8 L32.5 86.1 L29.0 86.0 L25.9 84.2 L22.6 83.5 L19.5 81.7 L16.4 80.2 L20.1 79.4 L23.8 78.5 L27.3 78.7 L31.0 77.8 L34.3 78.9 L37.9 78.4 L40.9 80.2 L44.2 81.1 L47.0 83.9 L50.0 86.0 Z M50.0 86.0 L52.8 84.2 L55.5 81.6 L58.5 81.0 L61.4 79.5 L64.7 80.1 L67.7 79.4 L71.0 80.4 L74.2 80.4 L77.6 81.6 L80.9 82.5 L78.0 83.8 L75.1 85.3 L72.0 85.7 L69.2 87.3 L66.0 87.2 L63.1 88.5 L59.8 87.9 L56.7 88.2 L53.3 86.7 L50.0 86.0 Z M48.4 84 L51.6 84 L51.6 99.5 L48.4 99.5 Z'/%3E%3C/svg%3E");
         --leaf-mask-sm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50.0 86.0 L46.7 76.2 L41.6 66.5 L42.6 56.8 L41.1 47.0 L44.2 37.2 L44.8 27.5 L48.4 17.8 L51.5 8.0 L53.9 17.8 L56.9 27.5 L57.0 37.2 L59.6 47.0 L57.8 56.8 L58.6 66.5 L53.4 76.2 L50.0 86.0 Z M50.0 86.0 L43.6 80.3 L35.8 75.3 L32.8 67.8 L27.6 61.5 L25.8 53.4 L22.1 46.3 L20.7 38.1 L18.7 30.1 L25.1 35.8 L31.8 41.4 L36.1 48.2 L42.3 54.0 L44.8 61.7 L49.4 68.4 L49.0 77.5 L50.0 86.0 Z M50.0 86.0 L51.2 77.9 L51.1 69.2 L55.7 63.0 L58.3 55.7 L64.5 50.4 L68.8 44.1 L75.4 39.1 L81.8 33.9 L79.7 41.4 L78.0 49.2 L74.2 55.8 L72.3 63.5 L67.1 69.3 L64.0 76.3 L56.3 80.8 L50.0 86.0 Z M50.0 86.0 L41.1 83.9 L32.1 82.1 L26.1 76.2 L19.0 71.7 L13.8 64.8 L8.3 58.3 L17.1 60.4 L26.1 62.3 L33.1 66.9 L40.9 70.4 L45.5 78.2 L50.0 86.0 Z M50.0 86.0 L54.6 78.8 L59.1 71.5 L66.7 68.7 L73.5 64.8 L82.1 63.6 L90.6 62.2 L85.2 68.1 L80.0 74.4 L73.1 78.2 L67.2 83.5 L58.5 84.6 L50.0 86.0 Z M50.0 86.0 L43.8 87.5 L37.5 89.2 L32.2 87.0 L26.6 86.2 L21.6 83.0 L16.4 80.2 L22.6 78.7 L28.9 77.0 L34.5 78.0 L40.4 77.8 L45.2 81.9 L50.0 86.0 Z M50.0 86.0 L54.6 82.4 L59.1 78.8 L64.5 79.3 L69.6 78.7 L75.3 80.7 L80.9 82.5 L76.1 84.9 L71.4 87.6 L66.2 88.0 L61.3 89.8 L55.6 87.8 L50.0 86.0 Z M48.4 84 L51.6 84 L51.6 99.5 L48.4 99.5 Z'/%3E%3C/svg%3E");
@@ -41,92 +41,97 @@
         --ease-out: cubic-bezier(.22, .9, .28, 1);
         --ease-spring: cubic-bezier(.34, 1.35, .4, 1);
         --ease-io: cubic-bezier(.45, 0, .2, 1);
-        /* ---- Theme-driven scenic colors (Deep Space defaults) ---- */
-        --nebula-a: rgba(122, 76, 196, 0.17);
-        --nebula-b: rgba(47, 143, 70, 0.26);
-        --nebula-c: rgba(122, 76, 196, 0.08);
-        --top-glow: rgba(245, 168, 60, 0.10);
-        --card-a: rgba(30, 44, 33, 0.66);
-        --card-b: rgba(17, 26, 20, 0.74);
-        --card-c: rgba(12, 19, 15, 0.82);
-        --card-line: rgba(96, 138, 104, 0.32);
-        --btn-a: #ffb15e; --btn-b: #f5a83c; --btn-c: #e07f16;
-        --btn-ink: #1d1206;
-        --btn-glow: rgba(229, 106, 13, 0.42);
-        --tab-bg: rgba(6, 10, 9, 0.6);
-        --accent-2: #7a4cc4;
+        /* ---- Theme-driven scenic colors (Quantum Void defaults) ---- */
+        --nebula-a: rgba(64, 80, 255, 0.20);
+        --nebula-b: rgba(14, 165, 216, 0.24);
+        --nebula-c: rgba(139, 123, 255, 0.12);
+        --top-glow: rgba(63, 216, 255, 0.12);
+        --card-a: rgba(16, 30, 52, 0.66);
+        --card-b: rgba(9, 17, 32, 0.74);
+        --card-c: rgba(4, 8, 17, 0.84);
+        --card-line: rgba(86, 156, 220, 0.34);
+        --btn-a: #7ce9ff; --btn-b: #3fd8ff; --btn-c: #0e8fd8;
+        --btn-ink: #02141f;
+        --btn-glow: rgba(30, 170, 255, 0.45);
+        --tab-bg: rgba(3, 7, 14, 0.62);
+        --accent-2: #8b7bff;
+        --grid: rgba(90, 180, 255, 0.05);
         --type-indica: #b18cff;
-        --type-sativa: #ffb15e;
-        --type-hybrid: #6fce62;
+        --type-sativa: #ffd166;
+        --type-hybrid: #3dffa0;
       }
       /* ================= Themes (data-theme on <html>, set before paint) ================= */
       html[data-theme="emerald"] {
-        --bg: #0a1710; --bg-deep: #040805;
-        --surface: #12211a; --surface-2: #1a2f22; --line: #2e5c3e;
-        --ink: #f2f9ec; --ink-soft: #c4dcb6; --ink-faint: #8fb183;
-        --ember: #eec643; --ember-deep: #d9a514; --ember-soft: rgba(238, 198, 67, 0.14);
-        --leaf: #7fe07a; --leaf-deep: #35a04c; --leaf-soft: rgba(127, 224, 122, 0.14);
-        --green: #7fe07a; --blue: #5ac8e6; --red: #e06c5a;
-        --nebula-a: rgba(64, 190, 120, 0.16); --nebula-b: rgba(20, 120, 80, 0.30);
-        --nebula-c: rgba(238, 198, 67, 0.07); --top-glow: rgba(238, 198, 67, 0.10);
-        --card-a: rgba(24, 46, 30, 0.66); --card-b: rgba(13, 26, 17, 0.74); --card-c: rgba(8, 17, 11, 0.82);
-        --card-line: rgba(90, 150, 105, 0.32);
-        --btn-a: #ffd968; --btn-b: #eec643; --btn-c: #c9930a; --btn-ink: #221a04;
-        --btn-glow: rgba(238, 198, 67, 0.40);
-        --tab-bg: rgba(4, 10, 6, 0.6);
-        --accent-2: #3ec97e;
-        --type-indica: #b18cff; --type-sativa: #ffd968; --type-hybrid: #7fe07a;
+        --bg: #020805; --bg-deep: #010302;
+        --surface: #07130c; --surface-2: #0b1d12; --line: #1d4d2e;
+        --ink: #eafff2; --ink-soft: #b2dec2; --ink-faint: #6b9a7c;
+        --ember: #4dff6a; --ember-deep: #17b83e; --ember-soft: rgba(77, 255, 106, 0.12);
+        --leaf: #1fe8c8; --leaf-deep: #0aa88d; --leaf-soft: rgba(31, 232, 200, 0.12);
+        --green: #4dff6a; --blue: #4dc8ff; --red: #ff5d47;
+        --nebula-a: rgba(23, 184, 62, 0.18); --nebula-b: rgba(10, 120, 60, 0.26);
+        --nebula-c: rgba(200, 255, 46, 0.07); --top-glow: rgba(77, 255, 106, 0.10);
+        --card-a: rgba(14, 36, 20, 0.66); --card-b: rgba(7, 20, 11, 0.74); --card-c: rgba(3, 10, 5, 0.84);
+        --card-line: rgba(80, 190, 110, 0.32);
+        --btn-a: #9dffb0; --btn-b: #4dff6a; --btn-c: #12a83a; --btn-ink: #021a06;
+        --btn-glow: rgba(50, 255, 110, 0.40);
+        --tab-bg: rgba(2, 6, 3, 0.62);
+        --accent-2: #c8ff2e;
+        --grid: rgba(90, 255, 140, 0.05);
+        --type-indica: #b18cff; --type-sativa: #ffe066; --type-hybrid: #1fe8c8;
       }
       html[data-theme="purple"] {
-        --bg: #150b24; --bg-deep: #0a0514;
-        --surface: #1e1332; --surface-2: #281b42; --line: #4b3670;
-        --ink: #f4efff; --ink-soft: #cfc2ea; --ink-faint: #9d8cc4;
-        --ember: #c77dff; --ember-deep: #9d4edd; --ember-soft: rgba(199, 125, 255, 0.14);
-        --leaf: #7ee8a2; --leaf-deep: #3fae6a; --leaf-soft: rgba(126, 232, 162, 0.13);
-        --green: #7ee8a2; --blue: #7ec8e8; --red: #f07a9a;
-        --nebula-a: rgba(157, 78, 221, 0.28); --nebula-b: rgba(90, 40, 160, 0.30);
-        --nebula-c: rgba(199, 125, 255, 0.12); --top-glow: rgba(199, 125, 255, 0.12);
-        --card-a: rgba(46, 30, 74, 0.66); --card-b: rgba(27, 17, 46, 0.74); --card-c: rgba(18, 10, 32, 0.82);
-        --card-line: rgba(140, 110, 200, 0.32);
-        --btn-a: #e0aaff; --btn-b: #c77dff; --btn-c: #9d4edd; --btn-ink: #22083d;
-        --btn-glow: rgba(157, 78, 221, 0.45);
-        --tab-bg: rgba(10, 5, 18, 0.6);
-        --accent-2: #ff7ad9;
-        --type-indica: #e0aaff; --type-sativa: #ffd166; --type-hybrid: #7ee8a2;
+        --bg: #07030f; --bg-deep: #030109;
+        --surface: #120826; --surface-2: #1a0d38; --line: #3a2166;
+        --ink: #f6efff; --ink-soft: #cfc0f2; --ink-faint: #8f7cc0;
+        --ember: #c44dff; --ember-deep: #9626e0; --ember-soft: rgba(196, 77, 255, 0.14);
+        --leaf: #ff4dd8; --leaf-deep: #c724a8; --leaf-soft: rgba(255, 77, 216, 0.12);
+        --green: #4dffc8; --blue: #6ea8ff; --red: #ff5d7a;
+        --nebula-a: rgba(150, 38, 224, 0.26); --nebula-b: rgba(90, 20, 160, 0.30);
+        --nebula-c: rgba(255, 77, 216, 0.10); --top-glow: rgba(196, 77, 255, 0.12);
+        --card-a: rgba(38, 18, 66, 0.66); --card-b: rgba(20, 9, 42, 0.74); --card-c: rgba(10, 4, 24, 0.84);
+        --card-line: rgba(150, 110, 230, 0.34);
+        --btn-a: #e3a6ff; --btn-b: #c44dff; --btn-c: #8b1fd6; --btn-ink: #1c0230;
+        --btn-glow: rgba(170, 60, 255, 0.48);
+        --tab-bg: rgba(5, 2, 12, 0.62);
+        --accent-2: #5c6bff;
+        --grid: rgba(190, 120, 255, 0.05);
+        --type-indica: #e0aaff; --type-sativa: #ffd166; --type-hybrid: #4dffc8;
       }
       html[data-theme="sunset"] {
-        --bg: #190d06; --bg-deep: #0d0502;
-        --surface: #241209; --surface-2: #301a0e; --line: #6b3d22;
-        --ink: #fdf3e7; --ink-soft: #eccdb2; --ink-faint: #bd926e;
-        --ember: #ff9a3c; --ember-deep: #e05e16; --ember-soft: rgba(255, 154, 60, 0.14);
-        --leaf: #d9b84a; --leaf-deep: #a8842c; --leaf-soft: rgba(217, 184, 74, 0.14);
-        --green: #d9b84a; --blue: #5aa9e6; --red: #e05a3a;
-        --nebula-a: rgba(255, 110, 40, 0.16); --nebula-b: rgba(190, 60, 20, 0.28);
-        --nebula-c: rgba(255, 180, 60, 0.08); --top-glow: rgba(255, 154, 60, 0.14);
-        --card-a: rgba(56, 32, 16, 0.66); --card-b: rgba(34, 18, 9, 0.74); --card-c: rgba(22, 11, 5, 0.82);
-        --card-line: rgba(180, 120, 70, 0.32);
-        --btn-a: #ffc46b; --btn-b: #ff9a3c; --btn-c: #e05e16; --btn-ink: #2a1204;
-        --btn-glow: rgba(255, 110, 30, 0.45);
-        --tab-bg: rgba(14, 6, 2, 0.6);
-        --accent-2: #ff5e3a;
-        --type-indica: #c98cff; --type-sativa: #ffcf5e; --type-hybrid: #d9b84a;
+        --bg: #0a0300; --bg-deep: #040100;
+        --surface: #180a02; --surface-2: #221004; --line: #5c2c10;
+        --ink: #fff6ea; --ink-soft: #f0cba6; --ink-faint: #b3805a;
+        --ember: #ff7a1a; --ember-deep: #e04a08; --ember-soft: rgba(255, 122, 26, 0.14);
+        --leaf: #ffd23c; --leaf-deep: #d9a514; --leaf-soft: rgba(255, 210, 60, 0.13);
+        --green: #a8e063; --blue: #5aa9e6; --red: #ff4a2e;
+        --nebula-a: rgba(255, 90, 20, 0.18); --nebula-b: rgba(190, 40, 5, 0.28);
+        --nebula-c: rgba(255, 180, 40, 0.09); --top-glow: rgba(255, 122, 26, 0.14);
+        --card-a: rgba(46, 22, 6, 0.66); --card-b: rgba(26, 11, 3, 0.74); --card-c: rgba(14, 5, 1, 0.84);
+        --card-line: rgba(220, 130, 60, 0.34);
+        --btn-a: #ffc46b; --btn-b: #ff7a1a; --btn-c: #e03c08; --btn-ink: #260c00;
+        --btn-glow: rgba(255, 100, 20, 0.48);
+        --tab-bg: rgba(10, 4, 0, 0.62);
+        --accent-2: #ff2e63;
+        --grid: rgba(255, 160, 80, 0.05);
+        --type-indica: #c98cff; --type-sativa: #ffd23c; --type-hybrid: #a8e063;
       }
       html[data-theme="ocean"] {
-        --bg: #061420; --bg-deep: #02090f;
-        --surface: #0b1f2e; --surface-2: #10293c; --line: #26506b;
-        --ink: #eaf7fd; --ink-soft: #bcd9e8; --ink-faint: #7fa6ba;
-        --ember: #38c6d9; --ember-deep: #1a94ad; --ember-soft: rgba(56, 198, 217, 0.13);
-        --leaf: #4fd8a8; --leaf-deep: #1f9e77; --leaf-soft: rgba(79, 216, 168, 0.13);
-        --green: #4fd8a8; --blue: #5aa9e6; --red: #e06c5a;
-        --nebula-a: rgba(30, 130, 180, 0.20); --nebula-b: rgba(10, 80, 110, 0.32);
-        --nebula-c: rgba(56, 198, 217, 0.08); --top-glow: rgba(56, 198, 217, 0.10);
-        --card-a: rgba(16, 42, 60, 0.66); --card-b: rgba(9, 26, 38, 0.74); --card-c: rgba(5, 16, 24, 0.82);
-        --card-line: rgba(80, 140, 175, 0.32);
-        --btn-a: #6fe3f2; --btn-b: #38c6d9; --btn-c: #1a94ad; --btn-ink: #04222b;
-        --btn-glow: rgba(56, 198, 217, 0.40);
-        --tab-bg: rgba(2, 8, 12, 0.6);
-        --accent-2: #3a7bd5;
-        --type-indica: #9db8ff; --type-sativa: #ffd166; --type-hybrid: #4fd8a8;
+        --bg: #020608; --bg-deep: #010203;
+        --surface: #04141a; --surface-2: #07222b; --line: #14505e;
+        --ink: #eafffb; --ink-soft: #aedcd8; --ink-faint: #649a96;
+        --ember: #00e5c7; --ember-deep: #00a88f; --ember-soft: rgba(0, 229, 199, 0.12);
+        --leaf: #38b6ff; --leaf-deep: #0e7fd6; --leaf-soft: rgba(56, 182, 255, 0.12);
+        --green: #00e5c7; --blue: #38b6ff; --red: #ff5d47;
+        --nebula-a: rgba(0, 150, 180, 0.20); --nebula-b: rgba(4, 80, 110, 0.30);
+        --nebula-c: rgba(0, 229, 199, 0.08); --top-glow: rgba(0, 229, 199, 0.10);
+        --card-a: rgba(8, 34, 44, 0.66); --card-b: rgba(4, 20, 28, 0.74); --card-c: rgba(2, 10, 14, 0.84);
+        --card-line: rgba(70, 170, 190, 0.32);
+        --btn-a: #6ffce8; --btn-b: #00e5c7; --btn-c: #009e8a; --btn-ink: #01231d;
+        --btn-glow: rgba(0, 229, 199, 0.42);
+        --tab-bg: rgba(1, 5, 7, 0.62);
+        --accent-2: #2e7bff;
+        --grid: rgba(80, 220, 255, 0.05);
+        --type-indica: #9db8ff; --type-sativa: #ffd166; --type-hybrid: #00e5c7;
       }
       * { box-sizing: border-box; }
       html { -webkit-text-size-adjust: 100%; }
@@ -144,7 +149,7 @@
         background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
         background-attachment: fixed;
         color: var(--ink);
-        font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-family: "Rajdhani", system-ui, -apple-system, "Segoe UI", sans-serif;
         line-height: 1.45;
         min-height: 100vh;
       }
@@ -965,7 +970,7 @@
         font-family: var(--mono); font-size: 13px; font-weight: 600;
         color: var(--leaf); overflow-wrap: anywhere; margin-bottom: 6px;
       }
-      .service-name { color: var(--ink-soft); font-family: "Manrope", sans-serif; font-size: 12.5px; margin-left: 8px; }
+      .service-name { color: var(--ink-soft); font-family: "Rajdhani", sans-serif; font-size: 12.5px; margin-left: 8px; }
       .char-row {
         border-top: 1px solid var(--line);
         padding: 9px 0 9px 12px;
@@ -2113,6 +2118,183 @@
         min-height: 36px; display: flex; align-items: center; list-style: none;
       }
       .src-group > summary::-webkit-details-marker { display: none; }
+
+      /* ================= 2026-11-05 futuristic pass: orbital control-deck =================
+         The whole visual language moves from botanical/vintage to a
+         next-gen device console: Orbitron display type + Rajdhani UI type,
+         a blueprint grid under the nebula field, angular panels with HUD
+         corner brackets instead of the leaf-tile watermark, the cannabis
+         leaf glyph replaced by a hex-core reactor mark, squared controls,
+         and neon hairlines/glows driven by the same theme variables.
+         Declared last so it wins over every earlier pass at equal
+         specificity; all BLE/JS hooks, ids and layout containment rules
+         above are untouched. */
+      :root {
+        --display: "Orbitron", "Rajdhani", system-ui, sans-serif;
+        /* Hex-core reactor mark (ring + core dot) — replaces the leaf mask */
+        --leaf-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill-rule='evenodd' d='M50 4 L90 27 L90 73 L50 96 L10 73 L10 27 Z M50 27 L70 38.5 L70 61.5 L50 73 L30 61.5 L30 38.5 Z'/%3E%3Ccircle cx='50' cy='50' r='8'/%3E%3C/svg%3E");
+        --leaf-mask-sm: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill-rule='evenodd' d='M50 4 L90 27 L90 73 L50 96 L10 73 L10 27 Z M50 27 L70 38.5 L70 61.5 L50 73 L30 61.5 L30 38.5 Z'/%3E%3Ccircle cx='50' cy='50' r='8'/%3E%3C/svg%3E");
+      }
+      /* Typography: Rajdhani UI voice, Orbitron for display + HUD labels */
+      body { font-family: "Rajdhani", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 16.5px; font-weight: 500; }
+      h1 { font-family: var(--display); font-size: 25px; font-weight: 800; letter-spacing: 0.015em; }
+      .tab-title { font-family: var(--display); font-size: 25px; font-weight: 800; letter-spacing: 0.015em; }
+      .tray-word { font-family: var(--display); font-size: 14.5px; letter-spacing: 0.06em; }
+      .sheet-title { font-family: var(--display); font-size: 15.5px; letter-spacing: 0.04em; }
+      .str-hero h3 { font-family: var(--display); font-size: 20px; letter-spacing: 0.01em; }
+      .bh-estimate { font-family: var(--display); font-size: 20px; letter-spacing: 0.01em; }
+      .big-temp .value { font-family: var(--display); font-weight: 800; letter-spacing: 0; text-shadow: 0 0 26px var(--ember-soft), 0 0 64px var(--ember-soft); }
+      .big-temp .unit { text-shadow: 0 0 16px var(--ember-soft); }
+      .fu-set-val { font-family: var(--display); font-weight: 800; letter-spacing: 0; text-shadow: 0 0 26px var(--ember-soft), 0 0 64px var(--ember-soft); }
+      .step-btn { font-family: var(--display); }
+      .card h2, details.card > summary, .fu-step, .bd-label, .tut-step,
+      .kv-row .k, .orb-side label, .src-group > summary {
+        font-family: var(--display); font-size: 11px; letter-spacing: 0.17em;
+      }
+      .btn { text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
+      .btn-small { text-transform: uppercase; letter-spacing: 0.06em; font-size: 12.5px; }
+      /* Kill the letterpress — flat type with a faint neon halo instead */
+      h1, h2, h3, .bh-estimate { text-shadow: none; }
+      h1, .tab-title { text-shadow: 0 0 22px var(--ember-soft); }
+      ::selection { background: var(--ember); color: #04070c; }
+      :focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+      /* Background: blueprint grid over the void, nebula field on top */
+      body {
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+          radial-gradient(120% 55% at 50% -10%, var(--top-glow), transparent 60%),
+          radial-gradient(85% 48% at 12% 18%, var(--nebula-a), transparent 62%),
+          radial-gradient(90% 50% at 88% 94%, var(--nebula-b), transparent 62%),
+          radial-gradient(72% 46% at 6% 46%, var(--nebula-c), transparent 60%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+        background-size: 44px 44px, 44px 44px, auto, auto, auto, auto, auto;
+        background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+      }
+      /* Brand mark: hex-core in the theme gradient, not a leaf photo tile */
+      .brand h1::before {
+        background: linear-gradient(135deg, var(--btn-a), var(--accent-2));
+        filter: drop-shadow(0 0 8px var(--btn-glow));
+      }
+      .leaf-badge { border-radius: 10px; box-shadow: inset 0 0 18px var(--ember-soft), 0 0 14px -4px var(--btn-glow); }
+      .leaf-badge img { filter: saturate(0.72) hue-rotate(14deg) brightness(0.94) contrast(1.06); }
+      .hero { border-radius: 12px; }
+      .hero img { filter: saturate(0.78) hue-rotate(10deg) brightness(0.96) contrast(1.05); }
+      .hero::after { background: linear-gradient(180deg, transparent 52%, rgba(2, 6, 12, 0.55) 100%); }
+      .bud-accent { border-radius: 10px; }
+      .bud-accent img { filter: saturate(0.8) hue-rotate(10deg) brightness(0.97) contrast(1.05); }
+      /* Panels: angular glass with HUD corner brackets (leaf tile retired) */
+      .card {
+        border-radius: 12px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.07),
+          inset 0 0 32px -18px var(--ember-soft),
+          0 18px 44px rgba(0, 0, 0, 0.5),
+          0 4px 14px rgba(0, 0, 0, 0.4);
+      }
+      .card::before {
+        content: ""; position: absolute; z-index: 4; pointer-events: none;
+        top: 9px; left: 9px; width: 15px; height: 15px;
+        border-top: 2px solid var(--ember); border-left: 2px solid var(--ember);
+        opacity: 0.55;
+      }
+      .card::after {
+        content: ""; position: absolute; z-index: 4; pointer-events: none;
+        top: auto; bottom: 9px; right: 9px; width: 15px; height: 15px;
+        background: none;
+        border-bottom: 2px solid var(--ember); border-right: 2px solid var(--ember);
+        opacity: 0.55;
+      }
+      @media (hover: hover) {
+        .card:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), inset 0 0 32px -14px var(--ember-soft), 0 24px 54px rgba(0,0,0,0.55), 0 6px 18px rgba(0,0,0,0.42); }
+      }
+      /* Controls: squared, hairline, neon */
+      .btn { border-radius: 9px; }
+      .btn-primary, .btn-set-live { border-color: var(--btn-a); }
+      .btn-ghost { background: linear-gradient(180deg, var(--surface-2), var(--surface)); }
+      .status-pill { border-radius: 8px; }
+      .auth-pill { border-radius: 8px; }
+      .auth-box, .led-note, .connect-msg, .mini-msg, .warn-line, .comp-note,
+      .honest-box, .fu-honest, .fu-sel, .plan-card, .vapebox, .switch-row,
+      .q-auto, .kv-row, .cal-row, .pick-row, .tut-card, .ref-panel,
+      .browser-opt, .log-row, .rq-row { border-radius: 10px; }
+      .unit-toggle { border-radius: 10px; }
+      .unit-toggle button { border-radius: 7px; }
+      .unit-toggle button[aria-pressed="true"] { color: var(--btn-ink); }
+      .seg-control { border-radius: 10px; }
+      .seg-control button { border-radius: 7px; }
+      .seg-control button[aria-pressed="true"] { color: var(--btn-ink); }
+      .seg-grid button { border-radius: 10px; }
+      .chip { border-radius: 7px; }
+      .chip::before { width: 12px; height: 12px; }
+      .tag, .ro-tag, .prop { border-radius: 5px; }
+      .type-chip { border-radius: 6px; }
+      .mode-temp { border-radius: 6px; }
+      .step-btn { border-radius: 10px; }
+      .switch { border-radius: 8px; }
+      .switch::after { border-radius: 5px; }
+      .switch[aria-checked="true"] { box-shadow: 0 0 12px var(--leaf-soft); }
+      .batt-steps span { border-radius: 2px; }
+      .bh-step-row, .bh-runs li, .compound-list li { border-radius: 8px; }
+      .band, .band-detail { border-radius: 12px; }
+      .text-input, .q-text, .q-num, .q-area, .str-search, .theme-select,
+      .cal-input-row input[type="number"] { border-radius: 8px; }
+      .btn-small { border-radius: 8px; }
+      .log { border-radius: 10px; }
+      .grade { border-radius: 4px; }
+      .prog { border-radius: 3px; }
+      .prog > i { border-radius: 3px; }
+      /* Thermal slider: slim rail, angular neon puck (heat spectrum kept — it is data) */
+      input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; }
+      input[type="range"]::-webkit-slider-thumb {
+        width: 30px; height: 30px; border-radius: 8px; margin-top: -13px;
+        background: radial-gradient(circle, var(--ember) 0 4px, transparent 5.5px), linear-gradient(180deg, #1c2942, #0a1120);
+        border: 2px solid var(--ember);
+        box-shadow: 0 0 0 4px var(--ember-soft), 0 0 18px var(--ember-soft), 0 5px 14px rgba(0, 0, 0, 0.6);
+      }
+      input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; }
+      input[type="range"]::-moz-range-thumb {
+        width: 26px; height: 26px; border-radius: 8px;
+        background: radial-gradient(circle, var(--ember) 0 4px, transparent 5.5px), linear-gradient(180deg, #1c2942, #0a1120);
+        border: 2px solid var(--ember);
+        box-shadow: 0 0 0 4px var(--ember-soft), 0 0 18px var(--ember-soft), 0 5px 14px rgba(0, 0, 0, 0.6);
+      }
+      /* Photos & media frames */
+      .str-card { border-radius: 12px; }
+      .str-mono { border-radius: 8px; }
+      .str-hero .str-mono { border-radius: 12px; }
+      .str-fav { border-radius: 8px; }
+      .str-ph-tag { border-radius: 4px; }
+      .gd-ph-pick { border-radius: 8px; }
+      .gd-ph-pick img { border-radius: 6px; }
+      .ph-thumb { border-radius: 8px; }
+      .rq-shareview img { border-radius: 10px; }
+      .temp-photo::after { background: linear-gradient(180deg, rgba(2, 6, 12, 0.62) 0%, rgba(2, 6, 12, 0.84) 55%, rgba(2, 6, 12, 0.94) 100%); }
+      .photo-zoom { background: rgba(2, 4, 8, 0.92); }
+      .photo-zoom img { border-radius: 14px; }
+      .pz-tag { border-radius: 4px; }
+      /* Theme picker, wheel, tray, island, dock */
+      .theme-swatch { border-radius: 10px; }
+      .theme-swatch .ts-grad { height: 40px; }
+      .wheel { border-radius: 14px; }
+      .wheel-band { border-radius: 10px; }
+      .wheel-empty { border-radius: 12px; }
+      .tray { border-radius: 0 14px 14px 0; }
+      .tray button[role="tab"] { border-radius: 9px; }
+      .tray-mark { border-radius: 8px; }
+      .tray-close { border-radius: 8px; }
+      .tray-handle-pill { border-radius: 8px; }
+      .island[data-state="expanded"] { border-radius: 20px; }
+      .isl-exp-head .str-mono { border-radius: 8px; }
+      .isl-close { border-radius: 8px; }
+      .surf-dock { border-radius: 14px; }
+      .surf-stage, .surf-facade, .surf-player, .surf-fallback { border-radius: 10px; }
+      .surf-zone-chip { border-radius: 5px; }
+      .surf-dock-title { border-radius: 6px; }
+      /* Thin neon scrollbars for the log + sheets */
+      .log::-webkit-scrollbar, .sheet::-webkit-scrollbar { width: 8px; }
+      .log::-webkit-scrollbar-thumb, .sheet::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+      .log::-webkit-scrollbar-track, .sheet::-webkit-scrollbar-track { background: transparent; }
     </style>
     <script>
       /* Theme + motion boot — runs before first paint so a saved theme/motion
@@ -2156,8 +2338,8 @@
   </head>
   <body>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<symbol id="ff-leaf" viewBox="0 0 100 100"><path d="M50.0 86.0 L48.8 81.7 L47.0 77.3 L46.4 73.0 L43.9 68.7 L44.5 64.3 L42.7 60.0 L44.2 55.7 L42.7 51.3 L44.5 47.0 L43.4 42.7 L45.3 38.3 L44.7 34.0 L46.6 29.7 L46.5 25.3 L48.2 21.0 L48.7 16.7 L50.2 12.3 L51.5 8.0 L52.5 12.3 L53.7 16.7 L53.9 21.0 L55.3 25.3 L55.0 29.7 L56.6 34.0 L55.8 38.3 L57.5 42.7 L56.3 47.0 L57.9 51.3 L56.3 55.7 L57.6 60.0 L55.8 64.3 L56.2 68.7 L53.7 73.0 L53.0 77.3 L51.2 81.7 L50.0 86.0 Z M50.0 86.0 L47.1 83.0 L43.6 80.3 L41.2 77.0 L37.2 74.6 L36.0 70.7 L32.8 67.8 L32.0 63.7 L29.0 60.8 L28.5 56.6 L25.8 53.4 L25.3 49.2 L23.1 45.8 L22.5 41.7 L20.7 38.1 L19.8 34.0 L18.7 30.1 L21.8 33.0 L25.1 35.8 L27.4 39.2 L30.8 41.9 L32.6 45.5 L36.1 48.2 L37.4 52.0 L40.8 54.8 L41.7 58.8 L44.8 61.7 L45.4 65.9 L48.0 69.1 L47.8 73.7 L49.0 77.5 L49.3 81.9 L50.0 86.0 Z M50.0 86.0 L50.8 82.1 L51.2 77.9 L52.5 74.3 L52.4 69.9 L55.0 67.0 L55.7 63.0 L58.8 60.3 L59.7 56.5 L63.1 54.0 L64.5 50.4 L67.9 48.0 L69.7 44.6 L73.1 42.1 L75.4 39.1 L78.7 36.5 L81.8 33.9 L80.6 37.6 L79.7 41.4 L77.8 44.8 L77.1 48.7 L74.8 51.8 L74.2 55.8 L71.6 58.7 L70.9 62.7 L68.0 65.4 L67.1 69.3 L63.9 71.9 L62.7 75.6 L58.8 77.8 L56.3 80.8 L52.9 83.2 L50.0 86.0 Z M50.0 86.0 L46.4 84.8 L42.4 84.2 L39.1 82.7 L35.1 82.1 L32.7 79.3 L28.9 78.3 L26.8 75.3 L23.3 74.0 L21.2 70.8 L18.0 69.1 L15.9 66.0 L13.0 63.9 L10.7 61.0 L8.3 58.3 L12.0 59.3 L15.9 60.0 L19.1 61.7 L23.1 62.3 L26.0 64.5 L29.9 65.2 L32.4 67.8 L36.2 68.8 L38.4 71.8 L41.8 73.1 L43.6 76.7 L46.1 79.3 L47.9 82.9 L50.0 86.0 Z M50.0 86.0 L52.1 83.1 L53.9 79.8 L56.4 77.4 L58.2 74.1 L61.5 73.1 L63.7 70.3 L67.3 69.7 L69.8 67.3 L73.6 66.9 L76.4 65.0 L80.2 64.7 L83.3 63.3 L87.0 62.8 L90.6 62.2 L88.2 64.6 L86.0 67.3 L83.1 69.1 L81.0 71.9 L77.9 73.3 L75.8 76.3 L72.5 77.3 L70.3 80.1 L66.7 80.8 L64.4 83.3 L60.5 83.5 L57.3 84.8 L53.5 85.1 L50.0 86.0 Z M50.0 86.0 L46.4 86.5 L42.5 87.8 L39.2 87.3 L35.5 87.8 L32.5 86.1 L29.0 86.0 L25.9 84.2 L22.6 83.5 L19.5 81.7 L16.4 80.2 L20.1 79.4 L23.8 78.5 L27.3 78.7 L31.0 77.8 L34.3 78.9 L37.9 78.4 L40.9 80.2 L44.2 81.1 L47.0 83.9 L50.0 86.0 Z M50.0 86.0 L52.8 84.2 L55.5 81.6 L58.5 81.0 L61.4 79.5 L64.7 80.1 L67.7 79.4 L71.0 80.4 L74.2 80.4 L77.6 81.6 L80.9 82.5 L78.0 83.8 L75.1 85.3 L72.0 85.7 L69.2 87.3 L66.0 87.2 L63.1 88.5 L59.8 87.9 L56.7 88.2 L53.3 86.7 L50.0 86.0 Z M48.4 84 L51.6 84 L51.6 99.5 L48.4 99.5 Z" fill="currentColor"/><path d="M50 82 C49.4 88 49.6 94 50 99.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M50.0 86.0 L50.0 76.6 L50.1 67.3 L50.2 57.9 L50.3 48.6 L50.5 39.2 L50.8 29.8 L51.1 20.5 L51.4 11.1" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.1" stroke-linecap="round"/><path d="M50.0 86.0 L46.5 79.2 L42.9 72.4 L39.3 65.6 L35.5 58.9 L31.8 52.2 L27.9 45.5 L24.0 38.9 L20.1 32.3" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.1" stroke-linecap="round"/><path d="M50.0 86.0 L53.6 79.6 L57.2 73.3 L60.9 67.0 L64.7 60.7 L68.5 54.4 L72.4 48.2 L76.4 42.0 L80.4 35.9" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.1" stroke-linecap="round"/><path d="M50.0 86.0 L45.2 82.4 L40.3 78.9 L35.4 75.5 L30.4 72.1 L25.4 68.8 L20.3 65.6 L15.2 62.4 L10.0 59.3" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.1" stroke-linecap="round"/><path d="M50.0 86.0 L54.7 82.9 L59.4 79.8 L64.2 76.9 L69.1 74.0 L74.0 71.1 L78.9 68.4 L83.9 65.7 L89.0 63.1" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.1" stroke-linecap="round"/><path d="M50.0 86.0 L46.0 85.0 L42.0 84.2 L38.0 83.4 L34.0 82.6 L30.0 81.9 L25.9 81.3 L21.9 80.8 L17.8 80.3" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.1" stroke-linecap="round"/><path d="M50.0 86.0 L53.7 85.3 L57.3 84.7 L61.0 84.2 L64.7 83.7 L68.4 83.3 L72.2 83.0 L75.9 82.8 L79.7 82.6" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.1" stroke-linecap="round"/></symbol>
-<symbol id="ff-leaf-sm" viewBox="0 0 100 100"><path d="M50.0 86.0 L46.7 76.2 L41.6 66.5 L42.6 56.8 L41.1 47.0 L44.2 37.2 L44.8 27.5 L48.4 17.8 L51.5 8.0 L53.9 17.8 L56.9 27.5 L57.0 37.2 L59.6 47.0 L57.8 56.8 L58.6 66.5 L53.4 76.2 L50.0 86.0 Z M50.0 86.0 L43.6 80.3 L35.8 75.3 L32.8 67.8 L27.6 61.5 L25.8 53.4 L22.1 46.3 L20.7 38.1 L18.7 30.1 L25.1 35.8 L31.8 41.4 L36.1 48.2 L42.3 54.0 L44.8 61.7 L49.4 68.4 L49.0 77.5 L50.0 86.0 Z M50.0 86.0 L51.2 77.9 L51.1 69.2 L55.7 63.0 L58.3 55.7 L64.5 50.4 L68.8 44.1 L75.4 39.1 L81.8 33.9 L79.7 41.4 L78.0 49.2 L74.2 55.8 L72.3 63.5 L67.1 69.3 L64.0 76.3 L56.3 80.8 L50.0 86.0 Z M50.0 86.0 L41.1 83.9 L32.1 82.1 L26.1 76.2 L19.0 71.7 L13.8 64.8 L8.3 58.3 L17.1 60.4 L26.1 62.3 L33.1 66.9 L40.9 70.4 L45.5 78.2 L50.0 86.0 Z M50.0 86.0 L54.6 78.8 L59.1 71.5 L66.7 68.7 L73.5 64.8 L82.1 63.6 L90.6 62.2 L85.2 68.1 L80.0 74.4 L73.1 78.2 L67.2 83.5 L58.5 84.6 L50.0 86.0 Z M50.0 86.0 L43.8 87.5 L37.5 89.2 L32.2 87.0 L26.6 86.2 L21.6 83.0 L16.4 80.2 L22.6 78.7 L28.9 77.0 L34.5 78.0 L40.4 77.8 L45.2 81.9 L50.0 86.0 Z M50.0 86.0 L54.6 82.4 L59.1 78.8 L64.5 79.3 L69.6 78.7 L75.3 80.7 L80.9 82.5 L76.1 84.9 L71.4 87.6 L66.2 88.0 L61.3 89.8 L55.6 87.8 L50.0 86.0 Z M48.4 84 L51.6 84 L51.6 99.5 L48.4 99.5 Z" fill="currentColor"/></symbol>
+<symbol id="ff-leaf" viewBox="0 0 100 100"><path d="M50 5 89 27.5v45L50 95 11 72.5v-45Z" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/><path d="M50 31 66.5 40.5v19L50 69 33.5 59.5v-19Z" fill="currentColor"/><circle cx="50" cy="50" r="5.5" fill="rgba(0,0,0,0.4)"/></symbol>
+<symbol id="ff-leaf-sm" viewBox="0 0 100 100"><path fill-rule="evenodd" d="M50 3 91 26.5v47L50 97 9 73.5v-47Z M50 30 67 40v20L50 70 33 60V40Z" fill="currentColor"/><circle cx="50" cy="50" r="7" fill="currentColor"/></symbol>
 <symbol id="i-flame" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1.2 3.2-2.2 4.4-2.2 6.7 0 1 .8 1.8 1.8 1.8S13.4 10.6 13.2 9c-.1-.7-.4-1.4-.9-2.1 2.3 1.4 3.9 3.7 3.9 6.1a7.2 7.2 0 1 1-14.4 0C1.8 9.7 5 7.6 7.5 5.6c-.3 1-.2 1.9.3 2.7.4.6 1.4.6 1.9 0C10.6 7.1 11.2 5 12 3Z"/><path d="M12 20.4a3.1 3.1 0 0 1-3.1-3.1c0-1.7 1.3-2.5 3.1-4.2 1.8 1.7 3.1 2.5 3.1 4.2a3.1 3.1 0 0 1-3.1 3.1Z"/></g></symbol>
 <symbol id="i-thermo" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13.6V5a2 2 0 1 1 4 0v8.6a4.5 4.5 0 1 1-4 0Z"/><path d="M12 9.5v5.6"/><circle cx="12" cy="17.6" r="1.3" fill="currentColor" stroke="none"/></g></symbol>
 <symbol id="i-drop" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4s6.1 6.7 6.1 11.1a6.1 6.1 0 1 1-12.2 0C5.9 10.1 12 3.4 12 3.4Z"/><path d="M9.4 14.6a2.8 2.8 0 0 0 2 3.2"/></g></symbol>
@@ -2401,11 +2583,11 @@
           <p>A little living light for your session — it wears whatever theme you pick. Pure decoration; it never touches the Firefly.</p>
           <label for="themeQuick">Theme</label>
           <select class="theme-select" id="themeQuick" aria-label="Theme — quick switch">
-            <option value="space">Deep Space</option>
-            <option value="emerald">Emerald Garden</option>
-            <option value="purple">Purple Haze</option>
-            <option value="sunset">Sunset Ember</option>
-            <option value="ocean">Ocean Depths</option>
+            <option value="space">Quantum Void</option>
+            <option value="emerald">Verdant Circuit</option>
+            <option value="purple">Ultraviolet</option>
+            <option value="sunset">Solar Flare</option>
+            <option value="ocean">Deep Current</option>
           </select>
         </div>
       </section>
@@ -3216,24 +3398,24 @@
         <p class="card-sub">Five moods, one app — every color, glow and accent follows the theme you pick, and your pick is remembered on this device. The same switch sits on the Session tab for a quick change mid-session.</p>
         <div class="theme-grid" id="themeGrid" role="group" aria-label="Theme">
           <button type="button" class="theme-swatch" data-theme-x="space" aria-pressed="true">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#0d1119,#3a2a6b 55%,#2f8f46);"></span>
-            <span class="ts-name">Deep Space<small>The original — starfield, nebula and leaf</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#04060d,#123a5c 55%,#3fd8ff);"></span>
+            <span class="ts-name">Quantum Void<small>Ion cyan on deep void black</small></span>
           </button>
           <button type="button" class="theme-swatch" data-theme-x="emerald" aria-pressed="false">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#040805,#1d5c38 55%,#eec643);"></span>
-            <span class="ts-name">Emerald Garden<small>Lush greens and garden gold</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#020805,#0d4d2a 55%,#4dff6a);"></span>
+            <span class="ts-name">Verdant Circuit<small>Signal green, circuit dark</small></span>
           </button>
           <button type="button" class="theme-swatch" data-theme-x="purple" aria-pressed="false">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#0a0514,#5a28a0 55%,#c77dff);"></span>
-            <span class="ts-name">Purple Haze<small>Deep purples in a hazy nebula</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#07030f,#3d1470 55%,#c44dff);"></span>
+            <span class="ts-name">Ultraviolet<small>Violet core, magenta signal</small></span>
           </button>
           <button type="button" class="theme-swatch" data-theme-x="sunset" aria-pressed="false">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#0d0502,#a03c14 55%,#ff9a3c);"></span>
-            <span class="ts-name">Sunset Ember<small>Warm amber, ember glow</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#0a0300,#7a2408 55%,#ff7a1a);"></span>
+            <span class="ts-name">Solar Flare<small>Reactor orange, solar gold</small></span>
           </button>
           <button type="button" class="theme-swatch" data-theme-x="ocean" aria-pressed="false">
-            <span class="ts-grad" style="background:linear-gradient(120deg,#02090f,#0e5a78 55%,#38c6d9);"></span>
-            <span class="ts-name">Ocean Depths<small>Deep teal, calm blue</small></span>
+            <span class="ts-grad" style="background:linear-gradient(120deg,#020608,#06455a 55%,#00e5c7);"></span>
+            <span class="ts-name">Deep Current<small>Abyssal teal, sonar cyan</small></span>
           </button>
         </div>
       </section><section class="card" aria-labelledby="prefs-h">
@@ -3345,7 +3527,7 @@
         <h2 id="info-app-h">App</h2>
         <p class="card-sub">Personal web app for one Firefly 2+. Runs in Bluefy on iPhone, or Chrome / Edge on desktop and Android. Talks to the device over Bluetooth — nothing is sent anywhere.</p>
         <p class="muted" style="margin:0 0 10px;">Everything you keep here — favorite strains, session logs, battery history, and your own strain photos — is stored only on this device, with the app's other data. It is never uploaded anywhere.</p>
-        <p class="muted" style="margin:0 0 4px;">Five themes — Deep Space, Emerald Garden, Purple Haze, Sunset Ember, Ocean Depths — every color, glow and accent follows the theme you pick, and your pick is remembered on this device.</p>
+        <p class="muted" style="margin:0 0 4px;">Five themes — Quantum Void, Verdant Circuit, Ultraviolet, Solar Flare, Deep Current — every color, glow and accent follows the theme you pick, and your pick is remembered on this device.</p>
       </section>
 <section class="card" aria-labelledby="strsci-h">
         <h2 id="strsci-h">How the numbers are made</h2>
@@ -8897,7 +9079,7 @@ var STRAIN_SRC_LINKS = {
         function fxDrawStars(t) {
           if (!bgCtx) return;
           bgCtx.clearRect(0, 0, fxW, fxH);
-          bgCtx.fillStyle = "#eef4e6";
+          bgCtx.fillStyle = "#dceaff";
           for (var i = 0; i < fxStars.length; i++) {
             var st = fxStars[i];
             st.y += st.s; if (st.y > fxH + 2) { st.y = -2; st.x = Math.random() * fxW; }
@@ -8930,11 +9112,19 @@ var STRAIN_SRC_LINKS = {
           sph.addColorStop(0.75, orbPalette.deep); sph.addColorStop(1, orbPalette.deep);
           c.fillStyle = sph;
           c.beginPath(); c.arc(cx, cy, 62, 0, 6.283); c.fill();
-          /* rotating leaf silhouette */
+          /* rotating hex-core silhouette */
           c.save();
-          c.translate(cx, cy); c.rotate(Math.sin(ang * 0.9) * 0.5 - 0.35); c.scale(1.5, 1.5); c.translate(-50, -50);
-          c.fillStyle = "rgba(10, 24, 10, 0.34)";
-          c.fill(new Path2D(ORB_LEAF));
+          c.translate(cx, cy); c.rotate(Math.sin(ang * 0.9) * 0.5 - 0.35);
+          c.strokeStyle = "rgba(4, 10, 18, 0.42)"; c.lineWidth = 7; c.lineJoin = "round";
+          c.beginPath();
+          for (var hx = 0; hx < 6; hx++) {
+            var ha = hx * Math.PI / 3 - Math.PI / 2;
+            var hxp = Math.cos(ha) * 40, hyp = Math.sin(ha) * 40;
+            if (hx === 0) c.moveTo(hxp, hyp); else c.lineTo(hxp, hyp);
+          }
+          c.closePath(); c.stroke();
+          c.fillStyle = "rgba(4, 10, 18, 0.42)";
+          c.beginPath(); c.arc(0, 0, 11, 0, 6.283); c.fill();
           c.restore();
           /* orbiting particles (front) */
           for (var j = 0; j < 9; j++) {
