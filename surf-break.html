@@ -104,7 +104,12 @@ details[open ]>summary::after{content:" –";}
 /* Digital zoom: a transform on the wrapper around the player node.
    The iframe itself is never moved, recreated or reloaded by zoom. */
 .pl-zoomwrap{position:relative; will-change:transform;}
-.pl-gesture{position:absolute; inset:0; z-index:6; touch-action:none; cursor:grab;}
+/* The gesture layer stops 56px short of the stage bottom on purpose:
+   that strip is the player's own control bar (volume, play/pause),
+   and taps there must reach the player itself — a tap on the volume
+   control must never be swallowed by this layer and turned into a
+   pause. Flick, pinch and pan work over the rest of the picture. */
+.pl-gesture{position:absolute; inset:0 0 56px 0; z-index:6; touch-action:none; cursor:grab;}
 .pl-gesture:active{cursor:grabbing;}
 .pl-gesture[hidden]{display:none !important;}
 .pl-zoombar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 8px;}
@@ -303,7 +308,7 @@ details[open ]>summary::after{content:" –";}
       </div>
     </div>
     <p class="tiny" id="camCredit" style="margin:10px 0 0;"></p>
-    <p class="tiny" style="margin:6px 0 0;">Flick left or right on the picture to change breaks; pinch zooms 1–3×, drag to pan while zoomed, double-tap to reset. A stream that fails to load is marked dead for this session and skipped by flicking and both auto modes — a stream that plays again clears its mark, and tapping its chip always retries it. If you land on a “couldn't load” card, you're never stuck on it: flick the card itself left or right, or use its Prev / Next break buttons, to move straight to another break. “Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break. These are live video streams and they use data; the stream unloads when the app goes into the background so nothing keeps eating data unseen.</p>
+    <p class="tiny" style="margin:6px 0 0;">Flick left or right on the picture to change breaks; pinch zooms 1–3×, drag to pan while zoomed, double-tap to reset. The strip at the very bottom of the picture is the player's own control bar — its volume button works right there, and the Sound button only ever changes the sound: turning sound on or reaching for the volume never pauses the stream. A stream that fails to load is marked dead for this session and skipped by flicking and both auto modes — a stream that plays again clears its mark, and tapping its chip always retries it. If you land on a “couldn't load” card, you're never stuck on it: flick the card itself left or right, or use its Prev / Next break buttons, to move straight to another break. “Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break. These are live video streams and they use data; the stream unloads when the app goes into the background so nothing keeps eating data unseen.</p>
   </div>
 </section>
 
@@ -1008,11 +1013,16 @@ function makeZoom(wrap, levelEl){
    picture always covers the stage); at 1× a fast flick cycles;
    double-tap returns to 1×; a clean single tap toggles play/pause
    through the player API, deferred ~280ms so a double-tap is never
-   also a pause. --- */
+   also a pause. The layer never covers the player's own control
+   bar (see the .pl-gesture rule), and a tap that starts in the
+   layer's own bottom band never toggles either: that band is
+   where the player's volume control shows when the picture is
+   zoomed, and reaching for the volume must only ever change the
+   volume — never pause the stream. --- */
 function attachGestures(layer, zoom, hooks){
   if(!layer) return;
   var pointers = {}, drag = null, pinch = null;
-  var moved = false, pinched = false, tapTimer = 0, lastTapAt = 0;
+  var moved = false, pinched = false, tapTimer = 0, lastTapAt = 0, tapGuard = false;
   function cancelTap(){ if(tapTimer){ clearTimeout(tapTimer); tapTimer = 0; } }
   layer.addEventListener("pointerdown", function(e){
     e.preventDefault();
@@ -1022,6 +1032,7 @@ function attachGestures(layer, zoom, hooks){
     if(ids.length === 1){
       drag = { id:e.pointerId, sx:e.clientX, sy:e.clientY, px:zoom.state.x, py:zoom.state.y, t:Date.now() };
       moved = false; pinch = null;
+      try{ var lr = layer.getBoundingClientRect(); tapGuard = e.clientY >= lr.bottom - 56; }catch(err){ tapGuard = false; }
     } else if(ids.length === 2){
       cancelTap();
       pinched = true;
@@ -1070,7 +1081,7 @@ function attachGestures(layer, zoom, hooks){
           return;
         }
       }
-      if(wasDrag && !pinched && !moved){
+      if(wasDrag && !pinched && !moved && !tapGuard){
         var now = Date.now();
         if(now - lastTapAt < 300){
           lastTapAt = 0; cancelTap(); zoom.reset();
@@ -1079,7 +1090,7 @@ function attachGestures(layer, zoom, hooks){
           tapTimer = setTimeout(function(){ tapTimer = 0; hooks.onTapToggle(); }, 280);
         }
       }
-      drag = null; pinch = null; moved = false; pinched = false;
+      drag = null; pinch = null; moved = false; pinched = false; tapGuard = false;
     }
   }
   layer.addEventListener("pointerup", end);
@@ -1246,7 +1257,7 @@ function resetChain(){ chainTried = []; chainManualRetried = false; }
    goes quiet on its own. */
 var soundWanted = false, soundVolume = 100;
 var soundRestores = 0, watchdogResumes = 0;
-var lastWatchdogResumeAt = 0, watchdogStandDown = false;
+var lastWatchdogResumeAt = 0, watchdogStandDown = false, soundOnAt = 0;
 
 function setNow(html){ camNowEl.innerHTML = html; }
 function followText(){
@@ -1434,7 +1445,11 @@ function syncSoundBtn(){
    pause it) shortly after an in-player unmute. A deliberate pause
    inside the player is respected: pause again within 5 seconds of
    a watchdog resume and the watchdog stands down until the next
-   stream start. */
+   stream start. One exception, by rule: a pause inside the grace
+   window right after sound is switched on is the unmute side-
+   effect, never a deliberate pause — the sound control adjusts
+   sound only — so it is always resumed and never trips the
+   stand-down. */
 function watchdogTick(){
   if(!camPlayer || camMode !== "playing" || stoppedByUser || document.hidden) return;
   try{
@@ -1449,8 +1464,9 @@ function watchdogTick(){
     var st = camPlayer.getPlayerState ? camPlayer.getPlayerState() : -1;
     if(st === 2 && !watchdogStandDown){ /* PAUSED */
       var now = Date.now();
-      if(lastWatchdogResumeAt && now - lastWatchdogResumeAt < 5000){ watchdogStandDown = true; return; }
-      lastWatchdogResumeAt = now;
+      var soundGrace = soundWanted && soundOnAt && (now - soundOnAt < 8000);
+      if(!soundGrace && lastWatchdogResumeAt && now - lastWatchdogResumeAt < 5000){ watchdogStandDown = true; return; }
+      if(!soundGrace) lastWatchdogResumeAt = now;
       watchdogResumes++;
       if(camPlayer.playVideo) camPlayer.playVideo();
       if(soundWanted) applySoundTo(camPlayer, true, soundVolume);
@@ -1612,9 +1628,22 @@ camBackBtn.addEventListener("click", function(){ unloadCam(); setNow(nowText("Sh
 camSoundBtn.addEventListener("click", function(){
   soundWanted = !soundWanted;
   watchdogStandDown = false;
+  if(soundWanted) soundOnAt = Date.now();
   if(camPlayer){
     applySoundTo(camPlayer, soundWanted, soundVolume);
     if(soundWanted && camPlayer.playVideo){ try{ camPlayer.playVideo(); }catch(e){} }
+    if(soundWanted){
+      /* Switching sound on must never leave the stream paused:
+         re-check shortly after the tap (the unmute side-effect
+         pause can land a beat later) and resume if it did. */
+      [400, 1600].forEach(function(ms){
+        setTimeout(function(){
+          if(!soundWanted || stoppedByUser) return;
+          if(camMode !== "playing" && camMode !== "loading") return;
+          try{ if(camPlayer && camPlayer.getPlayerState && camPlayer.getPlayerState() === 2 && camPlayer.playVideo) camPlayer.playVideo(); }catch(e){}
+        }, ms);
+      });
+    }
   } else if(camPlain && (camMode === "playing" || camMode === "loading")){
     startStream(spotByKey(currentKey), true);
   }
@@ -1881,7 +1910,7 @@ function makeFeed(f){
   var player = null, plain = false, gen = 0;
   var loadTimer = 0, hardTimer = 0, waitTimer = 0;
   var soundWanted = false, soundVolume = 100;
-  var lastResumeAt = 0, watchdogStandDown = false, stopped = false, bgPaused = false;
+  var lastResumeAt = 0, watchdogStandDown = false, stopped = false, bgPaused = false, soundOnAt = 0;
 
   function showOnly(which){
     el.facade.hidden = which !== "facade";
@@ -2053,9 +2082,21 @@ function makeFeed(f){
   el.soundBtn.addEventListener("click", function(){
     soundWanted = !soundWanted;
     watchdogStandDown = false;
+    if(soundWanted) soundOnAt = Date.now();
     if(player){
       applySoundTo(player, soundWanted, soundVolume);
       if(soundWanted && player.playVideo){ try{ player.playVideo(); }catch(e){} }
+      if(soundWanted){
+        /* Sound adjusts sound only: re-check shortly after the tap
+           and resume if the unmute side-effect paused the feed. */
+        [400, 1600].forEach(function(ms){
+          setTimeout(function(){
+            if(!soundWanted || stopped) return;
+            if(mode !== "playing" && mode !== "loading") return;
+            try{ if(player && player.getPlayerState && player.getPlayerState() === 2 && player.playVideo) player.playVideo(); }catch(e){}
+          }, ms);
+        });
+      }
     } else if(plain && (mode === "playing" || mode === "loading")){
       attempt(); /* plain embeds can't change sound in place: rebuild the same target with the new intent */
     }
@@ -2078,8 +2119,12 @@ function makeFeed(f){
       var st = player.getPlayerState ? player.getPlayerState() : -1;
       if(st === 2 && !watchdogStandDown){
         var now = Date.now();
-        if(lastResumeAt && now - lastResumeAt < 5000){ watchdogStandDown = true; return; }
-        lastResumeAt = now;
+        /* Same rule as the cams player: a pause inside the grace
+           window right after sound is switched on is the unmute
+           side-effect — always resumed, never a stand-down. */
+        var soundGrace = soundWanted && soundOnAt && (now - soundOnAt < 8000);
+        if(!soundGrace && lastResumeAt && now - lastResumeAt < 5000){ watchdogStandDown = true; return; }
+        if(!soundGrace) lastResumeAt = now;
         if(player.playVideo) player.playVideo();
         if(soundWanted) applySoundTo(player, true, soundVolume);
       }
