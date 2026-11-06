@@ -1389,7 +1389,11 @@
       }
       .sheet-inner { max-width: 640px; margin: 0 auto; }
       .sheet-head {
-        position: sticky; top: 0; z-index: 2;
+        /* The sticky head parks BELOW the fixed island (same 68px
+           clearance the sheet's top padding keeps), so a sheet title
+           stays fully visible while the sheet scrolls — the pill
+           never paints over it. */
+        position: sticky; top: calc(68px + env(safe-area-inset-top)); z-index: 2;
         display: flex; align-items: center; gap: 10px;
         padding: 8px 0 10px;
         background: linear-gradient(180deg, var(--bg) 82%, transparent);
@@ -1740,7 +1744,11 @@
       .isl-btns { display: flex; flex-wrap: wrap; gap: 8px; }
       .isl-btns .btn { flex: 1 1 30%; min-height: 48px; padding: 10px 8px; font-size: 14px; width: auto; }
       .isl-close { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: #fff; font-size: 15px; cursor: pointer; }
-      .sheet { padding-top: calc(56px + env(safe-area-inset-top)); }
+      /* Sheet tops clear the fixed island with the same margin the
+         page wrap keeps (island top offset 8 + island height ~42 +
+         18 of air): a sheet's first heading renders fully below the
+         pill, never clipped under it. */
+      .sheet { padding-top: calc(68px + env(safe-area-inset-top)); }
       /* Anything scrolled into view (tab switches, Fire Up walk-ins, guide
          jumps) must land BELOW the fixed island, never underneath it. */
       .wrap *, .sheet * { scroll-margin-top: calc(72px + env(safe-area-inset-top)); }
@@ -1833,27 +1841,13 @@
          directly — play/pause, volume, settings, fullscreen and the
          progress bar are the player's own, and no overlay, gesture
          layer or carve-out of ours sits between the viewer's finger
-         and any of them. Break cycling lives OFF the picture, on two
-         narrow Prev/Next rails at the picture's left and right edges
-         (and on the break chips on the Surf Break page); window
-         dragging lives on the player window's frame and chrome. The
-         rails are short and vertically centred, so the picture's
-         corners and its bottom control bar stay the player's alone. */
-      .surf-rail {
-        appearance: none; cursor: pointer; font: inherit;
-        position: absolute; top: 50%; transform: translateY(-50%); z-index: 7;
-        width: 32px; height: 72px; padding: 0;
-        display: flex; align-items: center; justify-content: center;
-        color: #fff; background: rgba(0, 0, 0, 0.45);
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-      }
-      .surf-rail:active { transform: translateY(-50%) scale(0.94); }
-      .surf-rail svg { width: 16px; height: 16px; flex: none; }
-      .surf-rail-prev { left: 4px; border-radius: 0 10px 10px 0; }
-      .surf-rail-next { right: 4px; border-radius: 10px 0 0 10px; }
-      .surf-rail[hidden] { display: none !important; }
+         and any of them. Break cycling lives OFF the picture, on the
+         break chips on the Surf Break page (and on the load-failure
+         fallback card's own Prev/Next buttons); window dragging lives
+         on the player window's frame and chrome. The picture's edges,
+         corners and bottom control bar are the player's alone — the
+         old Prev/Next edge rails were removed at the owner's order
+         (redundant next to the chips); nothing replaced them. */
       .surf-zoom-btn { display: inline-flex; align-items: center; gap: 5px; }
       .surf-zoom-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
       .surf-zoombar {
@@ -2156,14 +2150,30 @@
       .surf-dock .surf-fallback .muted { font-size: 12px; }
       .surf-dock .surf-fallback-actions { gap: 6px; }
       .surf-dock .surf-fallback-actions .btn-small { min-height: 36px; padding: 6px 10px; font-size: 12.5px; }
+      /* Fullscreen presentations inset the stream frame by the
+         safe-area insets (owner's order): on the owner's phone the
+         Dynamic Island sits inside the screen, and in fullscreen
+         the inset on the island's side (the top in portrait, a side
+         in landscape) is exactly the island's clearance — padding
+         the stage by env(safe-area-inset-*) shrinks the flex content
+         box the frame is laid out in, so NO part of the picture ever
+         runs underneath the cutout, on either the native Fullscreen
+         API path or the .fs-fill webview fallback. The picture is a
+         little smaller; that trade is the owner's stated choice.
+         viewport-fit=cover is set, so the insets are real device
+         values, not zeros. The floating mini window is untouched. */
       .surf-stage:fullscreen, .surf-stage:-webkit-full-screen {
         background: #000; border-radius: 0; margin-top: 0;
         display: flex; flex-direction: column; justify-content: center;
+        box-sizing: border-box;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
       .surf-stage.fs-fill {
         position: fixed; inset: 0; z-index: 200;
         background: #000; border-radius: 0; margin-top: 0;
         display: flex; flex-direction: column; justify-content: center;
+        box-sizing: border-box;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
       /* While the fill presentation is up, the dock's own frame is
          neutralised: its backdrop-filter would otherwise make it the
@@ -2291,7 +2301,15 @@
       @keyframes btnPress { 0% { transform: scale(1); } 45% { transform: scale(0.96); } 100% { transform: scale(1); } }
       .btn:active, .btn-small:active, .seg-control button:active, .str-ownbtn:active { animation: btnPress 180ms var(--ease-spring); }
       @keyframes chipPop { 0% { transform: scale(1); } 45% { transform: scale(1.07); } 100% { transform: scale(1); } }
-      .chip[aria-pressed="true"] { animation: chipPop 280ms var(--ease-spring); }
+      /* NO pop on aria-pressed (owner's press-isolation order): that
+         rule fired whenever the pressed STATE flipped — on programmatic
+         selection changes (Follow the Sun advancing, a chip list
+         re-render after an unrelated tap) a chip nobody had pressed
+         animated. Press feedback is the :active pressed-in transform
+         only, which exists solely on the control actually being
+         pressed, while it is being pressed — the same rule the Vibe
+         sheet already lives by below. chipPop itself remains only
+         for the JS-applied .vibe-pop / .fx-pop on the tapped element. */
       /* Surf surfaces: a slow light sweep across the stage, and the
          poster still breathing at a barely-there scale. The sweep sits
          under the gesture layer and never takes a touch. */
@@ -3073,12 +3091,6 @@
             <div class="surf-loading" id="surfLoading"><span class="surf-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
           </div>
         </div>
-        <button class="surf-rail surf-rail-prev" id="surfRailPrev" type="button" aria-label="Previous break" hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5 8 12l6.5 7"/></svg>
-        </button>
-        <button class="surf-rail surf-rail-next" id="surfRailNext" type="button" aria-label="Next break" hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 5 16 12l-6.5 7"/></svg>
-        </button>
         <button class="surf-fs-btn" id="surfFsBtn" type="button" aria-label="Watch the stream full screen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg>
         </button>
@@ -3930,7 +3942,7 @@
         </div>
   <p class="surf-dock-status" id="surfDockStatus" role="status" aria-live="polite" hidden></p>
         <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this page</strong>, or the speaker in the player's own control bar at the bottom of the picture. Nothing covers the picture at all, so the player's own buttons — play/pause, volume, settings, fullscreen, progress — take your taps directly — and whatever you set there stays set: turn sound on or off from either control and the app <strong style="color:var(--ink);">remembers</strong> your choice, bringing it back when Follow the Sun moves to the next break and when you return to the app. Sound controls only ever change the sound — they never pause the picture. If a webview quirk ever pauses the feed right after you touch the volume, the app notices and starts the picture again by itself. The player itself is a <strong style="color:var(--ink);">floating window</strong>, not a screen: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it over whichever screen you're on — just the stream, small enough to keep an eye on while you do anything else — and it stays usable right there: tap the arrow at the left or right edge of the picture to flip to the previous or next break, and this page's Zoom control zooms into the feed. Drag the player by its frame to move it, and it stays where you leave it. While the player is open, the wave button rides attached at the player's bottom-right corner — drag either one and the pair moves together. Close the player and the button is free again: drag it anywhere on the screen and it stays where you drop it. The button never covers the feed. The window button on the player's header strip loads <strong style="color:var(--ink);">this page</strong> — Surf Break's own screen in the tray, where this break menu lives. Pressing Play anywhere always plays the stream right where it is. This page is its control center: pick a break, close or stop the player, and set auto-play here.</p>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this page</strong>, or the speaker in the player's own control bar at the bottom of the picture. Nothing covers the picture at all, so the player's own buttons — play/pause, volume, settings, fullscreen, progress — take your taps directly — and whatever you set there stays set: turn sound on or off from either control and the app <strong style="color:var(--ink);">remembers</strong> your choice, bringing it back when Follow the Sun moves to the next break and when you return to the app. Sound controls only ever change the sound — they never pause the picture. If a webview quirk ever pauses the feed right after you touch the volume, the app notices and starts the picture again by itself. The player itself is a <strong style="color:var(--ink);">floating window</strong>, not a screen: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it over whichever screen you're on — just the stream, small enough to keep an eye on while you do anything else — and it stays usable right there: tap a break in the menu below to flip to another break, and this page's Zoom control zooms into the feed. Drag the player by its frame to move it, and it stays where you leave it. While the player is open, the wave button rides attached at the player's bottom-right corner — drag either one and the pair moves together. Close the player and the button is free again: drag it anywhere on the screen and it stays where you drop it. The button never covers the feed. The window button on the player's header strip loads <strong style="color:var(--ink);">this page</strong> — Surf Break's own screen in the tray, where this break menu lives. Pressing Play anywhere always plays the stream right where it is. This page is its control center: pick a break, close or stop the player, and set auto-play here.</p>
 
         <div class="surf-nowrow">
           <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
@@ -11682,8 +11694,6 @@ var STRAIN_SRC_LINKS = {
         var zoomLevel = document.getElementById("surfZoomLevel");
         var zoomResetBtn = document.getElementById("surfZoomReset");
         var zoomWrap = document.getElementById("surfZoomWrap");
-        var railPrev = document.getElementById("surfRailPrev");
-        var railNext = document.getElementById("surfRailNext");
 
         /* --- gesture ownership (owner bug fix, defect 1a) ---
            Any press that STARTS inside the surf subtree — the floating
@@ -12261,6 +12271,14 @@ var STRAIN_SRC_LINKS = {
         var mode = "idle"; /* idle | loading | playing | waiting | fallback */
         var ytPlayer = null, plainFrame = false;
         var dwellStart = 0, loadTimer = 0, slowTimer = 0;
+        /* Play nudges for the CURRENT stream start: when a freshly
+           created player reports PAUSED/CUED while it should still be
+           loading (the webview refused the first play command — the
+           classic way a cycled stream used to land paused behind its
+           poster), startStream's state handler re-issues playVideo a
+           few times before the start is allowed to settle into the
+           waiting-for-a-gesture state. Reset at every startStream. */
+        var playNudges = 0;
         var manualHold = false, stoppedByUser = false, gestureArmed = false;
         var dockState = "hidden"; /* hidden | mini — the floating player's only two states ("mini" names its shown state, kept from the unit-anchor code); there is no full/overlay stage */
         var bgSuspended = false, bgPaused = false;
@@ -12596,7 +12614,7 @@ var STRAIN_SRC_LINKS = {
              order): the compact fallback in the player's own frame —
              it never changes the presentation or navigates anywhere. */
           syncDockChrome();
-          syncZoomUI(); /* the cycling rails track which stage child is visible */
+          syncZoomUI();
         }
         function setFacade(spot) {
           var info = spotInfo(spot, new Date());
@@ -12680,13 +12698,7 @@ var STRAIN_SRC_LINKS = {
         function syncZoomUI() {
           if (zoomBtn) zoomBtn.setAttribute("aria-pressed", zoomOn ? "true" : "false");
           if (zoomBar) zoomBar.hidden = !zoomOn;
-          /* The Prev/Next cycling rails show while the player is the
-             visible stage child and the player is up — the rails are
-             the flick's new home, off the picture. Zoom transforms
-             themselves stay gated by zoomLive(). */
-          var railsUp = !!(playerBox && !playerBox.hidden && dockState !== "hidden");
-          if (railPrev) railPrev.hidden = !railsUp;
-          if (railNext) railNext.hidden = !railsUp;
+          /* Zoom transforms themselves stay gated by zoomLive(). */
           applyZoom();
         }
         function enterZoom() { if (dockState === "hidden") return; zoomOn = true; syncZoomUI(); }
@@ -12729,7 +12741,7 @@ var STRAIN_SRC_LINKS = {
           var lbl = fsActive ? "Exit full screen" : "Watch the stream full screen";
           if (fsBtn) fsBtn.setAttribute("aria-label", lbl);
           if (miniExpandBtn) miniExpandBtn.setAttribute("aria-label", lbl);
-          syncZoomUI(); /* the cycling rails stay live inside fullscreen */
+          syncZoomUI(); /* zoom state stays consistent inside fullscreen */
           syncFab(); /* the wave button hides while fullscreen is up and returns on exit */
           if (!fsActive && dockState === "mini") positionMini();
         }
@@ -12764,25 +12776,22 @@ var STRAIN_SRC_LINKS = {
         if (fsBtn) fsBtn.addEventListener("click", function () { toggleStreamFs(); });
 
         window.addEventListener("resize", applyZoom);
-        /* --- break cycling: the Prev/Next rails ---
+        /* --- break cycling ---
            The picture carries NO surface of ours (owner's order:
            YouTube's own control buttons must actually function), so
            the flick that used to live on a transparent layer over
            the picture is gone, with the layer itself — pinch, pan
            and double-tap on the picture went with it, and the
-           window's hold-to-move went with it too. Cycling's new home
-           is exactly where the owner put it: the two narrow rails
-           at the picture's left and right edges (the other home is
-           the break chips on the Surf Break page). A tap on a rail
-           cycles one break in its direction through the same
-           cycleSpot path the flick used — session-dead breaks
-           skipped, in place, the player's presentation untouched.
-           The window's move drag lives on the window's frame and
-           chrome (the box-drag controller below), never on the
-           picture; the Surf Break page's Zoom controls remain the
-           zoom. */
-        if (railPrev) railPrev.addEventListener("click", function () { cycleSpot(-1); });
-        if (railNext) railNext.addEventListener("click", function () { cycleSpot(1); });
+           window's hold-to-move went with it too. The Prev/Next edge
+           rails that briefly lived at the picture's edges are also
+           gone (owner's order: redundant). Cycling's homes are the
+           break chips on the Surf Break page (pickSpot) and the
+           load-failure fallback card's own Prev/Next buttons plus
+           its flick (cycleSpot — session-dead breaks skipped, in
+           place, the player's presentation untouched). The window's
+           move drag lives on the window's frame and chrome (the
+           box-drag controller below), never on the picture; the
+           Surf Break page's Zoom controls remain the zoom. */
 
         function nowText(prefix) {
           var spot = spotByKey(currentKey), info = spotInfo(spot, new Date());
@@ -12869,6 +12878,7 @@ var STRAIN_SRC_LINKS = {
         }
         function onPlaying() {
           mode = "playing";
+          playNudges = 0;
           resetChain(); /* a spot that plays ends any recovery chain */
           clearDead(currentKey); /* a stream that plays is alive — any dead mark on it clears at once */
           if (!soundApplied) { soundApplied = true; applySoundPref(null); } /* a (re)started player comes up muted — put the remembered sound back ONCE for this start; every later PLAYING (buffering, the volume grace's resume) leaves the player's own sound state exactly as the viewer set it */
@@ -12955,6 +12965,8 @@ var STRAIN_SRC_LINKS = {
         function startStream(spot, keepChain) {
           exitZoom(); /* every spot change — Follow the Sun, recovery chain, manual pick, replay — resets zoom */
           if (!keepChain) resetChain();
+          playNudges = 0; /* this start gets its own play-nudge budget */
+          plainMuted = true; /* a programmatic start ALWAYS begins muted: an unmuted embed is refused autoplay by webviews and lands paused behind its poster (the cycled-stream defect). The plain path's audible rebuild stays exclusive to the Sound button's own tap, and the API path applies the remembered sound once PLAYING lands (onPlaying). */
           currentKey = spot.key;
           bgPaused = false;
           lastVolAt = 0; /* a fresh stream starts a fresh grace window — its own unmute (applySoundPref) stamps it when the sound lands */
@@ -12983,11 +12995,36 @@ var STRAIN_SRC_LINKS = {
                 host: "https://www.youtube-nocookie.com",
                 playerVars: { autoplay: 1, mute: 1, playsinline: 1, rel: 0, modestbranding: 1 },
                 events: {
-                  onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } if (!soundApplied) { soundApplied = true; applySoundPref(e.target); } },
+                  /* onReady ONLY mutes and plays. The remembered sound
+                     is deliberately NOT applied here: unmuting a player
+                     that has not reached PLAYING yet is what made
+                     cycled streams land paused in gesture-gated
+                     webviews (the player refuses unmuted playback
+                     before its first frame and parks itself). The
+                     sound lands once, at the first PLAYING, in
+                     onPlaying — still exactly once per stream start. */
+                  onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } },
                   onStateChange: function (e) {
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
                     else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
-                    else if ((e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) && mode === "loading") onWaitingGesture();
+                    else if ((e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) && mode === "loading") {
+                      /* A start that reports paused/cued while loading
+                         is NOT yet a stream waiting for a gesture: the
+                         first play command is routinely refused once
+                         by the webview, so re-issue it (muted — the
+                         state autoplay is always allowed) a few times
+                         before this start may settle into waiting.
+                         Only a start still paused after its nudges
+                         is genuinely gesture-gated. */
+                      if (playNudges < 3) {
+                        playNudges++;
+                        var np = e.target;
+                        setTimeout(function () {
+                          if (mode !== "loading" || ytPlayer !== np) return; /* superseded by a newer start */
+                          try { np.playVideo(); } catch (err) { /* ignore */ }
+                        }, 600);
+                      } else onWaitingGesture();
+                    }
                     else if (e.data === YT.PlayerState.PAUSED && mode === "playing" && !stoppedByUser && Date.now() - lastVolAt <= 8000) {
                       /* Sound-interaction grace (safety net only): this
                          app never commands a pause, so a pause landing
@@ -13248,8 +13285,8 @@ var STRAIN_SRC_LINKS = {
           /* The live picture is never a drag surface (owner's order):
              presses on it land on the embedded player itself and never
              reach this handler at all, and while a stream is up the
-             only in-stage surfaces of ours still showing (the loading
-             veil, the cycling rails) are not drag surfaces either — a
+             only in-stage surface of ours still showing (the loading
+             veil) is not a drag surface either — a
              window drag may then start only from the window's own
              frame (the press lands on the dock itself) or its chrome
              buttons. */
@@ -13594,7 +13631,6 @@ var STRAIN_SRC_LINKS = {
               x: Math.round(zoomX), y: Math.round(zoomY),
               maxX: Math.round(b.x), maxY: Math.round(b.y),
               transform: zoomWrap ? (zoomWrap.style.transform || "") : "",
-              railsUp: railPrev ? !railPrev.hidden : false,
               zonesOn: zonesOn,
               zoneVisible: zoneEl ? !zoneEl.hidden : false,
               zoneBox: zoneEl ? { left: zoneEl.style.left, top: zoneEl.style.top, width: zoneEl.style.width, height: zoneEl.style.height } : null,
