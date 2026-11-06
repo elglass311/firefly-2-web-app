@@ -1801,23 +1801,33 @@
       /* Digital zoom: a transform on the wrapper around the player node.
          The iframe itself is never moved, recreated or reloaded by zoom. */
       .surf-zoomwrap { position: relative; will-change: transform; }
-      /* The gesture layer covers the picture but stops 44px short
-         of the frame's bottom edge, so taps in that strip land on
-         the player itself — on YouTube's own control bar, which
-         the embed renders in full (no controls parameter, set
-         where the player is built): its play/pause, volume,
-         settings and fullscreen buttons take taps directly, and
-         no app-made layer sits over them turning taps into
-         something else. Sound set in that bar is the viewer's
-         choice — the app adopts it, never overrides it.
-         Everywhere else on the picture the app's gestures keep
-         working: flick to cycle, pinch to zoom, tap to play/pause. */
-      .surf-gesture {
-        position: absolute; inset: 0 0 44px 0; z-index: 6;
-        touch-action: none; cursor: grab;
+      /* NOTHING of ours covers the video picture (owner's order:
+         YouTube's own control buttons must actually function). The
+         embedded iframe receives every touch on the whole video area
+         directly — play/pause, volume, settings, fullscreen and the
+         progress bar are the player's own, and no overlay, gesture
+         layer or carve-out of ours sits between the viewer's finger
+         and any of them. Break cycling lives OFF the picture, on two
+         narrow Prev/Next rails at the picture's left and right edges
+         (and on the break chips on the Surf Break page); window
+         dragging lives on the player window's frame and chrome. The
+         rails are short and vertically centred, so the picture's
+         corners and its bottom control bar stay the player's alone. */
+      .surf-rail {
+        appearance: none; cursor: pointer; font: inherit;
+        position: absolute; top: 50%; transform: translateY(-50%); z-index: 7;
+        width: 32px; height: 72px; padding: 0;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
       }
-      .surf-gesture:active { cursor: grabbing; }
-      .surf-gesture[hidden] { display: none !important; }
+      .surf-rail:active { transform: translateY(-50%) scale(0.94); }
+      .surf-rail svg { width: 16px; height: 16px; flex: none; }
+      .surf-rail-prev { left: 4px; border-radius: 0 10px 10px 0; }
+      .surf-rail-next { right: 4px; border-radius: 10px 0 0 10px; }
+      .surf-rail[hidden] { display: none !important; }
       .surf-zoom-btn { display: inline-flex; align-items: center; gap: 5px; }
       .surf-zoom-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
       /* Sound toggle: the page-owned unmute control. Streams must start
@@ -1916,6 +1926,8 @@
       .surf-fallback { padding: 18px 16px; background: var(--surface); }
       .surf-fallback-title { font-size: 16px; font-weight: 800; color: var(--ink); margin: 0 0 6px; }
       .surf-fallback-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      .surf-fallback-nav { margin-top: 8px; }
+      .surf-fallback-hint { margin: 8px 0 0; font-size: 12.5px; }
       .surf-yt-link { text-decoration: none; display: inline-flex; align-items: center; }
       .surf-nowrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; min-height: 34px; flex-wrap: wrap; }
       .surf-nowrow .btn-small { flex: none; }
@@ -2638,8 +2650,8 @@
          an app feature: touch-action: manipulation on the app shell and its
          interactive elements tells the engine taps here are app input, so a
          fast double tap is two taps — never a zoom. Stronger deliberate
-         rules are NOT overridden: the favorites wheel and the surf
-         digital-zoom gesture layer keep touch-action: none (their class
+         rules are NOT overridden: the favorites wheel, the wave bubble
+         and the floating player's drag surfaces keep touch-action: none (their class
          rules outrank the element selectors below), the tab panels keep
          pan-y (vertical scroll + the menu swipe), and the app's in-page
          zooms — the surf stage's transform zoom and the strain photo
@@ -2727,16 +2739,20 @@
         .surf-fab.is-playing .surf-fab-dot { animation: none; }
       }
       /* ---- The floating player window ----
-         The overlay is ONLY this: a small floating 16:9 frame holding
+         The overlay is ONLY this: a small floating frame holding
          the ONE live player — no sheet, no scrim, no expanded stage.
          The overlay box itself shrinks to the frame (JS sets its
          left/top/width, anchored with the wave button as one unit),
          so the frame never covers the screen and never blocks touches
          — or swipes — anywhere outside its own bounds. Its only
-         controls are the small round buttons floating over its
-         top-right corner: fold away (the stream keeps playing behind
-         the wave button), fullscreen in place, and the window button,
-         which navigates to the Surf Break PAGE. The full Surf Break
+         controls are the small round buttons on the HEADER STRIP
+         above the picture, never over it (owner's order: nothing of
+         ours covers any corner of the picture — YouTube's own
+         buttons take their taps directly): fullscreen (left), and
+         the window button and fold-away (right) — the window button
+         navigates to the Surf Break PAGE, and folding away keeps
+         the stream playing behind the wave button. The strip is
+         also the window's drag handle. The full Surf Break
          menu lives on that page (#panel-surfbreak), never in here. */
       .surf-overlay { position: fixed; inset: auto; height: auto; z-index: 70; }
       .surf-overlay[hidden] { display: none !important; }
@@ -2784,6 +2800,8 @@
       }
       .surf-overlay #surfFallbackText { display: none !important; }
       .surf-overlay .surf-fallback-actions { flex-wrap: nowrap; gap: 6px; }
+      .surf-overlay .surf-fallback-nav { margin-top: 6px; }
+      .surf-overlay .surf-fallback-hint { margin: 6px 0 0; font-size: 11px; }
       .surf-overlay .surf-fallback-actions .btn-small {
         min-height: 30px; padding: 4px 9px; font-size: 12px; white-space: nowrap;
       }
@@ -2803,10 +2821,15 @@
       body.surf-fb-on #surfMiniExpand,
       body.surf-fb-on #surfDockFsBtn,
       body.surf-fb-on #surfFsBtn { display: none !important; }
+      /* The header strip: the window's chrome buttons live here,
+         above the picture and entirely outside the iframe's bounds.
+         Fullscreen sits left; the window button and close sit right. */
       .surf-mini-controls {
-        display: flex; gap: 6px;
-        position: absolute; top: 6px; right: 6px; z-index: 9;
+        display: flex; align-items: center; gap: 6px;
+        padding: 6px;
+        background: #000;
       }
+      .surf-mini-expand { margin-right: auto; }
       /* While the dock itself is in fullscreen presentation — the
          native fullscreen element, or the fill-viewport fallback —
          the mini controls are NOT part of the fullscreen subtree, so
@@ -3152,11 +3175,12 @@
     </button>
     <div class="surf-overlay" id="surfOverlay" hidden role="dialog" aria-label="Surf Break">
       <div class="surf-overlay-sheet">
-        <!-- Floating player controls: fold away (the stream keeps
-             playing behind the wave button), fullscreen in place, and
-             the window button, which loads the Surf Break PAGE. -->
+        <!-- Floating player controls, on the header strip above the
+             picture (never over it): fullscreen in place, the window
+             button, which loads the Surf Break PAGE, and fold away
+             (the stream keeps playing behind the wave button). -->
         <div class="surf-mini-controls" id="surfMiniControls">
-          <button class="surf-mini-btn" id="surfMiniExpand" type="button" aria-label="Watch the stream fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg></button>
+          <button class="surf-mini-btn surf-mini-expand" id="surfMiniExpand" type="button" aria-label="Watch the stream fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg></button>
           <button class="surf-mini-btn" id="surfMiniFull" type="button" aria-label="Open the Surf Break page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16"/></svg></button>
           <button class="surf-mini-btn" id="surfMiniClose" type="button" aria-label="Close the floating player"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
         </div>
@@ -3205,7 +3229,12 @@
               <div class="surf-loading" id="surfLoading"><span class="surf-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
             </div>
           </div>
-          <div class="surf-gesture" id="surfGesture" hidden aria-hidden="true"></div>
+          <button class="surf-rail surf-rail-prev" id="surfRailPrev" type="button" aria-label="Previous break" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5 8 12l6.5 7"/></svg>
+          </button>
+          <button class="surf-rail surf-rail-next" id="surfRailNext" type="button" aria-label="Next break" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 5 16 12l-6.5 7"/></svg>
+          </button>
           <button class="surf-fs-btn" id="surfFsBtn" type="button" aria-label="Exit fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg></button>
 
           <div class="surf-fallback" id="surfFallback" hidden>
@@ -3216,6 +3245,11 @@
               <button class="btn-small" id="surfRetryBtn" type="button">Try again</button>
               <button class="btn-small" id="surfBackBtn" type="button">Back to poster</button>
             </div>
+            <div class="surf-fallback-actions surf-fallback-nav">
+              <button class="btn-small" id="surfFbPrevBtn" type="button">‹ Prev break</button>
+              <button class="btn-small" id="surfFbNextBtn" type="button">Next break ›</button>
+            </div>
+            <p class="muted surf-fallback-hint">You're never stuck here — flick left or right on this card to move to another break.</p>
           </div>
         </div>
       </div>
@@ -11440,7 +11474,10 @@ var STRAIN_SRC_LINKS = {
         var zoomLevel = document.getElementById("surfZoomLevel");
         var zoomResetBtn = document.getElementById("surfZoomReset");
         var zoomWrap = document.getElementById("surfZoomWrap");
-        var gesture = document.getElementById("surfGesture");
+        var railPrev = document.getElementById("surfRailPrev");
+        var railNext = document.getElementById("surfRailNext");
+        var fbPrevBtn = document.getElementById("surfFbPrevBtn");
+        var fbNextBtn = document.getElementById("surfFbNextBtn");
 
         function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
         function lsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
@@ -11634,7 +11671,7 @@ var STRAIN_SRC_LINKS = {
              changes the presentation form. */
           if (which === "fallback") showDock();
           syncDockChrome();
-          syncZoomUI(); /* the gesture layer tracks which stage child is visible */
+          syncZoomUI(); /* the cycling rails track which stage child is visible */
         }
         function setFacade(spot) {
           var info = spotInfo(spot, new Date());
@@ -11683,7 +11720,11 @@ var STRAIN_SRC_LINKS = {
            covers the stage. Exiting zoom mode resets to 1×; zoom also
            resets on any spot change, on Stop, on collapse to mini and
            on stream error/end (the exitZoom calls in those paths).
-           Zoom state is never persisted. --- */
+           Zoom state is never persisted. The picture itself carries
+           no gesture surface of ours — the embedded player takes
+           every touch there — so zoom is set only from the Zoom
+           controls (+ / − / reset); there is no pinch or pan on the
+           picture. --- */
         var zoomOn = false, zoomScale = 1, zoomX = 0, zoomY = 0;
         function fmtScale(s) { var v = Math.round(s * 10) / 10; return (v % 1 === 0 ? String(v) : v.toFixed(1)) + "×"; }
         function zoomBounds() {
@@ -11707,14 +11748,13 @@ var STRAIN_SRC_LINKS = {
         function syncZoomUI() {
           if (zoomBtn) zoomBtn.setAttribute("aria-pressed", zoomOn ? "true" : "false");
           if (zoomBar) zoomBar.hidden = !zoomOn;
-          /* The gesture layer rides over the live player whenever the
-             player is the visible stage child — in BOTH Surf Break
-             stages (the minimized frame and the full sheet) — so pinch,
-             pan and double-tap work identically everywhere, with no
-             zoom mode to switch on first. It never covers the poster
-             facade or the fallback panel, so their own buttons (Play,
-             Try again, YouTube) stay directly tappable. */
-          if (gesture) gesture.hidden = !(dockState === "expanded" && playerBox && !playerBox.hidden);
+          /* The Prev/Next cycling rails show while the player is the
+             visible stage child and the player is up — the rails are
+             the flick's new home, off the picture. Zoom transforms
+             themselves stay as the Zoom controls set them. */
+          var railsUp = !!(playerBox && !playerBox.hidden && dockState === "expanded");
+          if (railPrev) railPrev.hidden = !railsUp;
+          if (railNext) railNext.hidden = !railsUp;
           applyZoom();
         }
         function enterZoom() { if (dockState !== "expanded") return; zoomOn = true; syncZoomUI(); }
@@ -11724,74 +11764,6 @@ var STRAIN_SRC_LINKS = {
         if (zoomOutBtn) zoomOutBtn.addEventListener("click", function () { zoomScale = Math.max(1, Math.ceil(zoomScale * 2) / 2 - 0.5); applyZoom(); });
         if (zoomResetBtn) zoomResetBtn.addEventListener("click", function () { zoomScale = 1; zoomX = 0; zoomY = 0; applyZoom(); });
         window.addEventListener("resize", applyZoom);
-        /* Gestures on the transparent layer over the live player (the
-           cross-origin iframe swallows touches over the video itself,
-           so pinch and pan have to be caught here). The feed always
-           rests at 1× FULL FRAME — the entire video frame visible,
-           letterboxed in portrait — and zoom is entirely the viewer's:
-             · pinch scales 1×–3×;
-             · one finger drags to pan while zoomed, across the ENTIRE
-               frame: applyZoom clamps the pan to ±(scale−1)/2 of the
-               frame per axis, i.e. the zoomed picture's own edges are
-               the only limits — every part of the zone, top to bottom
-               as well as side to side, is reachable, and nothing locks
-               the view to a preset region;
-             · double-tap returns to the 1× full-frame fit;
-             · a plain single tap toggles play/pause through the player
-               API, like tapping the video itself (deferred ~280ms so a
-               double-tap is never also a pause).
-           Every gesture is consumed on this layer, which sits inside
-           .surf-dock / .surf-stage — both already in the swipe pager's
-           exclude list — so a pan can never turn a menu page or drag
-           the wave button, and the minimized frame's close/expand
-           buttons are separate elements above this layer, never part
-           of a pan. Zoom state resets in exitZoom: on every break
-           switch, on Stop, and when the minimized view folds away —
-           a new feed never opens pre-zoomed on a corner. */
-        var zPointers = {}, zDrag = null, zPinch = null;
-        var zMoved = false, zPinched = false, zTapTimer = 0, zLastTapAt = 0;
-        /* --- Swipe-to-cycle + window-move state ---
-           Disambiguation on this layer, in order: a two-finger pinch
-           zooms; zoomed past 1×, a one-finger drag pans and never
-           cycles; at 1× a fast short flick cycles to the next (left) /
-           previous (right) break in SPOTS order, wrapping — through
-           pickSpot's own path (a manual pick: Follow the Sun pauses,
-           dwell restarts when the new stream plays); at 1× a SUSTAINED
-           drag in the mini stage moves the mini window itself — the
-           window is grabbed on its own surface and follows the finger,
-           clamped fully on screen, and its spot persists. A drag
-           counts as sustained once it has clearly outlasted a flick:
-           still going ~200ms after touchdown, or moving slowly from
-           the start; a ~250ms nearly-still hold arms the same move
-           sooner. While the move is engaged it suppresses tap, pan
-           and cycle for that gesture, and a flick — over before
-           either test passes — never moves the window at all. */
-        var zHoldTimer = 0, zMoveOn = false, zMoveOrigin = null;
-        function clearZHold() { if (zHoldTimer) { clearTimeout(zHoldTimer); zHoldTimer = 0; } }
-        /* The mini window itself is what a sustained drag moves.
-           zEngageMove grabs it where it currently sits; from then on
-           pointermove feeds the finger's total travel into miniPlace
-           (clamped fully inside the viewport). zSettleMove sets it
-           down: outline off, spot persisted under MINI_POS_KEY so the
-           mini stage opens there next time. */
-        function zCanMoveWin() { return surfStage === "mini" && zoomScale <= 1 && !surfFsOn() && !!overlayEl; }
-        function zEngageMove() {
-          if (zMoveOn || !zCanMoveWin()) return false;
-          var r = overlayEl.getBoundingClientRect();
-          zMoveOn = true;
-          zMoveOrigin = { left: r.left, top: r.top };
-          clearZHold();
-          cancelPendingTap();
-          overlayEl.classList.add("is-moving");
-          return true;
-        }
-        function zSettleMove() {
-          if (!zMoveOn) return;
-          zMoveOn = false; zMoveOrigin = null;
-          if (!overlayEl) return;
-          overlayEl.classList.remove("is-moving");
-          settleUnitFromWindow(); /* the drag set the pair down: persist the window's anchor — the bubble rides attached at its corner */
-        }
         function cycleSurf(dir) {
           var idx = -1;
           for (var i = 0; i < SPOTS.length; i++) if (SPOTS[i].key === currentKey) idx = i;
@@ -11812,157 +11784,29 @@ var STRAIN_SRC_LINKS = {
             pickSpot(next.key);
           }
         }
-        function cancelPendingTap() { if (zTapTimer) { clearTimeout(zTapTimer); zTapTimer = 0; } }
-        function tapTogglePlay() {
-          if (!ytPlayer) return;
-          try {
-            var st = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
-            if (st === 1 && ytPlayer.pauseVideo) ytPlayer.pauseVideo(); /* 1 = YT.PlayerState.PLAYING */
-            else if (ytPlayer.playVideo) ytPlayer.playVideo();
-          } catch (e) { /* ignore */ }
-        }
-        if (gesture) {
-          gesture.addEventListener("pointerdown", function (e) {
-            e.preventDefault();
-            try { gesture.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-            zPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-            var ids = Object.keys(zPointers);
-            if (ids.length === 1) {
-              zDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, px: zoomX, py: zoomY, t: Date.now() };
-              zMoved = false;
-              zPinch = null;
-              /* Window-move arming (mini stage, 1×, not fullscreen):
-                 a ~250ms nearly-still hold engages the window drag
-                 early; a sustained moving drag engages it on its own
-                 in pointermove below — no secret hold is ever required.
-                 Any real movement before the timer fires cancels the
-                 hold path (that gesture is a pan, a flick or a tap). */
-              clearZHold(); zMoveOn = false; zMoveOrigin = null;
-              if (zCanMoveWin()) {
-                zHoldTimer = setTimeout(function () {
-                  zHoldTimer = 0;
-                  if (!zDrag || zPinched || zMoveOn) return;
-                  var p0 = zPointers[zDrag.id];
-                  if (!p0) return;
-                  if (Math.hypot(p0.x - zDrag.sx, p0.y - zDrag.sy) > 10) return;
-                  if (zEngageMove()) { try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ } }
-                }, 250);
-              }
-            } else if (ids.length === 2) {
-              cancelPendingTap();
-              zSettleMove(); /* a second finger ends any window move: the pinch takes over */
-              zPinched = true;
-              var a = zPointers[ids[0]], b = zPointers[ids[1]];
-              zPinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: zoomScale, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, px: zoomX, py: zoomY };
-              zDrag = null;
-            }
-          });
-          gesture.addEventListener("pointermove", function (e) {
-            if (!zPointers[e.pointerId]) return;
-            zPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-            if (zDrag && e.pointerId === zDrag.id) {
-              var dx = e.clientX - zDrag.sx, dy = e.clientY - zDrag.sy;
-              if (Math.abs(dx) + Math.abs(dy) > 6) zMoved = true;
-              if (!zMoveOn && Math.hypot(dx, dy) > 10) {
-                clearZHold(); /* moved too soon: the hold path is off the table */
-                /* Sustained-drag window move: still going ~200ms
-                   after touchdown, or moving slowly from the start
-                   (under ~0.3px/ms) — either way it is no flick, so
-                   the window itself takes the drag and follows the
-                   finger. A fast flick is released before either
-                   test can pass, so it never moves the window. */
-                if (zCanMoveWin()) {
-                  var zEl = Date.now() - zDrag.t, zDist = Math.hypot(dx, dy);
-                  if (zEl >= 200 || zDist / Math.max(1, zEl) < 0.3) zEngageMove();
-                }
-              }
-              if (zMoveOn && zMoveOrigin) {
-                miniPlace(zMoveOrigin.left + dx, zMoveOrigin.top + dy);
-              } else if (zoomScale > 1) {
-                zoomX = zDrag.px + dx;
-                zoomY = zDrag.py + dy;
-                applyZoom();
-              }
-            } else if (zPinch) {
-              var ids = Object.keys(zPointers);
-              if (ids.length !== 2) return;
-              var a = zPointers[ids[0]], b = zPointers[ids[1]];
-              var d = Math.hypot(a.x - b.x, a.y - b.y);
-              if (zPinch.d > 0) zoomScale = Math.max(1, Math.min(3, zPinch.s * d / zPinch.d));
-              zoomX = zPinch.px + ((a.x + b.x) / 2 - zPinch.mx);
-              zoomY = zPinch.py + ((a.y + b.y) / 2 - zPinch.my);
-              applyZoom();
-            }
-          });
-          var zEnd = function (e) {
-            var wasDrag = !!(zDrag && e.pointerId === zDrag.id);
-            var endDrag = wasDrag ? zDrag : null;
-            delete zPointers[e.pointerId];
-            var ids = Object.keys(zPointers);
-            if (ids.length === 1) {
-              var p = zPointers[ids[0]];
-              zSettleMove(); /* down to one finger: any window move is set down here; the rest is a fresh drag */
-              zDrag = { id: Number(ids[0]), sx: p.x, sy: p.y, px: zoomX, py: zoomY, t: Date.now() };
-              zPinch = null;
-            } else if (ids.length === 0) {
-              clearZHold();
-              if (zMoveOn) {
-                /* Window-move release: set the mini window down where
-                   it is and remember the spot across sessions. No tap,
-                   no cycle, no pan comes out of this gesture — and its
-                   synthesized click is swallowed whole. */
-                zSettleMove();
-                surfSwallowNextClick();
-                cancelPendingTap();
-                zDrag = null; zPinch = null; zMoved = false; zPinched = false;
-                return;
-              }
-              if (wasDrag && endDrag && !zPinched && zoomScale <= 1) {
-                /* Swipe-to-cycle, judged at release, 1× only (zoomed
-                   drags panned above and never reach this). Horizontal
-                   travel that clearly beats the vertical drift. */
-                var sdx = e.clientX - endDrag.sx, sdy = e.clientY - endDrag.sy;
-                if (Math.abs(sdx) >= 48 && Math.abs(sdx) >= Math.abs(sdy) * 1.4) {
-                  /* Flick-cycle IN PLACE: the stream changes, the stage
-                     never does (mini stays mini, full stays full), and
-                     the gesture's synthesized click is swallowed so no
-                     tap handler can escalate anything afterwards. */
-                  cancelPendingTap();
-                  surfSwallowNextClick();
-                  zLastTapAt = 0;
-                  cycleSurf(sdx < 0 ? 1 : -1);
-                  zDrag = null; zPinch = null; zMoved = false; zPinched = false;
-                  return;
-                }
-              }
-              if (wasDrag && !zPinched && !zMoved) {
-                /* A clean single tap. A second one inside 300ms makes
-                   it a double-tap: straight back to the 1× full frame,
-                   and the pending play/pause toggle is cancelled. */
-                var now = Date.now();
-                if (now - zLastTapAt < 300) {
-                  zLastTapAt = 0;
-                  cancelPendingTap();
-                  zoomScale = 1; zoomX = 0; zoomY = 0; applyZoom();
-                } else {
-                  zLastTapAt = now;
-                  cancelPendingTap();
-                  zTapTimer = setTimeout(function () { zTapTimer = 0; tapTogglePlay(); }, 280);
-                }
-              }
-              zDrag = null; zPinch = null; zMoved = false; zPinched = false;
-            }
-          };
-          gesture.addEventListener("pointerup", zEnd);
-          gesture.addEventListener("pointercancel", zEnd);
-          /* Desktop pointers get the same free zoom on the wheel. */
-          gesture.addEventListener("wheel", function (e) {
-            e.preventDefault();
-            zoomScale = Math.max(1, Math.min(3, Math.round((zoomScale + (e.deltaY < 0 ? 0.25 : -0.25)) * 4) / 4));
-            if (zoomScale === 1) { zoomX = 0; zoomY = 0; }
-            applyZoom();
-          }, { passive: false });
-        }
+        /* --- break cycling: the Prev/Next rails ---
+           The picture carries NO surface of ours (owner's order:
+           YouTube's own control buttons must actually function), so
+           the flick that used to live on a transparent layer over
+           the picture is gone, with the layer itself — pinch, pan
+           and tap handling on the picture went with it, and the
+           window's drag-from-the-picture went with it too. Cycling's
+           home is exactly where the owner put it: the two narrow
+           rails at the picture's left and right edges (the other
+           home is the break chips on the Surf Break page). A tap on
+           a rail cycles one break in its direction through the same
+           cycleSurf path the flick used — session-dead breaks
+           skipped, in place, the player's presentation untouched.
+           The window's move drag lives on the window's frame and
+           chrome (the box-drag controller below), never on the
+           picture; the Zoom controls remain the zoom. */
+        if (railPrev) railPrev.addEventListener("click", function () { cycleSurf(-1); });
+        if (railNext) railNext.addEventListener("click", function () { cycleSurf(1); });
+        /* The fallback card's explicit escape: Prev / Next break
+           step off a dead stream through the same dead-skipping
+           cycle the card's flick verdict uses. */
+        if (fbPrevBtn) fbPrevBtn.addEventListener("click", function () { cycleSurf(-1); });
+        if (fbNextBtn) fbNextBtn.addEventListener("click", function () { cycleSurf(1); });
 
         function nowText(prefix) {
           var spot = spotByKey(currentKey), info = spotInfo(spot, new Date());
@@ -12257,9 +12101,10 @@ var STRAIN_SRC_LINKS = {
                 /* YouTube's own control bar renders (no `controls`
                    parameter): play/pause, volume, settings and
                    fullscreen are the player's own buttons and take the
-                   viewer's taps directly — the gesture layer stops
-                   44px short of the frame's bottom edge so nothing
-                   covers the bar. Sound set inside the player is the
+                   viewer's taps directly — NOTHING of ours covers the
+                   picture at all, so no part of the bar (or any other
+                   part of the frame) sits under an app-made layer.
+                   Sound set inside the player is the
                    viewer's choice: the watchdog adopts it (see the
                    sound state note), and the remembered sound is
                    applied exactly once per stream start (onReady /
@@ -12381,8 +12226,8 @@ var STRAIN_SRC_LINKS = {
         /* --- Gesture claim: the surf layer owns any gesture that
            starts inside its subtree, in EVERY stage ---
            A pointerdown/touchstart whose target is inside #surfOverlay
-           (which contains #surfDock, the stage, the gesture layer, the
-           facade and the mini controls) or on the wave bubble (#surfFab)
+           (which contains #surfDock, the stage, the facade and the
+           header-strip controls) or on the wave bubble (#surfFab)
            claims that gesture for the surf layer from its first instant
            until it ends — plus a short tail that covers the synthesized
            click the gesture leaves behind. The app-level tab-swipe
@@ -12428,14 +12273,15 @@ var STRAIN_SRC_LINKS = {
         }, true);
         /* Minimized-frame geometry: ~62% of the screen width (capped
            so it stays a small window on wide screens too), a true 16:9
-           box, right-aligned to the wave button and parked just above
-           it — or just below it when there isn't room above — always
-           clamped fully inside the viewport. */
+           picture plus the header strip above it (46px), right-aligned
+           to the wave button and parked just above it — or just below
+           it when there isn't room above — always clamped fully inside
+           the viewport. */
         function miniGeom() {
           var vw = window.innerWidth || 360, vh = window.innerHeight || 640;
           var w = Math.round(Math.min(vw * 0.62, 440));
           w = Math.max(180, Math.min(w, vw - 16));
-          return { w: w, h: Math.round(w * 9 / 16), vw: vw, vh: vh };
+          return { w: w, h: Math.round(w * 9 / 16) + 46, vw: vw, vh: vh };
         }
         /* ---- The window anchor + the wave bubble (owner orders, 2026-11-05) ----
              · feed OPEN: the bubble sits ATTACHED at the window's
@@ -12878,197 +12724,102 @@ var STRAIN_SRC_LINKS = {
           if (surfFsFake) { fakeFsExit(); return; } /* native fullscreen: the browser exits it itself */
           if (surfStage !== "closed") closeSurf();
         });
-        /* Poster facade gestures: the same disambiguation as the live
-           player, for the moments the poster — not the stream — is
-           what fills the frame: a fast short flick cycles streams, and
-           in the mini stage a sustained drag (or a ~250ms hold) moves
-           the window itself. Taps keep their meaning (Play stays a
-           button; the poster itself does nothing on tap). */
-        if (facade) {
-          var fDown = null, fHoldTimer = 0, fMoveOn = false, fMoveOrigin = null;
-          function fCanMove() { return surfStage === "mini" && !surfFs && !!overlayEl; }
-          function fEngageMove() {
-            if (fMoveOn || !fDown || !fCanMove()) return false;
-            var r = overlayEl.getBoundingClientRect();
-            fMoveOn = true;
-            fMoveOrigin = { left: r.left, top: r.top };
-            if (fHoldTimer) { clearTimeout(fHoldTimer); fHoldTimer = 0; }
-            overlayEl.classList.add("is-moving");
-            return true;
-          }
-          function fSettleMove() {
-            if (!fMoveOn) return;
-            fMoveOn = false; fMoveOrigin = null;
-            if (!overlayEl) return;
-            overlayEl.classList.remove("is-moving");
-            settleUnitFromWindow(); /* the drag set the pair down: persist the window's anchor — the bubble rides attached at its corner */
-          }
-          facade.addEventListener("pointerdown", function (e) {
-            if (e.target.closest && e.target.closest("button, a")) return;
-            fDown = { x: e.clientX, y: e.clientY, t: Date.now() };
-            fMoveOn = false; fMoveOrigin = null;
-            if (fCanMove()) {
-              fHoldTimer = setTimeout(function () {
-                fHoldTimer = 0;
-                if (fEngageMove()) { try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ } }
-              }, 250);
-            }
-          });
-          facade.addEventListener("pointermove", function (e) {
-            if (!fDown) return;
-            var dx = e.clientX - fDown.x, dy = e.clientY - fDown.y;
-            if (!fMoveOn && Math.hypot(dx, dy) > 10) {
-              if (fHoldTimer) { clearTimeout(fHoldTimer); fHoldTimer = 0; }
-              /* Sustained drag (same tests as the live player):
-                 still going ~200ms in, or moving slowly — the
-                 window takes the drag. A fast flick never engages. */
-              if (fCanMove()) {
-                var fEl = Date.now() - fDown.t, fDist = Math.hypot(dx, dy);
-                if (fEl >= 200 || fDist / Math.max(1, fEl) < 0.3) fEngageMove();
-              }
-            }
-            if (fMoveOn && fMoveOrigin) miniPlace(fMoveOrigin.left + dx, fMoveOrigin.top + dy);
-          });
-          var fEnd = function (e) {
-            if (fHoldTimer) { clearTimeout(fHoldTimer); fHoldTimer = 0; }
-            if (!fDown) { fMoveOn = false; fMoveOrigin = null; return; }
-            var dx = e.clientX - fDown.x, dy = e.clientY - fDown.y;
-            fDown = null;
-            if (fMoveOn) { fSettleMove(); surfSwallowNextClick(); return; }
-            if (Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.4) { surfSwallowNextClick(); cycleSurf(dx < 0 ? 1 : -1); }
-          };
-          facade.addEventListener("pointerup", fEnd);
-          facade.addEventListener("pointercancel", fEnd);
-        }
-        /* Load-failure fallback gestures: the same disambiguation as
-           the poster facade, for the moments the failure card — not
-           the stream, not the poster — is what fills the frame. The
-           gesture layer never covers the fallback (syncZoomUI keeps it
-           over the player only, so the card's buttons stay tappable),
-           which left this card with no flick surface at all: a swipe
-           here could only drag the mini window (via the box handler)
-           or do nothing, and the viewer was stuck on a dead stream.
-           Now the card owns its surface exactly like the facade: a
-           fast short flick cycles to the next live break (cycleSurf
-           skips dead-marked breaks and, from fallback mode, starts the
-           new stream in place); in the mini stage a sustained drag (or
-           a ~250ms hold) moves the window itself; a clean tap is left
-           completely alone, so Try again, Watch on YouTube and Back to
-           poster keep working as plain taps. Presses are tracked even
-           when they start on a button: a slide or flick that began on
-           one has its synthesized click swallowed whole, so the button
-           never fires mid-gesture — the same rule the box handler
-           applies to its surfaces. */
-        if (fallback) {
-          var gDown = null, gHoldTimer = 0, gMoveOn = false, gMoveOrigin = null;
-          function gCanMove() { return surfStage === "mini" && !surfFs && !!overlayEl; }
-          function gEngageMove() {
-            if (gMoveOn || !gDown || !gCanMove()) return false;
-            var r = overlayEl.getBoundingClientRect();
-            gMoveOn = true;
-            gMoveOrigin = { left: r.left, top: r.top };
-            if (gHoldTimer) { clearTimeout(gHoldTimer); gHoldTimer = 0; }
-            overlayEl.classList.add("is-moving");
-            return true;
-          }
-          function gSettleMove() {
-            if (!gMoveOn) return;
-            gMoveOn = false; gMoveOrigin = null;
-            if (!overlayEl) return;
-            overlayEl.classList.remove("is-moving");
-            settleUnitFromWindow(); /* the drag set the pair down: persist the window's anchor — the bubble rides attached at its corner */
-          }
-          fallback.addEventListener("pointerdown", function (e) {
-            if (!e.isPrimary) return;
-            if (e.pointerType === "mouse" && e.button !== 0) return;
-            gDown = { x: e.clientX, y: e.clientY, t: Date.now() };
-            gMoveOn = false; gMoveOrigin = null;
-            if (gCanMove()) {
-              gHoldTimer = setTimeout(function () {
-                gHoldTimer = 0;
-                if (gEngageMove()) { try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ } }
-              }, 250);
-            }
-          });
-          fallback.addEventListener("pointermove", function (e) {
-            if (!gDown) return;
-            var dx = e.clientX - gDown.x, dy = e.clientY - gDown.y;
-            if (!gMoveOn && Math.hypot(dx, dy) > 10) {
-              if (gHoldTimer) { clearTimeout(gHoldTimer); gHoldTimer = 0; }
-              /* Sustained drag (same tests as the facade and the live
-                 player): still going ~200ms in, or moving slowly —
-                 the window takes the drag. A fast flick never engages. */
-              if (gCanMove()) {
-                var gEl = Date.now() - gDown.t, gDist = Math.hypot(dx, dy);
-                if (gEl >= 200 || gDist / Math.max(1, gEl) < 0.3) gEngageMove();
-              }
-            }
-            if (gMoveOn && gMoveOrigin) miniPlace(gMoveOrigin.left + dx, gMoveOrigin.top + dy);
-          });
-          var gEnd = function (e) {
-            if (gHoldTimer) { clearTimeout(gHoldTimer); gHoldTimer = 0; }
-            if (!gDown) { gMoveOn = false; gMoveOrigin = null; return; }
-            var dx = e.clientX - gDown.x, dy = e.clientY - gDown.y;
-            gDown = null;
-            if (gMoveOn) { gSettleMove(); surfSwallowNextClick(); return; }
-            /* Flick-cycle from the failure state: never leave the
-               viewer stuck on a stream that didn't load — the flick
-               moves to the next break that isn't dead-marked, in
-               place, and its click is swallowed. */
-            if (Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.4) { surfSwallowNextClick(); cycleSurf(dx < 0 ? 1 : -1); }
-          };
-          fallback.addEventListener("pointerup", gEnd);
-          fallback.addEventListener("pointercancel", gEnd);
-        }
-        /* --- Whole-box move (floating player): EVERY surface of the
-           floating box drags the unit, in every state ---
-           The live player (gesture layer) and the poster facade already
-           own their surfaces with their own disambiguation (flick
-           cycles, pinch zooms, zoomed drag pans, sustained drag moves)
-           — untouched. Everything else inside the mini box had no move
-           at all: the floating mini controls, the loading surface
-           whenever the gesture layer is down. This handler owns exactly
-           those surfaces: a press that slides past ~10px becomes a window
-           move (miniPlace, clamped in-viewport, anchor persisted on
-           release — the bubble rides attached at the window's corner
-           through miniPlace); a slide that started on a
-           button has its click swallowed whole, so the button never
-           fires; a clean tap with no slide is left completely alone
-           and activates its button normally. */
+        /* --- window move drag: the frame and chrome ONLY (owner's
+           order) ---
+           A window drag starts from the player window's own frame
+           and chrome — its frame ring, the poster facade, the
+           fallback card, and any button riding the window (the
+           header-strip controls, the facade Play, the fallback's
+           Watch on YouTube / Try again / Back to poster) — and from
+           nowhere else. The live picture is never a drag surface:
+           presses on it land on the embedded player itself and never
+           reach this handler at all, and while a stream is up the
+           only in-stage surface of ours still showing (the loading
+           veil, the cycling rails) is not a drag surface either — a
+           window drag may then start only from the window's frame
+           or its header-strip chrome. A press that slides past
+           ~10px becomes a window move: the window follows the
+           finger through miniPlace (clamped fully inside the
+           viewport, the bubble riding attached at its corner), and
+           its anchor persists on release. The release's synthesized
+           click is swallowed whole, so the button under the finger
+           never fires from a drag; a clean tap with no slide is
+           untouched and activates its button normally.
+           One verdict is kept for the FALLBACK card (owner bug
+           fix): the card is ours, not YouTube's, so it keeps its
+           flick. A press that STARTS on the fallback card
+           disambiguates exactly as the standard sets it — the move
+           arms only once the press is ~180ms old and travelling, so
+           a fast horizontal flick (release within 600ms, 48px+ of
+           travel, horizontal-dominant) is over before any drag can
+           arm and instead cycles to the next / previous break on
+           release, skipping session-dead breaks, in place, its
+           synthesized click swallowed whole (a flick that starts on
+           one of the card's buttons cycles without firing it). A
+           sustained slide still arms the move and drags the whole
+           window, and clean taps still fire their buttons. The
+           card's Prev / Next break buttons are the explicit
+           equivalent of the flick. */
         var boxDrag = null;
-        function boxDragSettle() {
-          if (!boxDrag) return;
-          var wasOn = boxDrag.on;
-          boxDrag = null;
-          if (!wasOn) return;
-          overlayEl.classList.remove("is-moving");
-          settleUnitFromWindow();
-          surfSwallowNextClick();
-        }
         if (overlayEl) {
           overlayEl.addEventListener("pointerdown", function (e) {
-            if (!e.isPrimary) { boxDragSettle(); return; } /* a second finger settles any box move in flight */
-            boxDrag = null;
+            if (boxDrag) { boxDrag = null; overlayEl.classList.remove("is-moving"); return; } /* a second finger cancels the drag */
+            if (!e.isPrimary) return;
             if (surfStage !== "mini" || surfFsOn()) return;
             if (e.pointerType === "mouse" && e.button !== 0) return;
-            var t = e.target;
-            if (!t || !t.closest) return;
-            if (t.closest("#surfGesture") || t.closest("#surfFacade") || t.closest("#surfFallback")) return; /* surfaces with their own gesture disambiguation */
-            var r = overlayEl.getBoundingClientRect();
-            boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, left: r.left, top: r.top, on: false };
+            /* The live picture is never a drag surface (owner's
+               order): while the player is up, a window drag may
+               start only from the window's own frame (the press
+               lands on the overlay box itself) or its header-strip
+               chrome. */
+            if (playerBox && !playerBox.hidden && e.target !== overlayEl && !(e.target.closest && (e.target.closest(".surf-mini-btn") || e.target.closest("#surfMiniControls")))) return;
+            boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, t: Date.now(), armed: false, dx: 0, dy: 0,
+                        fb: mode === "fallback" && !!fallback && fallback.contains(e.target) };
           });
-          overlayEl.addEventListener("pointermove", function (e) {
+          window.addEventListener("pointermove", function (e) {
             if (!boxDrag || e.pointerId !== boxDrag.id) return;
-            var dx = e.clientX - boxDrag.sx, dy = e.clientY - boxDrag.sy;
-            if (!boxDrag.on) {
-              if (Math.hypot(dx, dy) <= 10) return;
-              boxDrag.on = true;
+            if (!boxDrag.armed) {
+              if (boxDrag.fb && Date.now() - boxDrag.t < 180) return; /* a fallback press still young enough to be a flick: the move arms only once the press is ~180ms old, so a fast flick never becomes a drag */
+              if (Math.hypot(e.clientX - boxDrag.sx, e.clientY - boxDrag.sy) <= 10) return; /* still a tap */
+              var r0 = overlayEl.getBoundingClientRect();
+              boxDrag.dx = e.clientX - r0.left; /* grab offset taken at arm time: the window does not jump */
+              boxDrag.dy = e.clientY - r0.top;
+              boxDrag.armed = true;
               overlayEl.classList.add("is-moving");
             }
-            miniPlace(boxDrag.left + dx, boxDrag.top + dy);
-          });
-          overlayEl.addEventListener("pointerup", boxDragSettle);
-          overlayEl.addEventListener("pointercancel", boxDragSettle);
+            miniPlace(e.clientX - boxDrag.dx, e.clientY - boxDrag.dy); /* clamped in-viewport; the bubble rides attached at the window's corner */
+            if (e.cancelable) e.preventDefault();
+          }, { passive: false });
+          var boxDragEnd = function (e) {
+            if (!boxDrag || e.pointerId !== boxDrag.id) return;
+            var wasArmed = boxDrag.armed;
+            var bd = boxDrag;
+            boxDrag = null;
+            overlayEl.classList.remove("is-moving");
+            if (wasArmed) {
+              settleUnitFromWindow(); /* persist the pair's resting anchor — the bubble rides attached at its corner */
+              surfSwallowNextClick(); /* the release's click is not a tap: the button under the finger must not fire */
+            } else if (bd.fb && e.type === "pointerup" && mode === "fallback") {
+              /* Fallback flick verdict — the same numbers the
+                 picture flick used, judged on the gesture's total
+                 travel: a quick, clearly horizontal flick cycles
+                 the break IN PLACE (cycleSurf skips session-dead
+                 breaks and never touches the player's
+                 presentation), and the release's synthesized click
+                 is swallowed whole, so a flick that started on one
+                 of the card's buttons cycles without firing it.
+                 Anything else — a tap, a short or vertical slide,
+                 a slow press — falls through untouched. */
+              var fdx = e.clientX - bd.sx, fdy = e.clientY - bd.sy;
+              if (Date.now() - bd.t <= 600 && Math.abs(fdx) >= 48 && Math.abs(fdx) >= Math.abs(fdy) * 1.5) {
+                cycleSurf(fdx < 0 ? 1 : -1);
+                surfSwallowNextClick();
+              }
+            }
+          };
+          window.addEventListener("pointerup", boxDragEnd);
+          window.addEventListener("pointercancel", boxDragEnd);
+          overlayEl.addEventListener("dragstart", function (e) { if (surfStage === "mini") e.preventDefault(); });
         }
         window.__surfOverlay = {
           open: openSurfMini,
