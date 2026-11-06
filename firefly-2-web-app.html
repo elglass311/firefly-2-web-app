@@ -138,10 +138,10 @@
       /* No double-tap-to-zoom in the menus: manipulation keeps panning
          and drops the browser's double-tap zoom (and its tap delay) on
          the app shell and every interactive element. The app's own
-         deliberate zoom surfaces keep their own rules — .surf-gesture
-         and .wheel carry touch-action: none further down and run their
-         own pointer gestures, and the photo-zoom viewer is a transform
-         overlay, not browser zoom. */
+         deliberate zoom surfaces keep their own rules — .wheel and
+         the surf dock carry touch-action: none further down and run
+         their own pointer handling, and the photo-zoom viewer is a
+         transform overlay, not browser zoom. */
       html, body { touch-action: manipulation; }
       /* Pull-to-refresh defense, layer 2 of 2: no vertical drag — at
          the top of a menu, inside the surf dock/overlay, or while
@@ -1827,22 +1827,33 @@
       /* Digital zoom: a transform on the wrapper around the player node.
          The iframe itself is never moved, recreated or reloaded by zoom. */
       .surf-zoomwrap { position: relative; will-change: transform; }
-      /* The gesture layer covers the picture — pinch, pan, flick,
-         hold-to-move, double-tap — but it STOPS above the embedded
-         player's own control bar (owner's order: functional volume).
-         The bottom strip of the frame is never covered, so the bar's
-         own buttons — play/pause and the speaker/volume at its left
-         end — receive their taps directly from the browser; no
-         handler of ours ever sees a tap that lands there, so none
-         can reinterpret it as anything else. The strip grows in
-         fullscreen, where the player's bar is taller. */
-      .surf-gesture {
-        position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 6;
-        touch-action: none; cursor: grab;
+      /* NOTHING of ours covers the video picture (owner's order:
+         YouTube's own control buttons must actually function). The
+         embedded iframe receives every touch on the whole video area
+         directly — play/pause, volume, settings, fullscreen and the
+         progress bar are the player's own, and no overlay, gesture
+         layer or carve-out of ours sits between the viewer's finger
+         and any of them. Break cycling lives OFF the picture, on two
+         narrow Prev/Next rails at the picture's left and right edges
+         (and on the break chips on the Surf Break page); window
+         dragging lives on the player window's frame and chrome. The
+         rails are short and vertically centred, so the picture's
+         corners and its bottom control bar stay the player's alone. */
+      .surf-rail {
+        appearance: none; cursor: pointer; font: inherit;
+        position: absolute; top: 50%; transform: translateY(-50%); z-index: 7;
+        width: 32px; height: 72px; padding: 0;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
       }
-      .surf-dock.fs-on .surf-gesture { bottom: 88px; }
-      .surf-gesture:active { cursor: grabbing; }
-      .surf-gesture[hidden] { display: none !important; }
+      .surf-rail:active { transform: translateY(-50%) scale(0.94); }
+      .surf-rail svg { width: 16px; height: 16px; flex: none; }
+      .surf-rail-prev { left: 4px; border-radius: 0 10px 10px 0; }
+      .surf-rail-next { right: 4px; border-radius: 10px 0 0 10px; }
+      .surf-rail[hidden] { display: none !important; }
       .surf-zoom-btn { display: inline-flex; align-items: center; gap: 5px; }
       .surf-zoom-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
       .surf-zoombar {
@@ -1968,14 +1979,16 @@
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 18px 44px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.4);
         padding: 6px;
         overscroll-behavior: none;
-        /* The WHOLE floating player is a move-drag surface (owner's
-           order): no touch that starts on it — facade, fallback, or
-           any of its buttons — may be claimed by the browser for
-           scrolling or pull-to-refresh; the surf script's pointer
-           handlers decide tap vs. drag. Its width/left/top are set
-           inline by the surf script (about 62% of the screen width,
-           capped, anchored just above the wave button and clamped
-           inside the viewport). */
+        /* The floating player window is moved by dragging its frame
+           and chrome (the surf script's box-drag controller): no
+           touch that starts on the window may be claimed by the
+           browser for scrolling or pull-to-refresh while that
+           controller decides tap vs. drag. The video picture itself
+           is never a drag surface — touches there land on the
+           embedded player. Its width/left/top are set inline by the
+           surf script (about 62% of the screen width, capped,
+           anchored just above the wave button and clamped inside
+           the viewport). */
         touch-action: none;
       }
       .surf-dock * { -webkit-user-drag: none; }
@@ -2011,29 +2024,26 @@
       .surf-dock-status { margin: 8px 2px 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
       .surf-dock-status[hidden] { display: none !important; }
       /* ---------- Surf Break floating button — follows every screen ----------
-         A small glass wave button. CLOSED, it is a free button with
-         its OWN remembered spot (ff2.surfFabPos): it can be dragged
-         anywhere on the visible screen and stays where it is dropped
-         — the only clamp keeps the button itself fully inside the
-         viewport edges; nothing reserves or avoids any zone for it,
-         and dropped over another element it simply stays on top. With
-         the player OPEN it rides attached at the window's bottom-right
-         corner (the unit anchor, ff2.surfMiniPos), and dragging either
-         part then moves the whole unit, clamped only so the unit
-         stays fully inside the viewport. A tap on the button opens
-         the floating player over the current screen and closes it
-         again; its dot shows at a glance whether a stream is playing
-         behind it (pulsing red) or loading / waiting for a first tap
-         (steady amber). On wide screens the button's default home
-         hugs the app column's right edge. */
+         A small glass wave button, FIXED in the bottom-right corner
+         of the screen (owner's order): it never drags, never slides
+         and keeps no remembered spot — its stylesheet corner IS its
+         place, on load and after every reload. It is decoupled from
+         the player window: the window opens and drags on its own and
+         never moves the button, and wherever the two meet the WINDOW
+         renders on top (the button's z-index sits below the dock's),
+         so the button never covers the feed. A tap on the button
+         opens the floating player over the current screen and closes
+         it again; its dot shows at a glance whether a stream is
+         playing behind it (pulsing red) or loading / waiting for a
+         first tap (steady amber). On wide screens the corner hugs
+         the app column's right edge. */
       .surf-fab {
         appearance: none; cursor: pointer; font: inherit;
-        /* Above the status island (80): dropped over it — or over
-           anything else — the button stays ON TOP and grabbable,
-           never trapped underneath (owner's free-movement order). It
-           still yields to the tray + scrim (84/85) and the photo
-           viewer (90), exactly as before. */
-        position: fixed; z-index: 81;
+        /* Below the player window (70): the feed renders above the
+           button wherever they meet — the button never covers the
+           feed (owner's order). It still yields to the tray + scrim
+           (84/85) and the photo viewer (90), exactly as before. */
+        position: fixed; z-index: 65;
         right: max(12px, calc(50% - 268px + env(safe-area-inset-right)));
         bottom: calc(12px + env(safe-area-inset-bottom));
         width: 52px; height: 52px; border-radius: 50%;
@@ -2044,7 +2054,7 @@
         border: 1px solid var(--card-line);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 10px 26px rgba(0, 0, 0, 0.45);
         color: var(--ink);
-        /* The button is draggable (see the surf script): the browser must
+        /* The button is tap-only (see the surf script): the browser must
            never claim its touch for scrolling or a long-press callout. */
         touch-action: none;
         -webkit-touch-callout: none;
@@ -2052,9 +2062,6 @@
         transition: transform var(--dur-1) var(--ease-out);
       }
       .surf-fab:active { transform: scale(0.92); }
-      /* While the unit is being dragged by the button, the button
-         tracks the finger exactly — no press shrink, no easing. */
-      .surf-fab.fab-dragging { transform: none; transition: none; cursor: grabbing; }
       .surf-fab svg { width: 26px; height: 26px; flex: none; }
       .surf-fab-dot {
         position: absolute; top: 1px; right: 1px;
@@ -2073,15 +2080,23 @@
 
       /* ---------- Surf Break floating player chrome ----------
          The player's only chrome is the trio of small round controls
-         riding its frame: fullscreen (top-left), close (top-right),
-         and the window button (bottom-right) — the window button
-         loads the Surf Break PAGE in the tray (the break menu); it
-         expands nothing here. They show whenever the player does,
-         and hide while the stream itself is fullscreen. ---------- */
+         on its HEADER STRIP, above the picture and entirely outside
+         the iframe's bounds (owner's order: nothing of ours covers
+         any corner of the picture — YouTube's own buttons, its
+         fullscreen corner above all, take their taps directly):
+         fullscreen (left), and the window button and close (right) —
+         the window button loads the Surf Break PAGE in the tray
+         (the break menu); it expands nothing here. The strip is
+         also the window's drag handle. The controls show whenever
+         the player does, and hide while the stream itself is
+         fullscreen. ---------- */
+      .surf-dock-bar {
+        display: flex; align-items: center; gap: 6px;
+        padding: 2px 2px 6px;
+      }
       .surf-mini-btn {
         appearance: none; cursor: pointer; font: inherit;
-        position: absolute; z-index: 10;
-        width: 30px; height: 30px; border-radius: 50%;
+        width: 30px; height: 30px; border-radius: 50%; flex: none;
         display: none; align-items: center; justify-content: center;
         color: #fff; background: rgba(0, 0, 0, 0.55);
         border: 1px solid rgba(255, 255, 255, 0.28);
@@ -2092,9 +2107,7 @@
       .surf-dock .surf-mini-btn { display: flex; }
       .surf-mini-btn:active { transform: scale(0.92); }
       .surf-mini-btn svg { width: 15px; height: 15px; flex: none; }
-      .surf-mini-expand { top: 8px; left: 8px; }
-      .surf-mini-close { top: 8px; right: 8px; }
-      .surf-mini-full { bottom: 8px; right: 8px; top: auto; }
+      .surf-mini-expand { margin-right: auto; }
 
       /* ---------- Surf Break FULLSCREEN (the stream itself, in place) ----------
          The enlarge control takes the STAGE — the existing player container —
@@ -2999,23 +3012,25 @@
          screen underneath is never unloaded, scrolled or re-laid-out,
          and the player node never moves, so opening, closing and
          screen switches never reload it. The player is a PLAYER only:
-         the stream plus the small round controls riding its frame —
-         fullscreen (top-left), close (top-right) and the window
-         button (bottom-right), which loads the Surf Break PAGE in the
+         the stream plus the small round controls on its header strip
+         above the picture — fullscreen, the window button and close —
+         the window button loads the Surf Break PAGE in the
          tray (#panel-surf, where the break menu lives) instead of
          expanding anything here. There is no other presentation of
          Surf Break: no full-view overlay stage, no collapsible menu
          form, and Play on any surface plays the stream in place. ============ -->
     <div class="surf-dock" id="surfDock" data-state="hidden" hidden role="region" aria-label="Surf Break player">
-      <button class="surf-mini-btn surf-mini-expand" id="surfMiniExpand" type="button" aria-label="Watch the stream full screen">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg>
-      </button>
-      <button class="surf-mini-btn surf-mini-close" id="surfMiniClose" type="button" aria-label="Close the player — the stream keeps playing">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
-      </button>
-      <button class="surf-mini-btn surf-mini-full" id="surfMiniFull" type="button" aria-label="Open the Surf Break page — all breaks and controls">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2.2"/><path d="M4 17h4"/><path d="M12 17h8"/><circle cx="10" cy="17" r="2.2"/></svg>
-      </button>
+      <div class="surf-dock-bar" id="surfDockBar">
+        <button class="surf-mini-btn surf-mini-expand" id="surfMiniExpand" type="button" aria-label="Watch the stream full screen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg>
+        </button>
+        <button class="surf-mini-btn surf-mini-full" id="surfMiniFull" type="button" aria-label="Open the Surf Break page — all breaks and controls">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2.2"/><path d="M4 17h4"/><path d="M12 17h8"/><circle cx="10" cy="17" r="2.2"/></svg>
+        </button>
+        <button class="surf-mini-btn surf-mini-close" id="surfMiniClose" type="button" aria-label="Close the player — the stream keeps playing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+        </button>
+      </div>
       <div class="surf-stage" id="surfStage">
         <div class="surf-facade" id="surfFacade">
           <img class="surf-poster" id="surfPoster" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAFoAeADASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAAIBAwQFBgf/xABEEAABAwIDBQMJBQgCAQQDAAABAAIRAyEEEjEFE0FRcSJhgQYUFjJTkZLR0hVCobHBIzNSYnKC4fBD8UQ0VKLCJGNz/8QAGAEBAQEBAQAAAAAAAAAAAAAAAAECAwT/xAAgEQEBAQEBAQEAAwADAAAAAAAAARESAiFBAzFRE3GB/9oADAMBAAIRAxEAPwD5+hCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhCEAhdf0dxftaHxH5I9HcX7Wh8R+S1zRyELsDybxZ/5cP8AEfkp9GsZ7XD/ABH5Kc0cZC7XozjPa4f4nfJSPJfGn/lw/wATvknNHEQu56LY72uH+J3yU+imO9rhvid8k5o4SF3vRPH+2w3xO+SPRPH+1w3xO+Sc0cFC73olj/bYb4nfJR6J4/22G+J3yTmjhIXd9FMd7bDfE75I9Fcd7bDfE75JzRwkLu+imO9thvid8keimO9thvid8k5o4SF3vRPH+2w3xO+SB5JY8/8ANhvid9Kc0cFC7/ojtD22G+J30o9ENoe2w3xO+lOaOAheg9ENoe2w3xO+lHoftD22F+J30pzR59C9D6HbR9thfid9KPQ7aHtsL8TvpTmjzyF6H0O2h7bC/E76VHoftD22F+J30pzR59C9D6H7Q9thfid9KPQ7aHtsL8TvpTmjzyF6H0O2h7bC/E76VHoftD22F+J30pzR59C9B6H7Q9thfid9KPQ/aHtsL8TvpTmmvPoXoPRDaHtsN8TvpUeiGP8AbYb4nfSnNTXAQu/6I4/22G+J30o9Ecf7bDfE76U5q64CF3/RHH+2w3xO+lHojj/bYb4nfSnNNcBC7/ojj/bYb4nfSj0Rx/tsN8TvpTmmuAhd70Sx/tsN8TvpR6JY/wBthvid8k5prgoXe9E8f7bDfE75I9E8f7bDfE75JzTXBQu76J4/2uG+J3yU+ieP9rhvid8k5prgoXd9E8f7XDfE75I9FMd7XDfE75JzTXCQu56K472uH+J3yR6K472uH+J3yTmmuGhdz0Wx3tcP8Tvko9Fsd7XD/E75JzRxELt+i+N9rh/id8lHoxjfa4f4nfJOaOKhdn0ZxvtcP8Tvkg+TWMH/AC0PiPyV5o4yF1z5OYsf8tD4j8lB8nsWP+Sh8R+Sc1NclC6vo/i/aUfiPyR6P4v2lH4j8k5pr0c3TNKQAp2hd0O0qwKtgur2tUVLRKcBDQnAUA0JwFACeFBHBCkpVRJKQuUlKUQSgKAJTQgkKQFATgIABMFAClAJgoGqkIJCYKAmCAUShQgJQhCAQhCCUKESiJUFEqCUEOKXipKAEAbJUxUIIlSEqcWCCFClQgFClQghCkqAqBCmFMKKWEjlYdEjkCKQFIEpoVCwoITQghQVlIVYQlKoqKQlO5IQiEJVZKci6MvNUIAgp4soIQQBKdo7lIarWMUUMbdWtCGtVgaoqAEwCkBSgAmQFJUCu0S96kqOCqFcVAuUFSEApCEwRAAmUBSipQhCCQpCgBOAiAJtAiFBKioJUSglQFUMEIAUlBBUAqDqpaEEjRQSpckQSiUKEEJxolAlSUEO1UHRSQo4oBoQTdSTAskQSpQBKaECkIhPCUoFhACsywLoAugQBTCYkBKXCYnTVBEWJ4JCJKipiGMHONYUNrsc2WmyBojwRqk3zAJJEJTWDvV0RVwHFBMBBIZSaSbkTdV50EFIUxKiUFZCUhOSlN1UVEKIVuVLEoEAQQrIhIbqi9tPuVrWKwZOanMwauCy0UNUoL2c/wAEu9p8z7kDISmo3kfcoNZo4FEWhQSkFdp4FMKjDzUEqCpzN5x1Sy0/eHvVCnVSAmyToQnbTPJEIFMJ92U2QcwgrhSAnho+8Pejs/xBAikBMMvNOAOaBQIUqbcwpgc1ApKgp4bzSOqUwYLxPIIF4pgFAfTOklWBw5FBEJXJnVALwqN9mMBoQWgJgEoeeQQahA4KgdqoIgBIyo5zuCKryGzP4IJ4oVLalTmnpl7nmSiauY1REvhMZazW5SMpOLs5v4qKmpZJI1kKaoOUSNFnngqmrswnUe9NbmqqYEg6BVV8fSp1DTnTVE1sBa1hdcpHVWNi4uudiMdVe39kJ7lna5rGCrWc55IMK4nTrb8Gct470PxIpxAEk2K4lTajKVLLTpjNHAyFzKuIxFVxc+obmYzWCvLN/kkeq85zNzFwjmsmI2tTosnMHuNgB+a87vK0QKj47iVU/MTEknrKvLP/AC38divt6rGWm0AczxWF+1cS6ZqDwssRa46+5BpO4gjqridX/VztoV3yN666anjawGXOTPD9Vma0gyCOoKIl0gkniUNdLzl5aym6oQbmCYW5+JbhMO176lN8AEAOk34n/eC864E83HokIIsVManp36W22VKjt64hrWkgOEyeACrp7ZDnSTlA4Lgm3NBFplMa2vVN2lTdIbUY5/IFA2gS8NAafFeUzEdyuw7nNdmkz/KUxb6sepGObMFjp7lazENf90jgvOZMQWZ6tRzGx2e1l14q5mHfTojEVagdTuGZbyeJ6KYT09BTe2rOUmBYmLKXOpMs6rTB5ZgvL5qtVsOrVG0WmO04gdVtwb8Lh35MJSqY2u0EuqAWZ79VManrXbJZlnM0jqoORou4CeZWBm0WVKrKYozUcO1kfZotEwLm91TicUymGuq1KQrF5GVhL9DbQouusXOJu6O5EngErRzPvTE8vejOptqT4KM8WH+UpBi3vQB4Dkhp5PfKiwgvI6KC8gHLbvUNZJlxQ0+caNEprjUi/AJQQLAR4okRJOqGnBmwCYOA1P6KqSbaRw5dU7afO5UNOKx+6E28eRc+AQGpgIQ1AnimhToq3O4BF0znABIHE80sRrcq2kyblE0zG2VkE6J2sjwSufwARQA1okmUpqGYboo1QYHBE1W8mJJVMy6Bb809RxOnRFNgaJJ96GrKTFqa3sqpgmOAV2gKgoq6cykY0an8E9TkFIsLoqMvPRK64gcVY645KCzMQBrKCGNDG31KrcC90xZW1zFpsElNtrWVQmUCYVlBstk8SpygOGkd6HVGtcMpAAQM+GxN44LPVxLiJmw17lRicWxjnTc8IK5dTGvLOzaeMKyM+vcjqVcaBAnhzSecNFyVyq9Te4jsuLaet23jogNzHMTUdTd6twCe6/5CdVcYv8jZiscd2RScM0xC5jq4LRmBLuJjih9fJUP7ENv2muJQ+uwzu6DGE3BmfzWpHL170PxdSGBgyht7qqqalSN48AcBKapXe+JdoMsARPXmqnuJjM4HqtYx1aXLeRfqoLSbkfimDhF4KglsIaQkk5WwEeq2AY9yYBo5wkOUnsmFGkB3ePwSOM3BhSRfX3pX9yNTEE98qCXd8Ii0wlso2kFw4fmlsgqZACKWOdlEJp5FKSOaKjKOKG1HMBDSR0UE96VGol1Qlt+Cdtdxm4bFwJIE9FSUqjWRprY+vWbleW5dYDRr11VlOqW64iIMhtPSenHRZA5rQRkkniSrcOAA95bYDiYkclFxaX1CLuyB9yGDKCOEwpcA0Nb2HPBMVQZB7u9KwgkuawST2abdPElTvn0Yp4d79+8w8t/IR+aGPY6zEKY935oABHcm6lGCxNzwUElxsUxE2RZo0QQGgRm14Jrkyhok6SFYGONgJBUFZIaJUAEmSL634f5Vz8M9hkm/5f5TsphoiLDmgrp041CtAupJJTNbAUVAEDvR6uikmON0AEoarPcoIiVdlhJlkzZVNKxkuk3WumyAkpM0JCtcYEAqLFdR3BVgFxlORJURAsiaieSrqHNp+aeDPdzTCmePXRE1QGS68gcFY1pdxPer20v+imyibi6KVrYEAKHzoFdHYVL7myjSsi8wp4SU7WRqExAhBW42sraDRu3OmQFS83sVkxWNZSYQAYGp5Kpufavq1GGbKvzho4hcytWgnM+9jCop1H1XFrJNwDHP/f8Apakc7/LHWr4yB2YK5r8VVrktpBxP8om3NV1w3CgVMVVzGf3c9qfksdfaha1tPBzSa25fEOJ7uQsO+2qsjN9303NwdQsc/EVQxgBPadBELFVrtc002ENEXLuWsCJ4rnmq5zi55Libkk3KJlVzxt89qty7rJTI4tbcnmSVnc973l9RznPOriZKozcFOfvVMq0uKgutcmVWXJcxReVmbvS5pKrlEouLS8iynPzVMozIcr8ySRdVzCiUXkxnmoJUSolRUk2CVBKhFgKhBKhGhKCVCDoioKVSjgSjRTYqCpOiUo1BIlOXNLpBc2BbiZSscWulpgjino0HVs75DadOC954T3cT3LNVbQqMosdVNF1V5tmceyCm7NMl7nTVqaZW6E+7vvdZXBugvwBiJVlFgquc+pULWsA7WvQa8gfcor27ZdoDC10aBc5siQe5Ls+kYl7tOBW91QNsNeiWs+fLMaTS7+WeCBhw4u4RoneSHAtsJvZX0n0wYtmPM8VNa5VtwrWsEweJIT1KlOmJHKympULWkAyOSwvcXay0fmp/Z8i0Ovnc71tLoOlhCrac/a48VY1slac6ljeJuUxtdO0QEjjJURWBJVobAQ1sa6pyESEIlDRdNlQ0IHaICh2qmYCVyNIAuoNzomNglhGaGjMeHRXBvdA6JWjxVoAbHJEg0BjikgA3TnnzSGJuo1EuJIhVSA6bGE7z2bKl7YdI8RKNUweJVdaplCRzw1uvgsdSoar8jT2lcTcS/EEkwVezAsrwarQAwQWm+Y96y+a1WsD7hpuHHT3rRWcMNR39WuynSBglsk6aRxVcfV6PQwdEUoqPpZgC3QyBz1touZtDauF2eKlLZ7S7Ekmap0bzIH6Lm7R25UxA3WHpihSHK7ndT+i5BcSbrWf6kh6lR1Wo57yS5xkkmVEpZUSquGlEpZRKGJlEqEIqUSoQglQUKEEolQjigESjijUoolEqHWKOaGAlRKCgCZ7kVBUIJQdEUKCg9mxQdJPgigeslmxQDr3o0RUGyU6pjySlGoiCZhNmJZlvlBnxSgkTHEJyGCm6Hy6QBbURf9FGiuOaIbECLcU4p1BQNS7aYOWTYE8hzSCf1lSW3mQWzAdpKg+n4QNcw99rqt37N5DiXA6WT0KYo0COJVVQ5239YXWP1VzDY8b8ljOMy1SXjpFlnq13scCKhPZix/BY69cOI4u5rU8s2u47ENLBexPaHcsWLxNIEtY4xwlYxiyQAVRVIdcLU8s3024KuXVMnDroutS0uvN4aoadYOXoaNVrmyFPUZlWPdASN5fgoc6SpBk6rLNurAU/BVtN05KNREwDdHIJSY4qReyIdKT3ptFW43RaJkp22FkgEpgboydpy2OqkGTEpE1MSSVFiyJKV1ipc7KOCzVa2UqOmJqkwYd0WF9eozNJAgJ6mIBFiC7gq20DVYd4Q0EXP+FqRj16xnqPNRmcmBMAzr0W3D4SlUyUW6w15IdeIk/JVYfBuxNGm5zstOm4SI9bmpr4rzEVHgXIs3Toq5W6baOLw+DohgzNcJhgJJjvK8pj8fXxZaKriWsENE6KMZiKlWq57nElxk3WN55rWYzPpSUKQ08NU+6dLQRqUbIo4BXPYMpMRpYm6V1Itga8UFcoUlpDRY3UNbLwO9FCkXCkMlxCcMy0mu/iMBEVcEXurnUnNYAWkQLyENpEAOeDBNhzQ1SpHPknLNCbCeKsrUjRpNDhD3SSOXd/vNNVnAup4lacPharxIpkzZttf9ke9Q5mZ+VozH1RylE1S1kNkiysw9MOJMHWegW12GizLspiD3uTmkaOCdYglsk85t8z7k1nXILS57o5piIIEGFqoUcgdUdaBYIZh5vIECSZmLWHVGtYyMzw3RNXhoDGTe5sttOk2i0VQMz6him2OHOFmqsOfM53aHfoi79ZniDl4hQ0Gel1ZUblME34pWtFydEbK0ScztEru0Z4BWG7YA6dyR2ga3SVVhBYKT6s87JgOGoGqA19RwMGBdFI0WLneCejRdXflBawG+ZxgALTUwhFEhha8t7Ty0yGNMRx1mbaqyjhn12UWvz0sO0kuc6AC0zJbIvZp466LOr+slQUpazCh9QvAu5sOab2ABjlzVmFoYY4WrXxNUtyuyta0Xdxt3/gNTNgTFNaagOHpZKXqUrjO4A+sRrJPHwWmjgKjW0cbiqYo4YuLmMeLFovYHUHQc76wVPxpaalHB0clHC//lVnZWt3Yc5hEAZXSTfWw1J0hY6+FqUmPqYwuY6Jp08wLgSZgjUcT/2t+EqmhRfjBRLajWRQNNxbDhHbIGgAjXmecjp4HY2Or4qltbaTcuUh2RzC5xjiW8NNLfopuK9HVblpCDwuubiKgZ9+Frr1w0lvKxXPxLc5JFxGqRKzve0mADmH4rM/tRe/EqX52aBZnPcXSV1kcrQTCupyYus83VlN0DXVWuencC10rsYJ+XDtmy47XAldGlUAYBwWKbjdvOWqlj7rCavaVtN88VMJfrcx15Tlyzsemz+5RurJlWMuVS1XN0UIHG8JQEON1M2QqJgJgEmqeRA4oYl5AAHFNQd614gKqo6BfVV0n9oibEEXRqGq4gi2qxV6zi2GjM6Ygc1FeqGuc0OBPP8AVZGviowtFz43VkZ9e8MWvouDqgLgDfLdaqTH4ulcZWuMz3LIczqovAbzTYjG06FHLTd2+PetOMu/201ca3Ah1Jrxb1YuuHisa6qS1zuyTMBVOqZ3HNxWWuSx9xYphb+QrpfmPAINENc0k8AofVpspZnGBy5qxtZtWmC2C0ad6afZD+blrMonM90GLwFop4Yl5eSMrLNvxWWjXqZjSc6C42ldSk1lMsMjLx7iofSVMIXwAQA9w7RGkKuvhAGVKpBAByNJvJ6+/RdJ+Ja+xG7IJgg/NRWIqUCJa6DJdyvcD8VNXHDOHJc5xDrCQYiSdEuHo5mPeBMaHv5D3ro7QO8qGnTYIaM77R3DwiFbRFPzcNzhpnK0yBAPH3lXTfxgbgX+bEgCXECxv/13rbTwAfiqdM5S3DUg944SbwteamwgE2BsOaqfjadN79yS97rFobA04/7zU0J5oatWg1xBu6q+RYn/AE9yzYvC5KrabYLxy6f733WrzveVsodJpiCQdf8Ae5ZRXFMOqNBdUcSA46HggpGHccQxhbJa6XA+8D9T1SMwzsXioEBjYBJt/pK0TDHUmk582XM02vBJ62WoPp4eadMAZXEwf4Tx59yos83FHBzTjM+5ngIJ08dFgFCnTq0wYytuTNz3K6rjS2mf2jSNbd4WQ4uQZaAEStjTSykO7Oac3C8pMTVpvAE9njHdoFz6lbO6QJnu4I3kWueQQaiTkDTw5IrVqbXQ69MGco4lZnVgGyQD3KneF7944Xm3d3osiypWcS5x/eObA/lHIJCW06LWi7zqeSVr4J01vzSPfJn/AEo0UgXnjdKe2Rwb+aHHNroEEwq0hxIBA1NksBtgDPPmm4hNTp53Wc2e8xbijUX4HAvxhAzbugKjWvqEEgSQIHM3XqK+yaNHB4fCbKeX18Uw/tyeyGfecXDRsBtguH5zh6GCwtI0c7XueagHZNQSALxOU3ETw7oWz7XrYeh50/D099WcaTMpIcxrSLAGbzb85Fji7XSZGvB4DAYFr2U3Ox+b18sgVJMNaALc5kyMs2tJV3VNzhi2Ua+Gwb3VG0aTQwAgcecTexmWyAFz6O2gwMMfsWw1rTcUbAOItckTrMXMcEY3aLRgK9BhcKVV7nlrLO7QY4TN41B526KZWtiaDmV9oYzEYoGnRFJlao8tBfRbIhjCLAlpA+7+EHZWfUqVKhcRSxoYBhqWH/aOw7P5nTcwSNOOolcahi6r3POIr1M1Z4qV3ss7s6TAtB+dyFlFcsqPytFNx7JkSBz1mD39fC4zr12FxAbgsPh8NhaRwO7qPaHkg1YgEvOXSXGYmdBax24yrisPSY/NL2tzuZUdAc3KdWj1ZIFhwkayvKVNrGrUpOzPaaQ3dMsAaWMAgBoGhM8dOHArRisTTyBzaPnMOc9uWQ2GglziNQZMkHXjFlnGtdSsTVDnnULM/EOZ2XceMLWzdvw4ImSdVz8c3trrGaSpVzNN/BY3u7SneFs8lW5110kcvScyspMfVeGMBc48Aq6dN1R4a0EuOgC7mxsDUo4o1qjbBpAJE3U9XEnjRhNlEU21K0jN90iIVtTDik0wbSt1Sq4wHWAMER+KoqlplsjmFy1u+JjmkS63BWUHQ7tLQaTQwwJnkk3ENkLTE8YcVLqxtSeKylpaEMeon63tctLD2JK5zX6LoUINCSVK35QTJlBMNsoeYckc8HU6KKmcsqveGSldUlxSE5nAAKour1gYgQYvdZalctblaZJVderDnybTMgLMawqPDRpxKsjN9YK1Ts5r5ibpaBblLqhJdyGvRJVcXdtoMCw7+SoqVDyE9y04/wBtNfEZWlrYBPJYHniTc8Uj6gzS6espDiBNp70FNbM3tahWCo2tT3ZHe136LSwUixpywXmGgqivhzh3FzCcp1gWaiyObjW7sCmRfXos1N7qbpBIKvxjnHEetJygdFD8OabqQJDs17GQuVv3Y9Xn55kq+jU3pEnJUNxNp6LdSxZDSXl2fiZusZyubleJA0PLol3xzZXDM7g6Y961/wBuNkv9N4xLnBwEgC8hWNxRktzQCIdOhEaLnZwdNe8INS0eCrONoxcvcXes+zjpwQMSaeUAdkXPI/Jc+Z0TNfABieuiLy3+en964gkeqziPH/e5ZjWc55dnLiTrMGeaoN+CZr8p5nRDGuhX3DHAtBzCCeanfNIGkm9uKxl3PgjPAmxkXBROWjfFoixJMnqkOJc6Bo0ag3VBcTrdF0XFzq5eACdDYAJTULrad3AKubHkjNbjZFxaH5RYxOt9VIfeSZPJUSI4ozWRMWZ5M/gguAsqg5EouGLiTqlJUaoJ5IqZUaqClJRcMSSJUl4DdJI4lJKHQTpYI0JkyfBOXloAm+mqrE8CjQG896KuY8CmWuc5wsQyYE6T18FDH1GtyNdU7VsoJggkWA6ge4Kq0Xt3KCe1p3QEVYXSZOvEaoBJdJuSTJN5lVgkxpCupw0y4Z3O9Uf73oGzZJeO1ULiCCJH+VY5mUtoGsDVc6ar3Ds0u6b35x0uq206tSqxlPtV3uhlJgl0nu4Lr0MG2lmwdKh5zixepTa4ZKX9bvvHuFhzJWbVjtiq2lhyA0yOK5mIxLX2geCtxuLl8NAPfOi5zu063FdPMS0tTVVjVWFpjRKGldGF+ErbjEMqCSQeC7mExgc8EnTgvPBpB710cEAKTiSM3Ac1j1NXzXVxGLa1jiBxuFzjXBdYmTzVL6zi7LNumiQtBJuszytrY7GbkWMlaKONp4lgA7LhqFxw4w7sgxxKWnUIrSbDktcprtOaXmALpBhcQSYpGwlNhK7BDyQSuhRxu8qkHLlA1KxdhzK57cPiMsmm6/cujSDmYbK9sOGqattHK9oZpxnip89pmabzMCCTzWfqzzIx1KoHFUb0l03hdFuEovYYf63GdFQzAMhzs/ZAt3q6llYzU7WuiDUJf60dVTV7DjebqkS94zHsAac1rHK3DVYdVDQ7M0GSeYS1ntsxrY7hwCQvIf2bchCrqPAsNTqtMX6HO0APVVnLCRxgSstTEABRT1CzMqy5s8Z7oCyvrEmxSZnTcqas8urRqsMS4gxEkgrZTFNzJzAg2ErgtqlvBOMZVaIAb4pq8ttfZjX1ajmUXPZl9YnKAVgOGrYctD2w1swJuZ7kvnmKY4vbU7yCJBS1tq4usb1Mvc0Qud+V2ktio1SI1UtcS4Ejgs83VtN0KyrfPxeTKDwuo1voEzWzqtOYaCTPBPeImbKCQBdQZOtu4IgJnQ2UcYAn9VOUnu/RMAGjRBDSWyTCIm58FM37XuR4oiNEEAetryU9PeoJjQQTzQQSdXe5RJ96IvrKmwRUBBRcqEEEoCkBEc0VCFKgkdUEd/BQeakyUaIpVBKkjvRZFQbwiPeiVEx1RU6awomBYeJUE8lBJKKlpJIDRJ4Bd/ZWyadZ+Z1VwIuCJANr9rTWBA71waIO8bDWuvo4wCu/hWNqU99iKjnYdt3U6FWAO57onwaCs+ldJlWnuzh9k0G72mC2o+k0BrATq533jrYW71VhsZh9lYQtePOCwHLSpw1mbm5x1/pvrosmLdUrYZuGoZcHhnGWio/LmknRvrO8deQT4PYZrblriKUiQ6sSSBxin363PuWFV1A7VwiVQTey6ePqU6ksa4HKYusAp9kjmvTKxYtwwfVLWNiAIvdXVcKQRAJC2bINOlhnvdGcmIIT1KwO8zCMo10Wevq58cp9ONdVowTqYrtFSQP1VTjmNzPJM5hIBaDGi0ynF1abqpyCB+aodV9yatSdMgFUlp4hIlMx+t1RUcS9MbFUudeQtM1spVC0AHRbKNe8TbkuRviAmZiCFL5JXcqYhr2kN9cWAlYm1zTfe8rAcQXGSTYqDW71J5W13aGNIqNawzPNRVxbmB7Q4meAK5FCq0VA6pOXjBhT5wXVCS6BJhTk6+NZqZiJPVTUeGstZZjVbzSOq5raq441aX5u4ckjnOnTxUAgJKtRrGkyJ7yoRXiK0CFz3uLnKyo8vJ+SQNgLNdJMQAiFKEXUIsphEdygR1wVmNzdbHNtcx0WV4k8lmunilaJKuYIEQq2C6va0pIvqnFuCnXjCUBMFpyqQOSIARoptCIifBSo4qUQCxU2nRRdR1QST70pJKCAiyKi5PJTACL9ApjkhqNUQphCGlQpUIIRClQigpSpUIsKoTKIRoqhMYUIqFAHepTN0jU8kVbh6JeZykt/D/bhemwuGxDnOBAptDQKbR+0fIEggkQ3xHDxXF2fSOUudSe+9mR+JJj/AHgV0Disc6jkaW0KQNj8pgX0sOB6rF+q00gcM5z8u7Y5haMls44yZkm3Nb8PjGBha2t5syJ/ZCXv68OMQZXGYKbu2+rVqFxykTIJ5k8f9haaFRpdDaYhwkOJnMfAW/wmJrlnESb+9aaE1Gkwb2Ceps7CAEzWKhpbRZlp1q7R/QF20dWhhntptAEF2olJisM67REuKyU8diAzKMTUIGk02pTjapcHGvUkadkfksfV2NmG2ZVe0EggSuj5lTosDZFrmVxTtHE1A0OxFQhugyAfkrW4qq6JqvPgl0ljdUwrajpF+4Kmrs0EWCqGKc0etWnqAq34sudd2IB7nKTU2MuLwdSn90npwXNqndzm1XWe4Vbu84I73Kk4fDPPbpVj1J+a6S1i45Dq7RxS74cCu63Z+DP/AItS/Mn5qxuzML/7Z3ir2mR54vgTKgVhm4r0n2fRDgBhxH9IP6oGzKZbO4I/sas9Ljz2/I0mOijekmwK9GzZtJtxSPi1vySu2cx0uNPwzJ0mOCKlTgPxRmqzqAu19m0zfdub1coGzmSf2Y+KVemf/HHAedXuKksAvl8SV1TgQJ7LBHNyR+DdAIDCDxBU1PrmZeiVwECASV0ThDpLQkOGIGg/FQc8i/ZBjvCiDEwtvm50DUrqBFsv4IazNbxUjRXbl0xBnuCh1NzRJbboiazVPVPBUH+m/NantJ0EJN2TxUrp59ZFbGnkrMpTNYYTBh/yievRQyNVMJssKYKMaSyhOW2ngiENKhPEahEQhpeKiE8HUoynkhpIRCaO5BEIFQma2dSAOZKMvKT4IFUJkZTyQKohOWnmERxkIukyqITEE6lBHeUUkKExAUIpSUqtyiNCfFKYn1YRpWoVhacsxZDWgxNkUrGZnQt2Bwxe+S4NaOO6zTwiI6pcNTYfWJ14RJ7gu5RpUhhYZRYawsczXAx7o5qVZVDnOo4apTBxG5Y7XeZR0jhyVLSa4AY2mxpkFzgAT1/64q/E1GMJytoiqQAZaSBroDIHC/5KMI5tOo5xAEtylrQTfoFApoFrW2ZaLOKvBZULSTvHjXKJj/ellDiLiBBvekATPfAMfNX0nF9O1Yw2wDXHTnMoEqMaQYb+sLO6Rru73uYWoNpFv3bH+FqljaYBJY38IW1YwHH+EHuRuqmks15rWW4c+tTp34wECnQmAxkDmE1GXdOm5Z4OKdmRo7b/AMVo3dIG1KkT0UNp03O/dMjvCBGvpuMtc0/3FOXg6QP7iP0TFgEAMaAeindsiN3TPOT/AIUCb2b5Wjl2ygVmaS2f/wCjlYAARlpUI5SB+iHVWz2qVCe90/oiJbWpNmXDxeSnD2OnttBHJ8KnzimLCnhw7kHgfoo3sgf+n8anyQX76nALajSP6tVLq1KCHVA0/wBarbWEQ7zbT+OVIxDBY7i3IpgtZUYRaq0z/OkqZXWc9g/uPyUNxDI7VSj0j/Ch1fDm7jRB55T8kwT96DUYe7OiDJBeyOqPOMNYTSPPszKXzmgx2aGgaTlPyRE5THYe0jrKRzHkH1ff/lBxeHfYsEcJpk/opFXBlwEMv3R+EIKyyqCXOy9f9KrdTquMgs8VsHm4EtpsPQAKBUaJygDxQxzn06wcf2jPC/uSuoYjLLnxHHdldIvpiO2R0cpNWiJMlpjhF0TlyhRqERvCeM7sylOFfqXVJ4/siF1DUoF0hz5PFQNyDll098FE5cc4ciSw1557tVGiyPXxRn+Rd4lhaYe4TrEfNKRP3Xnvt+SLmOGaTWiZrEcyIU02sM9msejo/RdgskyXvPcQNFJA+6x7ehCrPLj5KLj6lWOs/ooNNuuSoR4LqHDMJBcXx3tHyTZaTWZd7Ec2gT+CHLjmmTpSf1IQaZEDdkHouvug7So8f0g/JKaVJp7TpPNzUTlzBRJ+7HX/ALSFg0k89F1g1gdJc2/CAP0SltMRDwL2yjT8FTlzQypBhpg96XdvJMtNua6e7pk9ogjWSo3dE9nO0xoMoKJy5m7dpEdUwpGJsB1XTLabR61uQaErWUnXnTmmLy5wpOjh71BY88B4LoPayZhx7wobTYdYnkmJjBujxICg0XcwuhuwTb8Cp3TD6zRPXVDK53m74m6U0yDBldJ1JsGWhQKLYNhc89UXHOyZdQfcl3ciwK6W4pHVt+kpdxTm1pOkwmGVzhTJMGPeg0bd/Lmtxw1ImB+CPNqYHqEnvTF+ufujzEo3Y5rduKM3ZHgEvm9Ix2B77pi6ybqCL+8q+nhTF57rK9uHo8WTGt1qDmsaWt3kH7oIhRYKOGaA2HVA8cA3RWjOxhDSA0GQ11Mkj8QgV2taZrYgki8vsP8A5JK9em5sF+Je0GwJBH5qY0zy+rUBqXcbQBotVOk8UxlpAHUiSPz8Fl3oabB7u4nT8VbvWPbDvOOmaf0TEjczD1i2dz2eTmzfibJmU673fvGZjeDTP5ysbMZRYIIrDqQf0U+dUzfNXveQR81Ma1WKGJkhoHWf8KRRxQ1YD/ckO1rkNpuj+pH2s8G1IHqt4mxaaOIn93PVyjd4ga05H9ar+1MQfVptHgUDaOJP8A8CmGrG06l5pOJ7n/5TQ+YGHq/H/lV/aOIBvk+Eo+0cRFg092UqYatyvNhh6w93zUhjwP3NUeEqk7QrmJa3wBH6pvPa+oYz8fmriaY0nOPqvHUFNunxGV0f0qvz7EAyW0z7/mmG0MREZWfj81MNAovaD2Kl/wCVSKR4MffkxO3aOJizafiD81J2nix92n/vin0+EFF8funn+yFAoO40X+IMq37Wr8WM9/8AlH2riP4W+9Pp8ViiQI3Twf6SpgssGGOf+hONrYn+ADxKn7UxI1YT4p9Pio1Wg6Do7/pTvyD2d23uyn5J/tXEfwD3o+0qziJptJ6D5IiPO3zJNIj+kwo86cDmHm4PPKg44R2sNTJ8Ap89ZEeasJ6pgPPn8X0z0EI8/cDZ1MHnlUHGMI/9KwHulKcVT4YcJhqTjajrOLDHNiU19ZLPBguo3rXT+xA6OKUl4HqR0BVw02/qEAZjHINCjevBgF6VocIJe6BzCYut649xsiDfVOLiO5MKzwJzeFkrYj94PcmzNBs6e9FK6q50T+MJS4ySR+SextmTNYIsZQUZzM3BhDqhBHZJ71eQSeE9P8IiXGWjxaiM29g6wg1hm7RnqtBblAgAX0hIS4usD1AVFG+bOjJ6Kd6w37I6ghaGtP8AEB3CVBpiDJP4oM5ewkwGSVG9byb7logAi5jqUZHG507iiYp84A0AjojekiQQFeacgjK021lLu5cAGtt3ofVYquGgHip3zgYgJzSjQNg9FO7gmGW5ygr3x0sD3C6jeO7vcU+VotAA8FGQA9nL70FYq8j4cFO8J4D3KzdZrCPepOHP8IQxU59/V9wSF41LSf7VeMMOLR7kbgtFx+CLlUGoOAPuUW1yx4K/cE8D4BQMOSJAd7kMUDdk38OyVOVugNuiu3Eaz7lBpTJkx0TTFIY2Z4/0pjPB8BNuRrJjog07xKBMsi2U9Ql3U6mOhT5QNXA90qMpLbORSFoFg+I7lEHNIq9bFPkJtmt1lQWOb94e5EIczTOcTzUkVDo49QdEOa+Jhp/tSQ48IPIwg1jAv4QesqDgqo4NPUlZjisSPWL0vnVcH7/uXPt15avNnngCOqcYRw4HpKxjFV9Zf7k7cTinaF6dnLYMK7hTPWVIwrdchlYRXxTjALj7kOrYkGCT+CnZy3ebgSMrh1UeagGQxYPOMUNM/vXX2Ds3F7YdiA7FPoCiGmcuaZnpyV7OWfzck+oZTDDvIjLZZcUcVh8VWoCuXbqo5km0wYlVecYwEDeEeKdpy6Awhg2t1R5q8aW/uWAYrF8KjypGIxf8b/wTs5bTh3xfwhTuahF3OHULB53iRpVeeiBjcUD+9d7gnZy37upYZnHwUhlUfe/BLg8bv3buq0B50I0K3COcdys9amMp338Qt/Kkh+mdhPeIW2Wm4d+KWRftOHgrqYxkvmC6kUQ+btpELX2P43DwTBk6OnqmmMMVAbU2+BUuFQj9ytppE/dYfAKPNv8A9Y8E0xgAeCZYjtCMzHLd5qRfKfBxRuHfzBXUxhl8nKx0ckB9UCIPitpoOIs4+5T5u8aOnqmmMZfUOjSecBAdWIjIfctZoVdBASHD1tOz4ppjOHVRJy/gpL6ogyfcmNCq25aw9FBL4vTHiETBva3P8FGerqXjxalD6kwG2PcrN5WAvTQLvKp1II/pTBz/AOEAdwRvHk/uhPKVOd0T5uZQG8eJBye5NvHRe/T/ALSE1D/w/wDyUsZUDid2TPJ0Iqc5Os/74qQQZyuJCRzKhEmmL63KjdPJB3bZ6oLLEwDE6SUZXfxiPcqvN62e4ao83qBxkt9yItLHEWPUhyUteCYf1Eo3L7HO0f2qBQI1eJ6IGAcY7Qdz0URA9YRx0uqzRifkg0QIAkdUDiAPWI8AidTJvxgIbRMzHuSuY2Rmgd0opg5t+0fdCUPjVxIm3ahRu4PraqTTaSNZCBi+3aa4DmXJTV7Vs3gUtRkC5kgIFMup3kHqgsNW2pkcJRvSb7zL3SqdzBOruhSuYQLMJ8UF+8OhqE+IVe8dmMPd71WaZiQyP7pS5ahEBotrDlTWgPcCeJSuP8QPvVABgndtnnJukLHGJLR3GUNaC4ATDgeHa1UAnN949T/hZHNJgGCn/aBvqH8v1TDWokA+qY6f4SOdT4gkjgYVBdUgAUx7/wDKXNUFntme/VMLVmHpV61enRZldUqODW9SvYVsFsTYdCkNoNNetUGsEkxqQNALrzWxqrMPtjCVawysFUSToJt+q9ztnH4vZ7ab8Ns92LY6Q7JJc08LAGy81d3A23sbCu2a3amyTFKA5zCSQWzre4vqE1TYmD2tsLznZVM0sSL5N4T2hqwyfcei27T2htL7FrvxOzqNGjUpEOmt2mzbSNe5J5LUm7O2ZX2ji6ppUqjc2V2gaPvHvPy5oKNo7L2VsbYtJteiK2Oe3KDndd3EwDoPkrtn7A2TW2FSxWIpZHFmepVzGQAb8Y0Co8scK5xp7SpudUoloY6LhnIjuM/7K6GEpuxnkYyjRBL30DlGkmdFBVhsBsDbGHqUsHSNN9MesA4ObyN9Qq/I/Duw2L2nQqevScxp8C9L5H4HE0MRiMRiKFSi0s3YFRpaXGZ0PT8Vt2DWp4jbe2qlMgtNSmARxjMP0QeaqYRlbaWMqvbmb5xUa1s5Q4ySZPBoFyenNXCkCAGMaQRmAGGpXHMMJ3hHfqrMWx1GpiW1mbuatYEVOy0hz2uaSeDXBjmzolrdtgqirTpCtUdAe3eVHO9bO1zAZiQBBjs95CoynA0zicM4Bu7fVptqMaSWlrjZzSb5TBF7giCvS4zY2wsAWYjEtFKk2W5C5xzOOlrkxB0XKplvnDSQWTWb2CIyF9dr2sPeACSOErX5dOhmCb/M/wDRQJs7Ymzn0sTtPFmMGHvdSbdoyAm54+CsoYTYO3aVWngaBo1WCcwaWkd8aEf7ZbtiYjP5NUX4Vgq1aVMt3ZMS4cDyn9VXgdq7Wxhfu9kClk13z3MnpLbqjxNbPhMVUpOBp1qDyJy8QdV6ZraVcDe1KhOt2kBcbbD3V9qYqpVaxlQuhzWOzAEAA38F6NuCJDcjjEDit+azYV+Ew4a0tfbiqajMG2BvpHGy1/Z2Zsv7Te8rO7Z9NxloEDhBK18ZukzYBglpLz3mEbzDVS3KyoTxyiyup7Pbm9SBxIbC2so0qVENp0yX/wARTYSViZSouBG5DeTi26l+FBjsUyAOA1V+4dm7QJ6BO1jQ0gE5u8Jq4wuwefSllEcDKmns8OYHGmCDodCtzKr2TAMd51VgqmpoADzU1ccs4RlNsvw+bxKV9Jhb2MM1p1PaK7IqZCCWgnm5JUyvu4druTTHFGFpvfG8c0Efd4LTS2OKgtiKhGmq3BwA49AEwqGOzKaYwjYMOOevUaOeYFa6WzcFRpZQw1nfxVDKcvf95VvrkGN2T3hT7T4xv2PTqVnPe6AdGsEAI+xsORZ9QeK1CtP/ABvTtqOMzTcOqv0+OadiGRlxLgOgKu+xqQaZqVHOIsTAutVWs4GGR4lVjEvb+8cPen1PihuxGW/avHcIQ7YtMuIGIqAcoCStialaq1rH1Wt/lskc3MJbv8w1fmKuU+GGwgSZxDo4QFXU2I6P2daecrXSe5zRmpPcRxzaq9tVwBy0wzqU+mRyTsWs3XEMBPCCpGxzu5NWXdy6DXNYTmqMJOvblSa9AC7m+BRMjlv2O9jpFZumvJA2SwQamI8AF0t9SJ7JcnFVh+8fEKmRyn7JptuMQIPNKNj0wZdiAAdCP+12MwixafBAM602lTTI4/2PFziGAc/9KV2yWNIc/Egj+X/tddzWEXp/ggNpi4awHvarpkcV+yHGDScXN4Tr+Cduxpy9pzZ1JC7W8gQGA9EhrmfUcO9NpkcetsOrY0n0yDwcSCqXbGxbQSMnxruiqOTo7yg1gYieibTI80dn4kG1MGeTkj9nYqmYdh3A8pXqS6llDiLzop3lImxBPemnMeR8xxQ/4XeBSuwuLGtN/uXsczeQPgle8gaNAV6OHjzQxQH7p4HQpTSxMeo892VesLnG/wCTlBc6fVd1TU5eVbhMZUgtoP6lsKXbPxLLupwSdMwXp3VHEQZPUJAQRIDARxIV05jzD8HimAF9J1/FLuK5EZHz/SvUPcdHkX0OVGbLcBp7yE05jyZewkZ3DKuzhfKfaWAoNZvaVWiBDd6wkgdQR+K8mMa8CMlP3H5pnbQquADmUyBpY/NebY6vRY/bWL2mW+dVGuptMik0Qzx4n3ptobexuPw4w9fJuZBy02RMaT3LzIx1QaMYPA/NONpVh91nuPzTYPRU/KLaFHBDBNbSfhgwsy1GScvLVemwuJrYXyJp16ILKrKOZpib5l83+0qsepT6wfmpdtTEFuXs5eQJj802D0+J8rtpYigaUU6UiHOpsId7yTC5+zNsYnZld1TCva3MIc1wkEdFxhtGsPus9xUHH1T92n7k2GV3sXtnF43HjFvqBlQMyfsmkAtk85nVTTx9UzvWtqiZaCS3LaLZSItw0XB+0Kv8LPcUfaNb+FnuPzTYY7pxdfe0XtFNjaLg6mwCGtMg6cdLk3K07R2vi9qCmMS6l+zktyNjX/peZO0ax+6z3H5o+0a/AM9ybB6PZ21cTs17nYZ8A+u1wlrluxPlZj61I02upUZEF1Jpn3kmF48bSrjgz3KDtGueDPcmwdapWY1upJPivXtx9JjGl1VwEDQL5z9oVv5fcumzys2g0Ru8OerT81qepCyvafalF7cu9zRe4hVjbOGY2Ax5I7l41/lRi6nr4bCH+x3zSekeI/8AaYT4XfUtdeWc9PaM207EVG0zSgE8XQAuoarmQHUoMWIMhfNj5Q1z/wCLhR/a76loHlftINDQ2gALAZT81L68kl/X0DfvbMalZC2o97iH2dqZXiPSvHHWjhz1DvqTeluO4YfCj+131J1FyvaBtRguSehVgbUqAFj3A9F4dvlftBulLDD+131JvTHaIM7vDfC76k7hj2jnVmVIcyo6PvECEjcWTUiD42heOPlltImSzDnwd9SPTDaE/ucL4td9SdxMr2Jx4OjRHPmrGYzswGxK8WfLLHkQcNg/gd9SQ+V2PmRRww6Nd9SvfkyvaYktrBsOqSNRMBKzNEBpB5ySvHemG0fZYb4XfUj0vx/Gjhj/AGu+pO4c17MZ22JeT0Ug4gk3jlZeNb5ZbQbpQwvwu+pT6abR9hhPgd9SncOXsnmubMDQ7mWyFZRpVSZqmmT3BeK9NtpewwnwO+pQfLTaRP7rCjox31J3Dl7wiowdndkdEbxswQGjjfVfP6nldtCq3K+lhyOjvqVI8pMQP/Fwp6tcf/snUXK+hRcuZVBHIhQ3eFt3UyOi+fO8pMS7XDYUdGuH/wBlLPKfG0x2KdFvTN9SdRMr25wwc8nsNHTVV+bsk9hjo4gryA8rdoA3p4c9Wu+akeV2PExRwwn+V31K9w5ereW0CC7DujmDKXzynJBo1PBeX9L8fxoYU9Wu+pM3yyx7RHm2Dj+h31J3DmvVUatCoYa+o08nLU3dtGoK8S7yvx50w+Eb0Y75qtnlVj2uJNPDunm0/NO4ZXvSbQoueErw48rscP8AxsJ8DvqUHyuxxj9hhhHIO+pTuLle3MDWykUydAV4geV+OBB83wsjm1x/+yY+We0na0sN8LvqTuGPaVGGm0kuDY5lVU6oqgwA4DU6LxtTyux9T1qOF+F31JaflXj6bC0UsPDtZa75q9wx7V1LLqHNPVLuZuH/AILyDvLHaLgJpYawgHK76lWfKzHHWjhieeV31J3DHtCKoFoKrc2pMyfevIN8rtotEBlCO9rvmmPlftA60cKR3sPzTuGPVFlUi8FAZUmwd4FeUf5XY95k0MLP9LvqUelmP9jhvhd9SdxOXqi+uD2QT1VtI1Hn9oxrIHFeRHlftAaUcL8DvmlPlZjy4u3WHk/yu+adxeXsntJMNu1Y3Gpmc0UngTbvXmvS3HxG6w8f0u+aj0rx/ssP8LvmncS+XCQhC4thCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIBCEIP/9k=" alt="" />
@@ -3040,7 +3055,12 @@
             <div class="surf-loading" id="surfLoading"><span class="surf-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
           </div>
         </div>
-        <div class="surf-gesture" id="surfGesture" hidden aria-hidden="true"></div>
+        <button class="surf-rail surf-rail-prev" id="surfRailPrev" type="button" aria-label="Previous break" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5 8 12l6.5 7"/></svg>
+        </button>
+        <button class="surf-rail surf-rail-next" id="surfRailNext" type="button" aria-label="Next break" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 5 16 12l-6.5 7"/></svg>
+        </button>
         <button class="surf-fs-btn" id="surfFsBtn" type="button" aria-label="Watch the stream full screen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg>
         </button>
@@ -3063,10 +3083,12 @@
     </div>
 
     <!-- ============ Surf Break floating button: a small wave mark that
-         follows every screen. Drag it to park it anywhere on the
-         screen — where it lands is remembered on this device. Tap it to
+         follows every screen, fixed in the bottom-right corner — it
+         never drags and keeps no remembered spot. Tap it to
          open the floating live player over the current screen; tap it
-         again to put the player away. It wears the
+         again to put the player away. Wherever the player window
+         passes over its corner, the player renders on top: the
+         button never covers the feed. It wears the
          wave in both states; its dot shows at a glance whether a stream
          is playing behind it. ============ -->
     <button class="surf-fab" id="surfFab" type="button" aria-pressed="false" aria-label="Open Surf Break" data-play="off">
@@ -3888,7 +3910,7 @@
         </div>
   <p class="surf-dock-status" id="surfDockStatus" role="status" aria-live="polite" hidden></p>
         <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this page</strong>, or the speaker in the player's own control bar at the bottom of the picture. Nothing covers that bar, so the player's own buttons take your taps directly — and whatever you set there stays set: turn sound on or off from either control and the app <strong style="color:var(--ink);">remembers</strong> your choice, bringing it back when Follow the Sun moves to the next break and when you return to the app. Sound controls only ever change the sound — they never pause the picture. If a webview quirk ever pauses the feed right after you touch the volume, the app notices and starts the picture again by itself. The player itself is a <strong style="color:var(--ink);">floating window</strong>, not a screen: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it over whichever screen you're on — just the stream, small enough to keep an eye on while you do anything else — and it stays usable right there: flick sideways on it to flip to the next or previous break, pinch to zoom into the feed and drag to look around the whole frame, double-tap to put the full frame back. The wave button and the player are one piece: drag either one — hold the player for a moment, then drag, or simply drag the wave button — to move them together, and they stay where you leave them. The window button on the player (bottom-right of its frame) loads <strong style="color:var(--ink);">this page</strong> — Surf Break's own screen in the tray, where this break menu lives. Pressing Play anywhere always plays the stream right where it is. This page is its control center: pick a break, close or stop the player, and set auto-play here.</p>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this page</strong>, or the speaker in the player's own control bar at the bottom of the picture. Nothing covers the picture at all, so the player's own buttons — play/pause, volume, settings, fullscreen, progress — take your taps directly — and whatever you set there stays set: turn sound on or off from either control and the app <strong style="color:var(--ink);">remembers</strong> your choice, bringing it back when Follow the Sun moves to the next break and when you return to the app. Sound controls only ever change the sound — they never pause the picture. If a webview quirk ever pauses the feed right after you touch the volume, the app notices and starts the picture again by itself. The player itself is a <strong style="color:var(--ink);">floating window</strong>, not a screen: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it over whichever screen you're on — just the stream, small enough to keep an eye on while you do anything else — and it stays usable right there: tap the arrow at the left or right edge of the picture to flip to the previous or next break, and this page's Zoom control zooms into the feed. Drag the player by its frame to move it, and it stays where you leave it. The wave button never moves: it sits fixed in the bottom-right corner, and wherever the player window passes over that corner the player shows on top — the button never covers the feed. The window button on the player's header strip loads <strong style="color:var(--ink);">this page</strong> — Surf Break's own screen in the tray, where this break menu lives. Pressing Play anywhere always plays the stream right where it is. This page is its control center: pick a break, close or stop the player, and set auto-play here.</p>
 
         <div class="surf-nowrow">
           <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
@@ -11520,7 +11542,7 @@ var STRAIN_SRC_LINKS = {
          (2) the Surf Break PAGE (#panel-surf) — a normal tray screen like every
          other section, carrying the menu: break chips, auto modes, switches,
          credits, and the Sound / Zoom / Stop controls for the player. The
-         player's window button (bottom-right of its frame) loads that PAGE
+         player's window button (on its header strip) loads that PAGE
          through the app's own tab wiring — it navigates; it expands nothing.
          The player node never moves, so opening, closing and screen switches
          never reload it, and pressing Play on any surface plays the stream in
@@ -11534,10 +11556,10 @@ var STRAIN_SRC_LINKS = {
          either control set last (a mute, an unmute, or a new level) as
          the remembered choice, and re-applies that choice at every
          player (re)start (Follow the Sun advance, background resume,
-         recovery chain). The player's bar is never covered by any
-         surface of ours (the gesture layer stops above it), so its
-         buttons take their taps directly and whatever they set stays
-         set. Sound controls change sound ONLY: nothing in this app ever
+         recovery chain). Nothing of ours covers the picture at all —
+         no overlay or gesture layer — so the player's own buttons
+         take their taps directly on the whole video area and
+         whatever they set stays set. Sound controls change sound ONLY: nothing in this app ever
          pauses the player, and as a safety net a pause the player
          reports within ~8s of a volume interaction — the known webview
          side-effect of an in-player unmute — is resumed by the grace in
@@ -11639,7 +11661,8 @@ var STRAIN_SRC_LINKS = {
         var zoomLevel = document.getElementById("surfZoomLevel");
         var zoomResetBtn = document.getElementById("surfZoomReset");
         var zoomWrap = document.getElementById("surfZoomWrap");
-        var gesture = document.getElementById("surfGesture");
+        var railPrev = document.getElementById("surfRailPrev");
+        var railNext = document.getElementById("surfRailNext");
 
         /* --- gesture ownership (owner bug fix, defect 1a) ---
            Any press that STARTS inside the surf subtree — the floating
@@ -12288,8 +12311,8 @@ var STRAIN_SRC_LINKS = {
           fab.setAttribute("data-play", mode === "playing" ? "playing" : (mode === "loading" || mode === "waiting" ? "busy" : "off"));
           fab.setAttribute("aria-label", open ? "Close Surf Break" : (mode === "playing" ? "Surf Break is playing — tap to open it" : "Open Surf Break"));
           /* The wave button is HIDDEN only while the stream itself
-             is fullscreen — it floats beside the closed unit and the
-             open player alike. */
+             is fullscreen — it stays in its corner beside the closed
+             player and under the open one alike. */
           var hideFab = fsActive;
           fab.style.display = hideFab ? "none" : "";
           fab.setAttribute("aria-hidden", hideFab ? "true" : "false");
@@ -12304,26 +12327,25 @@ var STRAIN_SRC_LINKS = {
         /* --- the floating player, on the ONE dock node. The player
            node never moves, so opening and closing it never reloads a
            stream that is loading, waiting or playing. The player
-           always opens at full-frame 1x fit — zoom is the viewer's
-           own gesture (pinch / the Zoom button), never a resting
+           always opens at full-frame 1x fit — zoom comes from the
+           Surf Break page's Zoom controls, never a resting
            state — so every open starts from exitZoom(). --- */
         function clearDockInlinePos() {
           dock.style.left = ""; dock.style.top = ""; dock.style.width = "";
         }
-        /* THE SURF UNIT: the wave button and the floating stream window
-           are one unit with ONE shared anchor — the window's top-left
-           corner — remembered on this device (ff2.surfMiniPos) and
-           restored on every load for BOTH states. Closed, the wave
-           button renders at the anchor's corner spot (overlapping
-           where the window's bottom-right corner sits); open, the
-           window renders at the anchor and the button renders
-           attached at that same corner, at a constant offset.
-           Grabbing EITHER part — dragging the button, or dragging the
-           window by its frame — moves the whole unit, and the anchor
-           is always re-clamped so the WHOLE unit (window + attached
-           button) stays fully inside the viewport. Until an anchor
-           exists, the unit rests at its default home: the button at
-           its stylesheet corner and the mini anchoring above it. */
+        /* THE FLOATING WINDOW AND THE WAVE BUTTON ARE DECOUPLED
+           (owner's order). The window keeps its own anchor — its
+           top-left corner — remembered on this device
+           (ff2.surfMiniPos) and restored on every load; dragging the
+           window by its frame moves the window alone. The wave
+           button is FIXED in the bottom-right corner of the screen:
+           it never drags, keeps no remembered spot (any spot an older
+           build saved under ff2.surfFabPos is dropped below and never
+           read again), and the window never moves it. Wherever the
+           window passes over the button's corner, the window renders
+           on top (its z-index is the higher one) — the button never
+           covers the feed. Until a window anchor exists, the window
+           opens just above the button's corner. */
         var miniPos = null;
         (function restoreMiniPos() {
           var raw = lsGet(MINI_POS_KEY);
@@ -12333,132 +12355,40 @@ var STRAIN_SRC_LINKS = {
             if (saved && isFinite(saved.x) && isFinite(saved.y)) miniPos = { x: saved.x, y: saved.y };
           } catch (e) { /* a corrupt saved spot just leaves the default home */ }
         })();
-        var FAB_SIZE = 52;      /* the wave button's box, px (see .surf-fab) */
-        var UNIT_OVERLAP = 16;  /* how far the attached button tucks OVER the window's bottom-right corner */
-        /* The wave button's OWN spot (its top-left), remembered on
-           this device (ff2.surfFabPos) and used whenever the player is
-           CLOSED: closed, the button is a free button — it renders
-           exactly where it was last dropped, anywhere on the visible
-           screen, and its clamp touches nothing but the viewport
-           edges. (An older build saved a spot under this same key;
-           it is honoured again.) With no saved button spot, one is
-           derived from a restored unit anchor's corner, so the button
-           keeps the resting place it has today. While the player is
-           OPEN the button rides attached at the window's corner and
-           this spot simply follows that corner (syncFabPosToButton),
-           so closing the player leaves the button right where it was. */
-        var FAB_POS_KEY = "ff2.surfFabPos";
-        var fabPos = null;
-        /* Clamp a button top-left so the BUTTON — nothing else —
-           stays fully inside the viewport. No zone is reserved, no
-           element is avoided: a drop over the status island, the tray
-           or bottom bar, the Forecast button or any card sticks. */
-        function clampFabXY(x, y) {
-          var vw = window.innerWidth, vh = window.innerHeight;
-          return {
-            x: Math.max(0, Math.min(Math.round(x), vw - FAB_SIZE)),
-            y: Math.max(0, Math.min(Math.round(y), vh - FAB_SIZE))
-          };
-        }
-        (function restoreFabPos() {
-          var raw = lsGet(FAB_POS_KEY);
-          if (raw) {
-            try {
-              var saved = JSON.parse(raw);
-              if (saved && isFinite(saved.x) && isFinite(saved.y)) fabPos = { x: saved.x, y: saved.y };
-            } catch (e) { /* a corrupt saved spot just leaves the default home */ }
-          }
-          if (!fabPos && miniPos) {
-            var g = unitGeom();
-            var p = clampMiniXY(miniPos.x, miniPos.y, g.w, g.h);
-            fabPos = clampFabXY(p.x + g.w - FAB_SIZE, p.y + g.h - UNIT_OVERLAP);
-          }
-        })();
+        var UNIT_OVERLAP = 16;  /* the default window anchor tucks this far over the wave button's corner spot */
+        /* The wave button's old remembered spot is retired: the
+           button is fixed in its corner now, so any value an older
+           build saved is removed once and never read. */
+        try { window.localStorage.removeItem("ff2.surfFabPos"); } catch (e) { /* ignore */ }
         /* The mini window's height for a given width — the SAME
-           formula positionMini lays the window out with, so the
-           button's attached spot is identical whether the unit is
-           computed closed, open, or mid-drag (no jump on open/close). */
-        function miniWinH(w) { return Math.round(w * 9 / 16) + 12; }
+           formula positionMini lays the window out with, so geometry
+           computed ahead of layout matches the laid-out window. */
+        function miniWinH(w) { return Math.round(w * 9 / 16) + 46; } /* picture + frame padding (12) + the header strip (34) */
         function unitGeom() {
           var vw = window.innerWidth;
           var w = Math.min(Math.round(vw * 0.62), 480, vw - 16);
           if (w < 160) w = Math.max(120, vw - 16);
           return { w: w, h: miniWinH(w) };
         }
-        /* Clamp an anchor (the window's top-left) so the whole unit —
-           window plus the button attached below its bottom-right
-           corner — stays fully inside the viewport. That is the ONLY
-           clamp (owner's order): there are no forbidden zones and no
-           avoidance relocations — the unit may be dropped over the
-           status island, over the tray / bottom bar, over the docked
-           Forecast button or over any card, and it stays where it is
-           dropped, on top. (The island and Forecast avoidance that
-           used to live here is what made drops near them jump away,
-           and the window-width clamp on this shared anchor is what
-           made the closed button unable to stay on the left side of
-           the screen at all — the closed button now has its own free
-           spot and clamp, above.) */
+        /* Clamp an anchor (the window's top-left) so the WINDOW —
+           the window alone; the button is not attached to it — stays
+           fully inside the viewport. That is the only clamp: no
+           forbidden zones, no avoidance relocations, and the
+           button's corner is not excluded — the window may pass over
+           it and simply renders on top there. */
         function clampMiniXY(x, y, w, h) {
           var vw = window.innerWidth, vh = window.innerHeight;
-          var uh = h + FAB_SIZE - UNIT_OVERLAP; /* the unit's full height: window + the button's hang below it */
           x = Math.max(0, Math.min(Math.round(x), vw - w));
-          y = Math.max(0, Math.min(Math.round(y), vh - uh));
+          y = Math.max(0, Math.min(Math.round(y), vh - h));
           return { x: x, y: y };
         }
-        /* Place the wave button at the anchor's corner spot:
-           overlapping the window's bottom-right corner, right edges
-           aligned, its top band tucked over the window's frame —
-           where it sits attached while the mini is open, and where
-           it rests, alone, while the unit is closed. With no saved
-           anchor the button keeps its stylesheet home and this is a
-           no-op. */
-        function fabFollow(x, y, w, h) {
-          if (!fab) return;
-          fab.style.right = "auto";
-          fab.style.bottom = "auto";
-          fab.style.left = (x + w - FAB_SIZE) + "px";
-          fab.style.top = (y + h - UNIT_OVERLAP) + "px";
-        }
-        /* The button's own remembered spot follows the corner a unit
-           DRAG set it down on — called at drag end only (fab drag,
-           window drag, gesture move), never on a plain open or
-           resize: merely opening the player must not relocate the
-           spot the button was dropped at. */
-        function syncFabPosToButton() {
-          if (!fab) return;
-          var r = fab.getBoundingClientRect();
-          if (r.width > 0) { fabPos = clampFabXY(r.left, r.top); lsSet(FAB_POS_KEY, JSON.stringify(fabPos)); }
-        }
-        function placeFab() {
-          if (!fab) return;
-          if (dockState === "mini" && miniPos) {
-            /* Open: the button rides attached at the unit anchor's corner. */
-            var g = unitGeom();
-            var p = clampMiniXY(miniPos.x, miniPos.y, g.w, g.h);
-            fabFollow(p.x, p.y, g.w, g.h);
-            return;
-          }
-          if (fabPos) {
-            /* Closed: the button rests at its own free spot, exactly
-               where it was dropped — no window geometry is involved. */
-            var fp = clampFabXY(fabPos.x, fabPos.y);
-            fabPos = fp;
-            fab.style.right = "auto";
-            fab.style.bottom = "auto";
-            fab.style.left = fp.x + "px";
-            fab.style.top = fp.y + "px";
-          }
-          /* No saved spot in either state: the stylesheet home stands. */
-        }
-        placeFab(); /* a restored anchor puts the closed button at its spot right away */
         function positionMini() {
           /* Player geometry: about 62% of the screen width (capped so
              it stays a small window even on a wide screen, and never
-             wider than the viewport), 16:9. The window renders AT the
-             unit's shared anchor and the wave button is placed
-             attached at its corner; with no saved anchor the window
-             anchors just above the button's home spot — below it when
-             there is no room above — exactly as before. */
+             wider than the viewport), 16:9. The window renders AT its
+             own saved anchor; with no saved anchor it anchors just
+             above the wave button's fixed corner spot — below it when
+             there is no room above. */
           if (dockState !== "mini" || !fab) return;
           var vw = window.innerWidth, vh = window.innerHeight;
           var g = unitGeom();
@@ -12474,12 +12404,13 @@ var STRAIN_SRC_LINKS = {
             y = Math.round(fr.top - h + UNIT_OVERLAP);
             if (y < 8) y = Math.round(fr.bottom - UNIT_OVERLAP);
             y = Math.max(8, Math.min(y, vh - h - 8));
-            miniPos = { x: x, y: y }; /* the anchor materialises on open, so the attached button has its spot */
+            miniPos = { x: x, y: y }; /* the anchor materialises on open */
           }
           dock.style.width = w + "px";
           dock.style.left = x + "px";
           dock.style.top = y + "px";
-          placeFab(); /* the button hangs attached at the window's corner — a purely visual attachment while open: the button's own remembered spot is NOT rewritten here, so closing the player returns it to exactly where it was dropped (only a unit DRAG re-anchors its spot, at drag end) */
+          /* The wave button is not touched: it stays fixed in its
+             corner whether the window is here or not. */
         }
         /* Player show/hide is DEBOUNCED (owner bug fix, defect 1b):
            while a show/hide transition is animating (~300ms — the
@@ -12513,7 +12444,6 @@ var STRAIN_SRC_LINKS = {
             dockState = "hidden";
             dock.setAttribute("data-state", "hidden");
             clearDockInlinePos();
-            placeFab(); /* closed, the button comes to rest at its own spot — the corner it just left */
             exitZoom(); /* closing the player resets zoom — it never survives into the next open */
           }
           syncDockChrome();
@@ -12538,7 +12468,7 @@ var STRAIN_SRC_LINKS = {
           }
           b.click();
         }
-        window.addEventListener("resize", function () { if (dockState === "mini") positionMini(); placeFab(); });
+        window.addEventListener("resize", function () { if (dockState === "mini") positionMini(); });
         function showOnly(which) {
           facade.hidden = which !== "facade";
           playerBox.hidden = which !== "player";
@@ -12548,7 +12478,7 @@ var STRAIN_SRC_LINKS = {
              order): the compact fallback in the player's own frame —
              it never changes the presentation or navigates anywhere. */
           syncDockChrome();
-          syncZoomUI(); /* the gesture layer tracks which stage child is visible */
+          syncZoomUI(); /* the cycling rails track which stage child is visible */
         }
         function setFacade(spot) {
           var info = spotInfo(spot, new Date());
@@ -12597,23 +12527,21 @@ var STRAIN_SRC_LINKS = {
            covers the stage. Exiting zoom mode resets to 1×; zoom also
            resets on any spot change, on Stop, on collapse to mini and
            on stream error/end (the exitZoom calls in those paths).
-           Zoom state is never persisted. On the floating player the
-           same transform is driven directly by touch — pinch (1×–3×),
-           one-finger pan across the whole frame, double-tap back to
-           fit — with no Zoom-mode toggle and no preset zones to lock
-           onto: any position the gestures reach stays freely
-           adjustable, and the player always rests at 1x full-frame
-           fit. --- */
+           Zoom state is never persisted, and the player always rests
+           at 1x full-frame fit. --- */
         var zoomOn = false, zoomScale = 1, zoomX = 0, zoomY = 0;
         function fmtScale(s) { var v = Math.round(s * 10) / 10; return (v % 1 === 0 ? String(v) : v.toFixed(1)) + "×"; }
         function zoomBounds() {
           var w = zoomWrap ? zoomWrap.offsetWidth : 0, h = zoomWrap ? zoomWrap.offsetHeight : 0;
           return { x: (zoomScale - 1) / 2 * w, y: (zoomScale - 1) / 2 * h };
         }
-        /* Zoom gestures are live in the Surf Break page's Zoom mode
-           AND directly on the floating player (where pinch / pan /
-           double-tap need no toggle) AND in fullscreen. Everywhere
-           else the wrapper carries no transform. */
+        /* A zoom transform is live in the Surf Break page's Zoom mode
+           and wherever a zoom level set there is in effect (the
+           floating player, fullscreen). The picture itself carries
+           no gesture surface of ours — the embedded player takes
+           every touch there — so zoom is set only from the page's
+           Zoom controls. Everywhere else the wrapper carries no
+           transform. */
         function zoomLive() { return zoomOn || dockState === "mini" || fsActive; }
         function applyZoom() {
           if (!zoomWrap) return;
@@ -12634,15 +12562,13 @@ var STRAIN_SRC_LINKS = {
         function syncZoomUI() {
           if (zoomBtn) zoomBtn.setAttribute("aria-pressed", zoomOn ? "true" : "false");
           if (zoomBar) zoomBar.hidden = !zoomOn;
-          /* The gesture layer exists while the player is the visible
-             stage child and the player is up — and in fullscreen —
-             because the same layer carries pinch / pan / double-tap
-             AND the swipe that cycles breaks at 1x and the player's
-             hold-to-move. Zoom transforms themselves stay gated by
-             zoomLive(): with Zoom mode off at 1x, drags pan nothing
-             (there is nothing to pan) and a clean horizontal swipe
-             cycles the break instead. */
-          if (gesture) gesture.hidden = !(playerBox && !playerBox.hidden && dockState !== "hidden");
+          /* The Prev/Next cycling rails show while the player is the
+             visible stage child and the player is up — the rails are
+             the flick's new home, off the picture. Zoom transforms
+             themselves stay gated by zoomLive(). */
+          var railsUp = !!(playerBox && !playerBox.hidden && dockState !== "hidden");
+          if (railPrev) railPrev.hidden = !railsUp;
+          if (railNext) railNext.hidden = !railsUp;
           applyZoom();
         }
         function enterZoom() { if (dockState === "hidden") return; zoomOn = true; syncZoomUI(); }
@@ -12673,7 +12599,7 @@ var STRAIN_SRC_LINKS = {
           var lbl = fsActive ? "Exit full screen" : "Watch the stream full screen";
           if (fsBtn) fsBtn.setAttribute("aria-label", lbl);
           if (miniExpandBtn) miniExpandBtn.setAttribute("aria-label", lbl);
-          syncZoomUI(); /* zoom/pan/swipe gestures are live inside fullscreen */
+          syncZoomUI(); /* the cycling rails stay live inside fullscreen */
           syncFab(); /* the wave button hides while fullscreen is up and returns on exit */
           if (!fsActive && dockState === "mini") positionMini();
         }
@@ -12708,172 +12634,25 @@ var STRAIN_SRC_LINKS = {
         if (fsBtn) fsBtn.addEventListener("click", function () { toggleStreamFs(); });
 
         window.addEventListener("resize", applyZoom);
-        /* Gestures on the transparent layer over the stage (the
-           cross-origin iframe swallows touches over the video itself).
-           The layer covers the picture only — it ends above the
-           player's own control bar (see the .surf-gesture rule), so
-           taps on that bar, its speaker/volume included, go straight
-           to the player and no verdict here can ever see them:
-           one finger drags to pan; two fingers pinch to scale; a
-           double-tap returns to full-frame 1x fit. A pan is never a
-           tap: a press that travels past a small threshold, a hold,
-           and any pinch all disqualify the tap verdict, so a drag can
-           never be read as a double-tap (or reach the player's
-           close / expand controls, which sit outside this layer). */
-        var zPointers = {}, zDrag = null, zPinch = null;
-        var gTap = null, gLastTapAt = 0, gLastTapX = 0, gLastTapY = 0;
-        /* Swipe-to-cycle + drag-to-move tracking (same layer, told
-           apart exactly: in the MINI view at 1x, a sustained drag —
-           or a hold of ~250ms with little movement — arms move mode
-           and takes precedence over everything, and the whole surf
-           UNIT (the window with the wave button attached at its
-           corner) follows the finger; a quick horizontal flick at 1x
-           cycles the break; beyond 1x a horizontal drag pans and
-           never cycles). */
-        var gSwipe = null, gHoldTimer = 0, gMove = null;
-        function zoomFitReset() { zoomScale = 1; zoomX = 0; zoomY = 0; applyZoom(); }
-        function clearHoldTimer() { if (gHoldTimer) { clearTimeout(gHoldTimer); gHoldTimer = 0; } }
-        function armMiniMove(id, x, y) {
-          if (dockState !== "mini" || fsActive || zoomScale !== 1) return;
-          var r = dock.getBoundingClientRect();
-          gMove = { id: id, dx: x - r.left, dy: y - r.top };
-          gTap = null; /* a hold is never a tap */
-          gSwipe = null; /* the hold takes precedence over any swipe */
-          dock.classList.add("mini-moving");
-        }
-        function finishMiniMove() {
-          if (!gMove) return;
-          gMove = null;
-          dock.classList.remove("mini-moving");
-          var r = dock.getBoundingClientRect();
-          miniPos = { x: Math.round(r.left), y: Math.round(r.top) };
-          lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
-          syncFabPosToButton(); /* the button's own spot follows the corner it ended on */
-        }
-        if (gesture) {
-          gesture.addEventListener("pointerdown", function (e) {
-            e.preventDefault();
-            try { gesture.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-            zPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-            var ids = Object.keys(zPointers);
-            if (ids.length === 1) {
-              zDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, px: zoomX, py: zoomY };
-              zPinch = null;
-              gTap = { id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now(), moved: false };
-              gSwipe = { id: e.pointerId, sx: e.clientX, sy: e.clientY, t: Date.now() };
-              /* Hold-to-move arms only on the floating player at full frame:
-                 a zoomed view's drag is a pan, never a window move. */
-              clearHoldTimer();
-              if (dockState === "mini" && !fsActive && zoomScale === 1) {
-                var hx = e.clientX, hy = e.clientY, hid = e.pointerId;
-                gHoldTimer = setTimeout(function () { gHoldTimer = 0; armMiniMove(hid, hx, hy); }, 250);
-              }
-            } else if (ids.length === 2) {
-              gTap = null; /* a pinch is never a tap */
-              gSwipe = null;
-              clearHoldTimer();
-              finishMiniMove();
-              var a = zPointers[ids[0]], b = zPointers[ids[1]];
-              zPinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: zoomScale, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, px: zoomX, py: zoomY };
-              zDrag = null;
-            }
-          });
-          gesture.addEventListener("pointermove", function (e) {
-            if (!zPointers[e.pointerId]) return;
-            if (gTap && e.pointerId === gTap.id && Math.hypot(e.clientX - gTap.x, e.clientY - gTap.y) > 10) gTap.moved = true;
-            if (gSwipe && e.pointerId === gSwipe.id && Math.hypot(e.clientX - gSwipe.sx, e.clientY - gSwipe.sy) > 10) clearHoldTimer(); /* it travelled: a pan or a swipe, not a hold */
-            zPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-            /* A sustained drag at 1x on the floating player moves the
-               UNIT: once the press has been down a beat and is
-               still travelling, it is no longer a flick candidate,
-               so arm move mode from the window's current spot (the
-               grab offset is taken now, so the window does not jump).
-               A fast flick is over before this can arm, so it still
-               reaches the cycle verdict on release untouched. */
-            if (!gMove && gSwipe && e.pointerId === gSwipe.id && dockState === "mini" && !fsActive && zoomScale === 1 &&
-                (Date.now() - gSwipe.t >= 180 || mode !== "playing") && Math.hypot(e.clientX - gSwipe.sx, e.clientY - gSwipe.sy) > 10) {
-              armMiniMove(e.pointerId, e.clientX, e.clientY);
-            }
-            if (gMove && e.pointerId === gMove.id) {
-              var w = dock.offsetWidth, h = dock.offsetHeight;
-              var p = clampMiniXY(e.clientX - gMove.dx, e.clientY - gMove.dy, w, h);
-              dock.style.left = p.x + "px";
-              dock.style.top = p.y + "px";
-              fabFollow(p.x, p.y, w, miniWinH(w)); /* the button rides attached — the unit moves as one */
-              return;
-            }
-            if (!zoomLive()) return; /* Zoom off at rest: drags move nothing — the swipe verdict on release does the work */
-            if (zDrag && e.pointerId === zDrag.id) {
-              zoomX = zDrag.px + (e.clientX - zDrag.sx);
-              zoomY = zDrag.py + (e.clientY - zDrag.sy);
-              applyZoom();
-            } else if (zPinch) {
-              var ids = Object.keys(zPointers);
-              if (ids.length !== 2) return;
-              var a = zPointers[ids[0]], b = zPointers[ids[1]];
-              var d = Math.hypot(a.x - b.x, a.y - b.y);
-              if (zPinch.d > 0) zoomScale = Math.max(1, Math.min(3, zPinch.s * d / zPinch.d));
-              zoomX = zPinch.px + ((a.x + b.x) / 2 - zPinch.mx);
-              zoomY = zPinch.py + ((a.y + b.y) / 2 - zPinch.my);
-              applyZoom();
-            }
-          });
-          var zEnd = function (e) {
-            delete zPointers[e.pointerId];
-            var ids = Object.keys(zPointers);
-            if (ids.length === 1) {
-              var p = zPointers[ids[0]];
-              zDrag = { id: Number(ids[0]), sx: p.x, sy: p.y, px: zoomX, py: zoomY };
-              zPinch = null;
-            } else if (ids.length === 0) { zDrag = null; zPinch = null; }
-          };
-          gesture.addEventListener("pointerup", zEnd);
-          gesture.addEventListener("pointercancel", zEnd);
-          /* Move / swipe verdicts, on release. Move mode (armed by a
-             hold or by a sustained drag) simply sets the window down
-             where it lies — never a cycle. Otherwise a quick, clearly horizontal swipe at 1x
-             full frame cycles the break: left = next, right = previous,
-             wrapping at the ends of the break list. Zoomed in, the same
-             drag was a pan and reaches no verdict here. */
-          gesture.addEventListener("pointerup", function (e) {
-            clearHoldTimer();
-            if (gMove) { if (e.pointerId === gMove.id) finishMiniMove(); gSwipe = null; surfSwallowClick(); return; }
-            if (!gSwipe || e.pointerId !== gSwipe.id) return;
-            var sw = gSwipe; gSwipe = null;
-            var dx = e.clientX - sw.sx, dy = e.clientY - sw.sy;
-            if (zoomScale !== 1) return; /* zoomed: the drag panned, it does not cycle */
-            if (mode !== "playing") return; /* loading / waiting: no flick — a slide was a window move (or a plain tap), never a cycle */
-            if (Date.now() - sw.t > 600) return; /* a slow drag or a hold, not a swipe */
-            if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-            /* A flick cycles the stream IN PLACE (owner's order):
-               the player stays exactly the presentation it was —
-               cycleSpot only restarts the stream; it never touches
-               the player's state. The gesture's synthesized click is
-               swallowed so no tap handler can fire from it. */
-            cycleSpot(dx < 0 ? 1 : -1);
-            surfSwallowClick();
-          });
-          gesture.addEventListener("pointercancel", function () {
-            clearHoldTimer();
-            finishMiniMove();
-            gSwipe = null;
-          });
-          /* Double-tap verdict: two quick, stationary, single-finger
-             taps close together reset the view to the full frame. */
-          gesture.addEventListener("pointerup", function (e) {
-            if (!gTap || e.pointerId !== gTap.id) return;
-            var tap = gTap; gTap = null;
-            if (tap.moved || Date.now() - tap.t > 350) return; /* a drag or a hold, not a tap */
-            var now = Date.now();
-            if (now - gLastTapAt < 350 && Math.hypot(e.clientX - gLastTapX, e.clientY - gLastTapY) < 48) {
-              gLastTapAt = 0;
-              zoomFitReset();
-            } else {
-              gLastTapAt = now; gLastTapX = e.clientX; gLastTapY = e.clientY;
-            }
-          });
-          gesture.addEventListener("pointercancel", function () { gTap = null; });
-        }
+        /* --- break cycling: the Prev/Next rails ---
+           The picture carries NO surface of ours (owner's order:
+           YouTube's own control buttons must actually function), so
+           the flick that used to live on a transparent layer over
+           the picture is gone, with the layer itself — pinch, pan
+           and double-tap on the picture went with it, and the
+           window's hold-to-move went with it too. Cycling's new home
+           is exactly where the owner put it: the two narrow rails
+           at the picture's left and right edges (the other home is
+           the break chips on the Surf Break page). A tap on a rail
+           cycles one break in its direction through the same
+           cycleSpot path the flick used — session-dead breaks
+           skipped, in place, the player's presentation untouched.
+           The window's move drag lives on the window's frame and
+           chrome (the box-drag controller below), never on the
+           picture; the Surf Break page's Zoom controls remain the
+           zoom. */
+        if (railPrev) railPrev.addEventListener("click", function () { cycleSpot(-1); });
+        if (railNext) railNext.addEventListener("click", function () { cycleSpot(1); });
 
         function nowText(prefix) {
           var spot = spotByKey(currentKey), info = spotInfo(spot, new Date());
@@ -13219,155 +12998,70 @@ var STRAIN_SRC_LINKS = {
         miniBtnGuard(miniCloseBtn, function () { closeOverlay(); });
         miniBtnGuard(miniExpandBtn, function () { toggleStreamFs(); });
         miniBtnGuard(miniFullBtn, function () { goSurfPage(); });
-        /* Dragging the wave button (owner bug fix — free movement, no
-           snap-back, first-tap opens). A press that travels past ~8px
-           is a drag; a clean tap toggles the player (fabTap, below).
-           CLOSED, the button alone travels: its own top-left follows
-           the finger and is re-saved on EVERY move, clamped only by
-           the viewport edges (clampFabXY) — it can be dropped
-           anywhere, the left side included, over any element, and it
-           stays there. OPEN, the button drags the whole unit as
-           before (shared anchor ff2.surfMiniPos, viewport-only
-           clamp). The gesture is claimed in the capture phase, the
-           button carries touch-action:none, and pointer capture is
-           taken at once, so no page swipe recognizer or scroll can
-           steal it mid-drag. A pointercancel after a true drag is a
-           DROP at the current position (fabPressEnd treats it exactly
-           like a release — the position was already applied and saved
-           move by move), never an abort back to the pre-drag spot;
-           the post-gesture click swallow arms ONLY after a true drag,
-           never after a clean tap. In fullscreen the button is
-           hidden, so it is not separately movable there. */
-        var fabPress = null, fabDragMoved = false, fabTapAt = 0;
+        /* The wave button is TAP-ONLY (owner's order): it is FIXED
+           in the bottom-right corner and never drags — no press
+           tracking, no drag threshold, no saved spot anywhere. A
+           clean tap fires the toggle HERE, on the pointerup path —
+           never on the synthesized click, which the global click
+           swallow can race and eat, and never through the stage
+           debounce (fabTap forces the toggle): the player opens on
+           the FIRST tap, every time. The click handler further down
+           covers taps with no pointer path behind them (keyboard,
+           assistive tech) and dedupes against this stamp. */
+        var fabTapAt = 0;
         if (fab) {
-          fab.addEventListener("pointerdown", function (e) {
-            if (fsActive) return; /* fullscreen: the button is not reachable/movable */
-            var fr = fab.getBoundingClientRect();
-            fabPress = { id: e.pointerId, sx: e.clientX, sy: e.clientY, dx: e.clientX - fr.left, dy: e.clientY - fr.top, moved: false };
-            try { fab.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-          }, true); /* capture phase: the button's claim on its own gesture precedes every page handler */
-          fab.addEventListener("pointermove", function (e) {
-            if (!fabPress || e.pointerId !== fabPress.id) return;
-            if (dockState !== "mini") {
-              /* Player closed: the button ALONE travels — free
-                 movement. The grab point on the button stays under
-                 the finger; the spot is applied and saved on every
-                 move, so wherever the gesture ends — release or
-                 pointercancel — the button is already there. */
-              if (!fabPress.moved) {
-                if (Math.hypot(e.clientX - fabPress.sx, e.clientY - fabPress.sy) <= 8) return; /* still a tap */
-                fabPress.moved = true;
-                fab.classList.add("fab-dragging");
-              }
-              var fp = clampFabXY(e.clientX - fabPress.dx, e.clientY - fabPress.dy);
-              fabPos = fp;
-              fab.style.right = "auto";
-              fab.style.bottom = "auto";
-              fab.style.left = fp.x + "px";
-              fab.style.top = fp.y + "px";
-              lsSet(FAB_POS_KEY, JSON.stringify(fp));
-              return;
-            }
-            var g = unitGeom();
-            if (!fabPress.moved) {
-              if (Math.hypot(e.clientX - fabPress.sx, e.clientY - fabPress.sy) <= 8) return; /* still a tap */
-              fabPress.moved = true;
-              fab.classList.add("fab-dragging");
-              if (!miniPos) {
-                /* First ever drag: the anchor materialises from the
-                   unit's current resting geometry (button home +
-                   window above it), so nothing jumps. */
-                var fr0 = fab.getBoundingClientRect();
-                miniPos = { x: Math.round(fr0.right - g.w), y: Math.round(fr0.top + UNIT_OVERLAP - g.h) };
-              }
-            }
-            /* The pointer's spot on the button stays under the
-               finger; the anchor is derived from it and clamped as a
-               whole unit. */
-            var p = clampMiniXY(e.clientX - fabPress.dx - (g.w - FAB_SIZE), e.clientY - fabPress.dy - (g.h - UNIT_OVERLAP), g.w, g.h);
-            miniPos = p;
-            if (dockState === "mini") { dock.style.left = p.x + "px"; dock.style.top = p.y + "px"; }
-            fabFollow(p.x, p.y, g.w, g.h);
+          fab.addEventListener("pointerup", function () {
+            fabTapAt = Date.now();
+            fabTap();
           });
-          var fabPressEnd = function (e) {
-            if (!fabPress || e.pointerId !== fabPress.id) return;
-            var wasDrag = fabPress.moved;
-            fabPress = null;
-            fab.classList.remove("fab-dragging");
-            if (wasDrag) {
-              /* A release — or a pointercancel (browser gesture
-                 theft, scroll takeover) — after a true drag is a
-                 DROP at the current position, never an abort: the
-                 position was applied and saved on every move, and
-                 nothing here re-anchors it. Only NOW, after a true
-                 drag, does the click swallow arm. */
-              fabDragMoved = true; /* the click that follows this release is not a tap */
-              surfSwallowClick(); /* …and no other tap handler may fire from it either */
-              if (dockState === "mini") {
-                if (miniPos) lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
-                syncFabPosToButton();
-              } else if (fabPos) {
-                lsSet(FAB_POS_KEY, JSON.stringify(fabPos));
-              }
-            } else if (e.type === "pointerup") {
-              /* A clean tap fires the toggle HERE, on the pointerup
-                 path — never on the synthesized click, which the
-                 global click swallow can race and eat, and never
-                 through the stage debounce (fabTap forces the toggle):
-                 the player opens on the FIRST tap, every time. */
-              fabTapAt = Date.now();
-              fabTap();
-            }
-            /* A pointercancel that never became a drag does nothing:
-               the gesture was taken away mid-press and the button
-               simply stays where it is. */
-          };
-          fab.addEventListener("pointerup", fabPressEnd);
-          fab.addEventListener("pointercancel", fabPressEnd);
         }
-        /* --- whole-window move drag (the floating player, EVERY state) ---
-           The owner: "This whole stream box should be tap and slide
-           to move around the page." The gesture layer above covers
-           only the live player's surface; this controller covers
-           EVERYTHING ELSE the player window shows — the poster facade,
-           the fallback card, and any button riding the window (mini
+        /* --- window move drag: the frame and chrome ONLY (owner's
+           order) ---
+           A window drag starts from the player window's own frame
+           and chrome — its frame ring, the poster facade, the
+           fallback card, and any button riding the window (mini
            expand / close / full, the facade Play, the fallback's
-           Watch on YouTube / Try again / Back to poster) — in every
-           state the player can be in. A press that slides past ~10px
-           becomes a unit move: the window and its attached wave
-           button follow the finger, clamped exactly like every other
-           unit drag (in-viewport, clear of the status island and the
-           docked Forecast button), and the anchor persists to
-           ff2.surfMiniPos on release. The release's synthesized click
-           is swallowed whole, so the button under the finger never
-           fires from a drag; a clean tap with no slide is untouched
-           and activates its button normally. Live-player presses are
-           left to the gesture layer, whose own disambiguation
-           (flick cycles at 1x, pinch zooms, zoomed drag pans,
-           sustained drag / hold moves — and, while loading, any
-           sustained slide moves) is unchanged.
-           One verdict of the live layer is mirrored here for the
-           FALLBACK card (owner bug fix): the card used to carry no
-           flick verdict at all, so a swipe on it was read as the
-           start of a window drag and the viewer was trapped on a
-           dead stream. A press that STARTS on the fallback card now
-           disambiguates exactly as the live state does — the move
-           arms only once the press is ~180ms old and travelling,
-           so a fast horizontal flick (release within 600ms, ≥48px
-           of travel, horizontal-dominant) is over before any drag
-           can arm and instead cycles to the next / previous break
-           on release, skipping session-dead breaks, in place, its
-           synthesized click swallowed whole (a flick that starts
-           on one of the card's buttons cycles without firing it).
-           A sustained slide still arms the move and drags the
-           whole window, and clean taps still fire their buttons.
-           The card's Prev / Next break buttons are the explicit
-           equivalent of the flick. */
+           Watch on YouTube / Try again / Back to poster) — and from
+           nowhere else. The live picture is never a drag surface:
+           presses on it land on the embedded player itself and are
+           the player's alone. A press that slides past ~10px
+           becomes a window move: the window follows the finger,
+           clamped so the window stays fully inside the viewport,
+           and its anchor persists to ff2.surfMiniPos on release.
+           The wave button never takes part — it stays fixed in its
+           corner, and the window simply renders on top wherever the
+           two meet. The release's synthesized click is swallowed
+           whole, so the button under the finger never fires from a
+           drag; a clean tap with no slide is untouched and
+           activates its button normally.
+           One verdict is kept for the FALLBACK card (owner bug
+           fix): the card is ours, not YouTube's, so it keeps its
+           flick. A press that STARTS on the fallback card
+           disambiguates exactly as before — the move arms only
+           once the press is ~180ms old and travelling, so a fast
+           horizontal flick (release within 600ms, ≥48px of travel,
+           horizontal-dominant) is over before any drag can arm and
+           instead cycles to the next / previous break on release,
+           skipping session-dead breaks, in place, its synthesized
+           click swallowed whole (a flick that starts on one of the
+           card's buttons cycles without firing it). A sustained
+           slide still arms the move and drags the whole window,
+           and clean taps still fire their buttons. The card's
+           Prev / Next break buttons are the explicit equivalent of
+           the flick. */
         var boxDrag = null;
         dock.addEventListener("pointerdown", function (e) {
           if (dockState !== "mini" || fsActive) return;
-          if (e.target === gesture) return; /* the live player's surface: the gesture layer owns it */
           if (e.button !== undefined && e.button > 0) return;
+          /* The live picture is never a drag surface (owner's order):
+             presses on it land on the embedded player itself and never
+             reach this handler at all, and while a stream is up the
+             only in-stage surfaces of ours still showing (the loading
+             veil, the cycling rails) are not drag surfaces either — a
+             window drag may then start only from the window's own
+             frame (the press lands on the dock itself) or its chrome
+             buttons. */
+          if (playerBox && !playerBox.hidden && e.target !== dock && !(e.target.closest && (e.target.closest(".surf-mini-btn") || e.target.closest(".surf-dock-bar")))) return;
           if (boxDrag) { boxDrag = null; dock.classList.remove("mini-moving"); return; } /* a second finger cancels the drag */
           boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, t: Date.now(), armed: false, dx: 0, dy: 0,
                       fb: mode === "fallback" && !!fallback && fallback.contains(e.target) };
@@ -13387,7 +13081,7 @@ var STRAIN_SRC_LINKS = {
           var p = clampMiniXY(e.clientX - boxDrag.dx, e.clientY - boxDrag.dy, w, h);
           dock.style.left = p.x + "px";
           dock.style.top = p.y + "px";
-          fabFollow(p.x, p.y, w, miniWinH(w)); /* the button rides attached — the unit moves as one */
+          /* The wave button is NOT followed: it stays fixed in its corner. */
           if (e.cancelable) e.preventDefault();
         }, { passive: false });
         function boxDragEnd(e) {
@@ -13400,11 +13094,10 @@ var STRAIN_SRC_LINKS = {
             var r = dock.getBoundingClientRect();
             miniPos = { x: Math.round(r.left), y: Math.round(r.top) };
             lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
-            syncFabPosToButton(); /* the button's own spot follows the corner it ended on */
             surfSwallowClick(); /* the release's click is not a tap: the button under the finger must not fire */
           } else if (bd.fb && e.type === "pointerup" && mode === "fallback") {
-            /* Fallback flick verdict — the live gesture layer's own
-               numbers, judged on the gesture's total travel: a quick,
+            /* Fallback flick verdict — the same numbers the picture
+               flick used, judged on the gesture's total travel: a quick,
                clearly horizontal flick cycles the break IN PLACE
                (cycleSpot skips session-dead breaks and never touches
                the player's presentation), and the release's
@@ -13448,7 +13141,6 @@ var STRAIN_SRC_LINKS = {
           startStream(spotByKey(currentKey));
         }
         if (fab) fab.addEventListener("click", function () {
-          if (fabDragMoved) { fabDragMoved = false; return; } /* a drag just ended — not a tap */
           if (Date.now() - fabTapAt < 1000) return; /* this tap already fired on its pointerup */
           fabTap(); /* a click with no pointer path behind it (keyboard, assistive tech) still toggles */
         });
@@ -13695,7 +13387,7 @@ var STRAIN_SRC_LINKS = {
               x: Math.round(zoomX), y: Math.round(zoomY),
               maxX: Math.round(b.x), maxY: Math.round(b.y),
               transform: zoomWrap ? (zoomWrap.style.transform || "") : "",
-              gestureUp: gesture ? !gesture.hidden : false,
+              railsUp: railPrev ? !railPrev.hidden : false,
               zonesOn: zonesOn,
               zoneVisible: zoneEl ? !zoneEl.hidden : false,
               zoneBox: zoneEl ? { left: zoneEl.style.left, top: zoneEl.style.top, width: zoneEl.style.width, height: zoneEl.style.height } : null,
