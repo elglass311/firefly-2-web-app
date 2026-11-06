@@ -1803,15 +1803,13 @@
       .surf-zoomwrap { position: relative; will-change: transform; }
       /* The gesture layer covers the picture but stops 44px short
          of the frame's bottom edge, so taps in that strip land on
-         the player itself, which answers a tap with play/pause —
-         no app-made layer sits over the player's own surface and
-         turns taps into something else. The embed renders no
-         YouTube control bar at all (controls=0, set where the
-         player is built): YouTube's in-player volume control
-         cannot change anything on iOS — the system owns media
-         volume there — and the owner's rule is that a button
-         that doesn't work must not be shown; YouTube offers no
-         per-button parameter, so the bar is not rendered.
+         the player itself — on YouTube's own control bar, which
+         the embed renders in full (no controls parameter, set
+         where the player is built): its play/pause, volume,
+         settings and fullscreen buttons take taps directly, and
+         no app-made layer sits over them turning taps into
+         something else. Sound set in that bar is the viewer's
+         choice — the app adopts it, never overrides it.
          Everywhere else on the picture the app's gestures keep
          working: flick to cycle, pinch to zoom, tap to play/pause. */
       .surf-gesture {
@@ -4420,7 +4418,7 @@
       <h2 class="tab-title">Surf Break</h2>
     <section class="card surf-card" aria-labelledby="surf-h">
         <h2 id="surf-h">Surf Break — control center</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player above if you want the sound of the ocean. Once sound is on it stays on when the break changes. The stream plays at your phone's own volume — the side buttons set how loud it is. Tap the picture to pause or resume it, and the player's Fullscreen button takes it big. (There's no volume button inside the stream on purpose: on an iPhone a YouTube stream's volume can only be set by the phone itself, so that button could never do anything.) Surf Break is its own page, like every other section of this app. The player itself floats: tap the wave button on any screen and the stream opens in a small floating window you can watch while you use the rest of the app — drag the window to move it, and closing the window never stops the stream, which keeps playing behind the wave button; its red dot shows while a stream is live. The wave button itself stays put in the bottom-right corner. The window button on the player brings you back to this page. This card is the player's control center: pick a break, show or hide the player, and set auto-play here.</p>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player above, or the speaker in the player's own control bar at the bottom of the picture, if you want the sound of the ocean. The player's own buttons — play/pause, volume, settings, fullscreen — take your taps directly, and whatever you set there stays set: turn the sound on or off from either control and the app remembers your choice, bringing it back when the break changes. Surf Break is its own page, like every other section of this app. The player itself floats: tap the wave button on any screen and the stream opens in a small floating window you can watch while you use the rest of the app — drag the window to move it, and closing the window never stops the stream, which keeps playing behind the wave button; its red dot shows while a stream is live. The wave button itself stays put in the bottom-right corner. The window button on the player brings you back to this page. This card is the player's control center: pick a break, show or hide the player, and set auto-play here.</p>
 
         <div class="surf-nowrow">
           <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
@@ -11536,20 +11534,28 @@ var STRAIN_SRC_LINKS = {
            hard-started muted, and nothing re-checked the player after it
            started. Now sound is an intent owned by THIS page:
            soundWanted is set by the dock's Sound button (a tap in this
-           frame — the gesture iOS counts), it is re-applied to every new
-           player (rotation, recovery chain, background resume, plain
-           fallback), and the 2-second watchdog follows it. The
-           watchdog's sound role is adoption, not override: if the
-           player's actual mute state ever diverges from the dock
-           Sound button's intent, the page adopts the player's state
-           rather than fighting it. (An earlier design let the
-           viewer also set sound inside the player; that ended when
-           the embed's chrome was switched off — controls=0 — because
-           YouTube's in-player volume control can never work on iOS.
-           The dock Sound button is now the only sound control.)
-           The watchdog still resumes a stream the webview paused
-           on its own. */
+           frame — the gesture iOS counts) or adopted from the player's
+           own controls, and it is applied to each new player exactly
+           ONCE per stream start (onReady / first PLAYING, guarded by
+           soundApplied) — never re-applied on a later PLAYING
+           transition or resume, so a mute or level the viewer just set
+           inside the player is never undone a beat later by the app's
+           own start logic (that re-assert is what made the stream's
+           volume button look dead in the sibling app). The 2-second
+           watchdog's sound role is adoption, not override: whatever
+           the viewer sets in the player's own speaker/volume — an
+           unmute, a mute, a new level, a deliberate drag to zero —
+           becomes the remembered choice (see the tick). The watchdog
+           still resumes a stream the webview paused on its own, and
+           that resume never touches the sound. */
         var soundWanted = false, soundVolume = 100;
+        /* soundApplied: the remembered sound has been applied for the
+           CURRENT stream start; reset by startStream. sawAudible: this
+           stream has actually been heard (unmuted, level > 0) since it
+           started — a muted reading is adopted as the viewer's choice
+           only after that; before it, muted is just the start state
+           (streams always start muted), never a choice to adopt. */
+        var soundApplied = false, sawAudible = false;
         var soundRestores = 0, watchdogResumes = 0;
         var lastWatchdogResumeAt = 0, watchdogStandDown = false;
 
@@ -12043,6 +12049,7 @@ var STRAIN_SRC_LINKS = {
         }
         function onPlaying() {
           mode = "playing";
+          if (!soundApplied) { soundApplied = true; applySound(ytPlayer); } /* a (re)started player comes up muted — put the remembered sound back ONCE for this start; every later PLAYING (buffering, a watchdog resume) leaves the player's own sound state exactly as the viewer set it */
           if (deadSpots[currentKey]) delete deadSpots[currentKey]; /* it plays: the dead mark clears immediately */
           resetChain(); /* a spot that plays ends any recovery chain */
           bgPaused = false;
@@ -12076,38 +12083,52 @@ var STRAIN_SRC_LINKS = {
            pause inside the player is respected: if the viewer pauses
            again within 5 seconds of a watchdog resume, the watchdog
            stands down until the next stream start. Sound state is NOT
-           the watchdog's to restore: the dock Sound button is the one
-           sound control (the embed renders no chrome of its own —
-           controls=0, see startStream), and the player's actual mute
-           state is adopted, never fought (see the tick). The plain (no-API) fallback
+           the watchdog's to restore either: the dock Sound button and
+           the player's own speaker/volume are equals, and the player's
+           actual state is adopted, never fought (see the tick). The plain (no-API) fallback
            player exposes no state to poll, so the watchdog can only
            guard API players; the fallback still inherits soundWanted
            on every rebuild. --- */
         function watchdogTick() {
           if (!ytPlayer || mode !== "playing" || stoppedByUser || document.hidden || dock.hidden) return;
           try {
-            /* The embed renders no controls of its own (controls=0),
-               so sound intent lives in exactly one place: the dock
-               Sound button, whose taps applySound writes into the
-               player. The tick still adopts the player's ACTUAL mute
-               state in both directions — if the player is ever found
-               muted (or unmuted) against soundWanted, the app state
-               follows the player rather than fighting it, so the
-               Sound button's label never lies. A volume LEVEL is
-               never adopted from the player: on iOS there is none to
-               set (the system owns volume; setVolume is a no-op
-               there), and getVolume just reports the level
-               applySound last wrote on platforms that have one.
+            /* Sound: the dock Sound button and the player's own
+               speaker/volume are equals — whichever changed the sound
+               last is the choice, and this tick ADOPTS any state our
+               bookkeeping didn't command, so the Sound button's label
+               never lies and a remembered level is never pushed back
+               over the viewer's finger:
+               - unmuted at a level > 0: the stream has been heard
+                 (sawAudible); adopt the unmute and any new level.
+               - unmuted at zero AFTER being heard: a deliberate drag
+                 to zero inside the player — adopt it like a mute.
+               - unmuted at zero BEFORE being heard, with sound
+                 wanted: this start's once-only unmute hasn't landed
+                 yet — re-assert the remembered level until it does
+                 (the one heal, and it is start-only).
+               - muted AFTER being heard, with sound wanted: the mute
+                 was pressed on the player's own speaker — adopt it.
+               A muted reading before the stream has ever been heard
+               is just the start state, never adopted as a choice.
                (The watchdog still guards the picture below: a stream
                the webview paused on its own is resumed, with the same
-               stand-down if he pauses again right after.) */
-            if (ytPlayer.isMuted) {
+               stand-down if he pauses again right after — and the
+               resume never re-applies the sound.) */
+            if (ytPlayer.isMuted && ytPlayer.getVolume) {
               var mutedNow = ytPlayer.isMuted();
-              if (mutedNow && soundWanted) { soundWanted = false; syncSoundBtn(); } /* muted inside the player: adopt it */
-              else if (!mutedNow && !soundWanted) { soundWanted = true; syncSoundBtn(); } /* unmuted inside the player: adopt it */
-              else if (!mutedNow && soundWanted && ytPlayer.getVolume) {
-                var v = ytPlayer.getVolume();
-                if (typeof v === "number" && v > 0 && v !== soundVolume) { soundVolume = v; syncSoundBtn(); } /* follow volume set inside the player */
+              var v = ytPlayer.getVolume();
+              if (!mutedNow) {
+                if (typeof v === "number" && v > 0) {
+                  sawAudible = true;
+                  if (!soundWanted) { soundWanted = true; syncSoundBtn(); } /* unmuted inside the player: adopt it */
+                  else if (v !== soundVolume) { soundVolume = v; syncSoundBtn(); } /* follow the level set inside the player */
+                } else if (sawAudible) {
+                  soundWanted = false; syncSoundBtn(); /* dragged to zero inside the player: adopt it like a mute */
+                } else if (soundWanted && typeof v === "number" && ytPlayer.setVolume) {
+                  try { ytPlayer.setVolume(soundVolume); } catch (e2) { /* ignore */ } /* start-only heal: this start's unmute hasn't landed yet */
+                }
+              } else if (soundWanted && sawAudible) {
+                soundWanted = false; syncSoundBtn(); /* muted inside the player: adopt it */
               }
             }
             var st = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
@@ -12116,8 +12137,7 @@ var STRAIN_SRC_LINKS = {
               if (lastWatchdogResumeAt && now - lastWatchdogResumeAt < 5000) { watchdogStandDown = true; return; }
               lastWatchdogResumeAt = now;
               watchdogResumes++;
-              if (ytPlayer.playVideo) ytPlayer.playVideo();
-              if (soundWanted) applySound(ytPlayer);
+              if (ytPlayer.playVideo) ytPlayer.playVideo(); /* resume the picture only — the player's sound state stays exactly as the viewer left it */
             }
           } catch (e) { /* player mid-teardown — next tick re-checks */ }
         }
@@ -12195,7 +12215,7 @@ var STRAIN_SRC_LINKS = {
           plainFrame = true;
           plainBuiltMuted = !soundWanted; /* the mute state baked into this frame's URL — a later volume change rebuilds only if THIS flips */
           var f = document.createElement("iframe");
-          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1&controls=0"; /* controls=0: same rule as the API player in startStream — no YouTube chrome, because its volume control cannot function on iOS */
+          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1"; /* YouTube's own control bar renders (no controls parameter): its buttons take the viewer's taps directly */
           f.title = spot.name + " live surf cam";
           f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
           f.setAttribute("allowfullscreen", "");
@@ -12207,6 +12227,8 @@ var STRAIN_SRC_LINKS = {
           exitZoom(); /* every spot change — Follow the Sun, recovery chain, manual pick, replay — resets zoom */
           watchdogStandDown = false; /* a fresh stream re-arms the watchdog's pause-resume */
           lastWatchdogResumeAt = 0;
+          soundApplied = false; /* the remembered sound is applied once for this start, then the player's own controls rule */
+          sawAudible = false; /* this stream has not been heard yet — a muted reading is its start state, not a choice */
           if (!keepChain) resetChain();
           currentKey = spot.key;
           bgPaused = false;
@@ -12232,25 +12254,20 @@ var STRAIN_SRC_LINKS = {
               ytPlayer = new YT.Player(target, {
                 videoId: spot.id,
                 host: "https://www.youtube-nocookie.com",
-                /* controls: 0 — the embed renders NO YouTube chrome.
-                   Owner rule (2026-11-05): a button that doesn't work
-                   must not be shown. YouTube's in-player VOLUME control
-                   cannot work on iOS/WKWebView (Bluefy): iOS reserves
-                   media volume to the hardware buttons, the IFrame
-                   API's setVolume is a no-op there, and the rendered
-                   slider changes nothing audible — a dead control.
-                   YouTube offers no per-button embed parameter, so
-                   `controls` (the parameter that governs which controls
-                   render) is the only way to hide it; the whole bar
-                   goes with it. Nothing working is lost: play/pause is
-                   a tap on the picture (the gesture layer's tap, or the
-                   uncovered strip at the frame's bottom edge, which the
-                   player itself answers), sound on/off is the dock
-                   Sound button (mute/unMute DO work on iOS), and
-                   fullscreen is the player's own Fullscreen buttons. */
-                playerVars: { autoplay: 1, mute: soundWanted ? 0 : 1, playsinline: 1, rel: 0, modestbranding: 1, controls: 0 },
+                /* YouTube's own control bar renders (no `controls`
+                   parameter): play/pause, volume, settings and
+                   fullscreen are the player's own buttons and take the
+                   viewer's taps directly — the gesture layer stops
+                   44px short of the frame's bottom edge so nothing
+                   covers the bar. Sound set inside the player is the
+                   viewer's choice: the watchdog adopts it (see the
+                   sound state note), and the remembered sound is
+                   applied exactly once per stream start (onReady /
+                   first PLAYING, guarded by soundApplied), never
+                   re-applied over an in-player change. */
+                playerVars: { autoplay: 1, mute: soundWanted ? 0 : 1, playsinline: 1, rel: 0, modestbranding: 1 },
                 events: {
-                  onReady: function (e) { try { applySound(e.target); e.target.playVideo(); } catch (err) { /* ignore */ } },
+                  onReady: function (e) { try { if (!soundApplied) { soundApplied = true; applySound(e.target); } e.target.playVideo(); } catch (err) { /* ignore */ } },
                   onStateChange: function (e) {
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
                     else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
@@ -13722,6 +13739,9 @@ var STRAIN_SRC_LINKS = {
               stopped: stoppedByUser,
               bgPaused: bgPaused,
               soundWanted: soundWanted,
+              soundVolume: soundVolume,
+              soundApplied: soundApplied,
+              sawAudible: sawAudible,
               soundMuted: (ytPlayer && ytPlayer.isMuted) ? ytPlayer.isMuted() : null,
               soundRestores: soundRestores,
               watchdogResumes: watchdogResumes,
