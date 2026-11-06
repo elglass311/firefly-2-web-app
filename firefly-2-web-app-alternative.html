@@ -1802,15 +1802,18 @@
          The iframe itself is never moved, recreated or reloaded by zoom. */
       .surf-zoomwrap { position: relative; will-change: transform; }
       /* The gesture layer covers the picture but stops 44px short
-         of the frame's bottom edge. That strip is YouTube's own
-         control bar, and it must receive taps directly: volume,
-         mute, play/pause, fullscreen and settings are the player's
-         own buttons — no app-made layer may sit over them and turn
-         their taps into something else (owner order, 2026-11-05:
-         make YouTube's own controls function; no substitute
-         controls). Everywhere else on the picture the app's
-         gestures keep working: flick to cycle, pinch to zoom,
-         tap to play/pause. */
+         of the frame's bottom edge, so taps in that strip land on
+         the player itself, which answers a tap with play/pause —
+         no app-made layer sits over the player's own surface and
+         turns taps into something else. The embed renders no
+         YouTube control bar at all (controls=0, set where the
+         player is built): YouTube's in-player volume control
+         cannot change anything on iOS — the system owns media
+         volume there — and the owner's rule is that a button
+         that doesn't work must not be shown; YouTube offers no
+         per-button parameter, so the bar is not rendered.
+         Everywhere else on the picture the app's gestures keep
+         working: flick to cycle, pinch to zoom, tap to play/pause. */
       .surf-gesture {
         position: absolute; inset: 0 0 44px 0; z-index: 6;
         touch-action: none; cursor: grab;
@@ -4417,7 +4420,7 @@
       <h2 class="tab-title">Surf Break</h2>
     <section class="card surf-card" aria-labelledby="surf-h">
         <h2 id="surf-h">Surf Break — control center</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player above if you want the sound of the ocean. Once sound is on it stays on when the break changes. The player's own buttons work right on the picture, too — tap the control bar at the bottom of the stream for YouTube's volume, pause and fullscreen. Surf Break is its own page, like every other section of this app. The player itself floats: tap the wave button on any screen and the stream opens in a small floating window you can watch while you use the rest of the app — drag the window to move it, and closing the window never stops the stream, which keeps playing behind the wave button; its red dot shows while a stream is live. The wave button itself stays put in the bottom-right corner. The window button on the player brings you back to this page. This card is the player's control center: pick a break, show or hide the player, and set auto-play here.</p>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player above if you want the sound of the ocean. Once sound is on it stays on when the break changes. The stream plays at your phone's own volume — the side buttons set how loud it is. Tap the picture to pause or resume it, and the player's Fullscreen button takes it big. (There's no volume button inside the stream on purpose: on an iPhone a YouTube stream's volume can only be set by the phone itself, so that button could never do anything.) Surf Break is its own page, like every other section of this app. The player itself floats: tap the wave button on any screen and the stream opens in a small floating window you can watch while you use the rest of the app — drag the window to move it, and closing the window never stops the stream, which keeps playing behind the wave button; its red dot shows while a stream is live. The wave button itself stays put in the bottom-right corner. The window button on the player brings you back to this page. This card is the player's control center: pick a break, show or hide the player, and set auto-play here.</p>
 
         <div class="surf-nowrow">
           <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
@@ -11536,12 +11539,16 @@ var STRAIN_SRC_LINKS = {
            frame — the gesture iOS counts), it is re-applied to every new
            player (rotation, recovery chain, background resume, plain
            fallback), and the 2-second watchdog follows it. The
-           watchdog's sound role is adoption, not override: YouTube's
-           own mute/volume buttons are reachable on the picture, and
-           whichever control the viewer used last — the player's or
-           the dock's — is the intent the page keeps (owner order,
-           2026-11-05). The watchdog still resumes a stream the
-           webview paused on its own. */
+           watchdog's sound role is adoption, not override: if the
+           player's actual mute state ever diverges from the dock
+           Sound button's intent, the page adopts the player's state
+           rather than fighting it. (An earlier design let the
+           viewer also set sound inside the player; that ended when
+           the embed's chrome was switched off — controls=0 — because
+           YouTube's in-player volume control can never work on iOS.
+           The dock Sound button is now the only sound control.)
+           The watchdog still resumes a stream the webview paused
+           on its own. */
         var soundWanted = false, soundVolume = 100;
         var soundRestores = 0, watchdogResumes = 0;
         var lastWatchdogResumeAt = 0, watchdogStandDown = false;
@@ -12069,26 +12076,30 @@ var STRAIN_SRC_LINKS = {
            pause inside the player is respected: if the viewer pauses
            again within 5 seconds of a watchdog resume, the watchdog
            stands down until the next stream start. Sound state is NOT
-           the watchdog's to restore: the player's own mute/volume
-           buttons are reachable and their state is adopted as the
-           viewer's intent (see the tick). The plain (no-API) fallback
+           the watchdog's to restore: the dock Sound button is the one
+           sound control (the embed renders no chrome of its own —
+           controls=0, see startStream), and the player's actual mute
+           state is adopted, never fought (see the tick). The plain (no-API) fallback
            player exposes no state to poll, so the watchdog can only
            guard API players; the fallback still inherits soundWanted
            on every rebuild. --- */
         function watchdogTick() {
           if (!ytPlayer || mode !== "playing" || stoppedByUser || document.hidden || dock.hidden) return;
           try {
-            /* YouTube's own controls are reachable now (the gesture
-               layer stops above the player's control bar), so the
-               mute/volume state inside the player IS the viewer's
-               intent — whichever control he used last wins. The
-               watchdog adopts it in BOTH directions and never
-               overrides it: an unmute or a mute done inside the
-               player is followed exactly like a dock Sound tap, and
-               a level set on the player's own volume control
-               becomes the level the app remembers. (The watchdog
-               still guards the picture below: a stream the webview
-               paused on its own is resumed, with the same
+            /* The embed renders no controls of its own (controls=0),
+               so sound intent lives in exactly one place: the dock
+               Sound button, whose taps applySound writes into the
+               player. The tick still adopts the player's ACTUAL mute
+               state in both directions — if the player is ever found
+               muted (or unmuted) against soundWanted, the app state
+               follows the player rather than fighting it, so the
+               Sound button's label never lies. A volume LEVEL is
+               never adopted from the player: on iOS there is none to
+               set (the system owns volume; setVolume is a no-op
+               there), and getVolume just reports the level
+               applySound last wrote on platforms that have one.
+               (The watchdog still guards the picture below: a stream
+               the webview paused on its own is resumed, with the same
                stand-down if he pauses again right after.) */
             if (ytPlayer.isMuted) {
               var mutedNow = ytPlayer.isMuted();
@@ -12184,7 +12195,7 @@ var STRAIN_SRC_LINKS = {
           plainFrame = true;
           plainBuiltMuted = !soundWanted; /* the mute state baked into this frame's URL — a later volume change rebuilds only if THIS flips */
           var f = document.createElement("iframe");
-          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
+          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1&controls=0"; /* controls=0: same rule as the API player in startStream — no YouTube chrome, because its volume control cannot function on iOS */
           f.title = spot.name + " live surf cam";
           f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
           f.setAttribute("allowfullscreen", "");
@@ -12221,7 +12232,23 @@ var STRAIN_SRC_LINKS = {
               ytPlayer = new YT.Player(target, {
                 videoId: spot.id,
                 host: "https://www.youtube-nocookie.com",
-                playerVars: { autoplay: 1, mute: soundWanted ? 0 : 1, playsinline: 1, rel: 0, modestbranding: 1 },
+                /* controls: 0 — the embed renders NO YouTube chrome.
+                   Owner rule (2026-11-05): a button that doesn't work
+                   must not be shown. YouTube's in-player VOLUME control
+                   cannot work on iOS/WKWebView (Bluefy): iOS reserves
+                   media volume to the hardware buttons, the IFrame
+                   API's setVolume is a no-op there, and the rendered
+                   slider changes nothing audible — a dead control.
+                   YouTube offers no per-button embed parameter, so
+                   `controls` (the parameter that governs which controls
+                   render) is the only way to hide it; the whole bar
+                   goes with it. Nothing working is lost: play/pause is
+                   a tap on the picture (the gesture layer's tap, or the
+                   uncovered strip at the frame's bottom edge, which the
+                   player itself answers), sound on/off is the dock
+                   Sound button (mute/unMute DO work on iOS), and
+                   fullscreen is the player's own Fullscreen buttons. */
+                playerVars: { autoplay: 1, mute: soundWanted ? 0 : 1, playsinline: 1, rel: 0, modestbranding: 1, controls: 0 },
                 events: {
                   onReady: function (e) { try { applySound(e.target); e.target.playVideo(); } catch (err) { /* ignore */ } },
                   onStateChange: function (e) {
