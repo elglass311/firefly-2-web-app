@@ -1835,19 +1835,27 @@
       /* Digital zoom: a transform on the wrapper around the player node.
          The iframe itself is never moved, recreated or reloaded by zoom. */
       .surf-zoomwrap { position: relative; will-change: transform; }
-      /* NOTHING of ours covers the video picture (owner's order:
-         YouTube's own control buttons must actually function). The
-         embedded iframe receives every touch on the whole video area
-         directly — play/pause, volume, settings, fullscreen and the
-         progress bar are the player's own, and no overlay, gesture
-         layer or carve-out of ours sits between the viewer's finger
-         and any of them. Break cycling lives OFF the picture, on the
-         break chips on the Surf Break page (and on the load-failure
-         fallback card's own Prev/Next buttons); window dragging lives
-         on the player window's frame and chrome. The picture's edges,
-         corners and bottom control bar are the player's alone — the
-         old Prev/Next edge rails were removed at the owner's order
-         (redundant next to the chips); nothing replaced them. */
+      /* The video picture is the player's own (owner's order:
+         YouTube's own control buttons must actually function), with
+         exactly ONE narrow claim over it: the swipe layer
+         (.surf-swipe, in the player markup) floats over the picture
+         ONLY while a stream is actually playing, and its recognizer
+         claims exactly one gesture — a clear horizontal-dominant
+         drag past its threshold — which cycles the break (owner's
+         order, 2026-11-06). It never covers the bottom control-bar
+         strip, so play/pause, volume, settings, fullscreen and the
+         progress bar take every touch directly at all times; and in
+         every non-playing state (paused, waiting, loading, cued) no
+         layer exists at all, so the player's own tap targets — its
+         centre play button, tap-to-resume — work exactly as they do
+         without it. A tap, a press or a vertical drag on the layer
+         never cycles and never fires anything. The layer never drags
+         the window either — window dragging lives on the player
+         window's frame and chrome. Break cycling also lives on the
+         break chips on the Surf Break page and on the load-failure
+         fallback card's own Prev/Next buttons; the old Prev/Next
+         edge rails were removed at the owner's order (redundant next
+         to the chips) and nothing replaced them. */
       .surf-zoom-btn { display: inline-flex; align-items: center; gap: 5px; }
       .surf-zoom-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
       .surf-zoombar {
@@ -1922,6 +1930,19 @@
       .surf-spot-sub { color: rgba(255,255,255,0.88); font-size: 12.5px; font-weight: 600; margin-top: 2px; text-shadow: 0 1px 6px rgba(0,0,0,0.7); font-variant-numeric: tabular-nums; }
       .surf-frame-wrap { position: relative; aspect-ratio: 16 / 9; background: #000; }
       .surf-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+      /* Swipe-to-cycle layer: transparent, invisible, and present
+         only while a stream is playing (JS keeps it hidden in every
+         other state). It stops 56px short of the picture's bottom
+         edge — the player's own control-bar strip stays uncovered,
+         so its buttons and progress bar take every touch directly.
+         touch-action: pan-y hands vertical drags to native page
+         scrolling untouched (the recognizer just gets cancelled);
+         horizontal drags are delivered as pointer events, and only a
+         clear horizontal-dominant one past 48px is ever claimed. */
+      .surf-swipe {
+        position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 1;
+        touch-action: pan-y;
+      }
       .surf-loading {
         position: absolute; inset: 0; z-index: 2;
         display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -3088,6 +3109,15 @@
         <div class="surf-zoomwrap" id="surfZoomWrap">
           <div class="surf-player" id="surfPlayer" hidden>
             <div class="surf-frame-wrap" id="surfFrameWrap"></div>
+            <!-- Swipe-to-cycle surface (owner's order, 2026-11-06):
+                 a transparent layer over the picture that exists only
+                 while a stream is playing and claims only a clear
+                 horizontal drag (left = next break, right = previous,
+                 dead breaks skipped, the new stream auto-starts). It
+                 never covers the bottom control-bar strip, is hidden
+                 in every non-playing state so the player's own taps
+                 land untouched, and never drags the window. -->
+            <div class="surf-swipe" id="surfSwipe" hidden aria-hidden="true"></div>
             <div class="surf-loading" id="surfLoading"><span class="surf-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
           </div>
         </div>
@@ -11672,6 +11702,7 @@ var STRAIN_SRC_LINKS = {
         var playBtn = document.getElementById("surfPlayBtn");
         var playerBox = document.getElementById("surfPlayer");
         var frameWrap = document.getElementById("surfFrameWrap");
+        var swipeLayer = document.getElementById("surfSwipe");
         var loading = document.getElementById("surfLoading");
         var fallback = document.getElementById("surfFallback");
         var fbTitle = document.getElementById("surfFallbackTitle");
@@ -12269,6 +12300,15 @@ var STRAIN_SRC_LINKS = {
         var fcData = null; /* { at: ms, spots: { key: {wh, per, wspd, wdir, rel, score} }, series: { key: {t, swH, swP, swD, wspd, wdir, gust} } } — last good Open-Meteo fetch (series absent in older caches) */
         var currentKey = autoPickKey(new Date()) || "pipeline";
         var mode = "idle"; /* idle | loading | playing | waiting | fallback */
+        /* Whether the embedded player itself was last seen PLAYING.
+           The app-level mode stays "playing" when the VIEWER pauses
+           from the player's own controls, so the swipe layer arms off
+           this flag instead: armed only while the player is truly
+           playing, disarmed the moment it reports paused/cued (the
+           picture is then wholly the player's again — centre play
+           button, tap-to-resume). The plain-frame path has no state
+           reports, so there the flag simply follows onPlaying. */
+        var swipePlayerLive = false;
         var ytPlayer = null, plainFrame = false;
         var dwellStart = 0, loadTimer = 0, slowTimer = 0;
         /* Play nudges for the CURRENT stream start: when a freshly
@@ -12533,6 +12573,24 @@ var STRAIN_SRC_LINKS = {
             y = Math.round(fr.top - h + UNIT_OVERLAP);
             if (y < 8) y = Math.round(fr.bottom - UNIT_OVERLAP);
             y = Math.max(8, Math.min(y, vh - h - 8));
+            /* The window never parks on the Forecast button's home
+               at bottom-left (glitch scan, 2026-11-06): the taller
+               header-strip window's default anchor had begun dipping
+               over that button's top-right corner at rest. The test
+               runs on the pair-clamped landing spot — the clamp below
+               can pull the window left, into the button's range, after
+               this anchor is chosen — and when the landing spot would
+               cross the button, the window rests just above it
+               instead. A placement the viewer drags to — or one
+               restored from their own drags — is theirs and is never
+               overridden here. */
+            if (fcBtn) {
+              var land = clampPairXY(x, y, w, h);
+              var fcr = fcBtn.getBoundingClientRect();
+              if (fcr.width > 0 && land.x < fcr.right && land.x + w > fcr.left && land.y < fcr.bottom && land.y + h > fcr.top) {
+                y = Math.max(8, Math.round(fcr.top) - h);
+              }
+            }
             miniPos = { x: x, y: y }; /* the anchor materialises on open */
           }
           /* Whichever anchor the window came from, the ATTACHED
@@ -12609,6 +12667,7 @@ var STRAIN_SRC_LINKS = {
           facade.hidden = which !== "facade";
           playerBox.hidden = which !== "player";
           fallback.hidden = which !== "fallback";
+          syncSwipeLayer();
           if (fsBtn) fsBtn.hidden = which === "fallback"; /* no fullscreen control over the fallback card */
           /* The fallback renders WITHIN the floating player (owner's
              order): the compact fallback in the player's own frame —
@@ -12777,20 +12836,22 @@ var STRAIN_SRC_LINKS = {
 
         window.addEventListener("resize", applyZoom);
         /* --- break cycling ---
-           The picture carries NO surface of ours (owner's order:
-           YouTube's own control buttons must actually function), so
-           the flick that used to live on a transparent layer over
-           the picture is gone, with the layer itself — pinch, pan
-           and double-tap on the picture went with it, and the
-           window's hold-to-move went with it too. The Prev/Next edge
-           rails that briefly lived at the picture's edges are also
-           gone (owner's order: redundant). Cycling's homes are the
-           break chips on the Surf Break page (pickSpot) and the
-           load-failure fallback card's own Prev/Next buttons plus
-           its flick (cycleSpot — session-dead breaks skipped, in
-           place, the player's presentation untouched). The window's
-           move drag lives on the window's frame and chrome (the
-           box-drag controller below), never on the picture; the
+           Cycling's homes: the break chips on the Surf Break page
+           (pickSpot), the load-failure fallback card's own Prev/Next
+           buttons plus its flick, and — at the owner's order
+           (2026-11-06) — a horizontal swipe on the stream picture
+           itself, through the claim-only swipe layer whose
+           recognizer lives with the other cycling controls below
+           (cycleSpot in every case — session-dead breaks skipped, in
+           place, the player's presentation untouched). The layer
+           claims nothing but a clear horizontal drag: pinch, pan and
+           double-tap on the picture stay the player's, the bottom
+           control-bar strip stays uncovered, and no layer exists at
+           all while the player is not playing. The Prev/Next edge
+           rails that briefly lived at the picture's edges are gone
+           (owner's order: redundant) and nothing replaced them. The
+           window's move drag lives on the window's frame and chrome
+           (the box-drag controller below), never on the picture; the
            Surf Break page's Zoom controls remain the zoom. */
 
         function nowText(prefix) {
@@ -12872,12 +12933,25 @@ var STRAIN_SRC_LINKS = {
         function clearTimers() { if (loadTimer) { clearTimeout(loadTimer); loadTimer = 0; } if (slowTimer) { clearTimeout(slowTimer); slowTimer = 0; } }
         function destroyPlayer() {
           clearTimers();
+          swipePlayerLive = false;
+          syncSwipeLayer();
           if (ytPlayer) { try { ytPlayer.destroy(); } catch (e) { /* ignore */ } ytPlayer = null; }
           plainFrame = false;
           frameWrap.innerHTML = "";
         }
+        /* The swipe layer exists exactly while a stream is truly
+           playing in the visible player: armed at onPlaying, disarmed
+           by every other transition (a new start's destroyPlayer, the
+           waiting state, a viewer pause/cue report, the player being
+           hidden behind the facade or the fallback card). */
+        function syncSwipeLayer() {
+          if (!swipeLayer) return;
+          swipeLayer.hidden = !(swipePlayerLive && mode === "playing" && playerBox && !playerBox.hidden);
+        }
         function onPlaying() {
           mode = "playing";
+          swipePlayerLive = true;
+          syncSwipeLayer();
           playNudges = 0;
           resetChain(); /* a spot that plays ends any recovery chain */
           clearDead(currentKey); /* a stream that plays is alive — any dead mark on it clears at once */
@@ -12891,6 +12965,7 @@ var STRAIN_SRC_LINKS = {
         function onWaitingGesture() {
           if (mode === "playing" || mode === "fallback") return;
           mode = "waiting";
+          syncSwipeLayer(); /* waiting means the player's own tap target must take the first touch — no swipe layer */
           loading.hidden = true;
           setNow("The webview wants one first touch before video can start — <strong>tap or scroll anywhere once</strong> and " + spotByKey(currentKey).name + " starts by itself.");
           syncDockChrome();
@@ -13005,6 +13080,11 @@ var STRAIN_SRC_LINKS = {
                      onPlaying — still exactly once per stream start. */
                   onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } },
                   onStateChange: function (e) {
+                    /* A viewer pause or cue disarms the swipe layer at
+                       once: while the player is not playing, the
+                       picture is wholly its own again. PLAYING re-arms
+                       it in onPlaying. */
+                    if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) { swipePlayerLive = false; syncSwipeLayer(); }
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
                     else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
                     else if ((e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) && mode === "loading") {
@@ -13283,13 +13363,15 @@ var STRAIN_SRC_LINKS = {
           if (dockState !== "mini" || fsActive) return;
           if (e.button !== undefined && e.button > 0) return;
           /* The live picture is never a drag surface (owner's order):
-             presses on it land on the embedded player itself and never
-             reach this handler at all, and while a stream is up the
-             only in-stage surface of ours still showing (the loading
-             veil) is not a drag surface either — a
-             window drag may then start only from the window's own
-             frame (the press lands on the dock itself) or its chrome
-             buttons. */
+             presses on it land on the embedded player itself — or, on
+             the swipe layer while a stream plays, whose presses this
+             guard turns away just the same (the target is neither the
+             dock nor its chrome), so a picture swipe can cycle but
+             can never move the window — and while a stream is up the
+             in-stage surfaces of ours (the loading veil, the swipe
+             layer) are not drag surfaces either: a window drag may
+             start only from the window's own frame (the press lands
+             on the dock itself) or its chrome buttons. */
           if (playerBox && !playerBox.hidden && e.target !== dock && !(e.target.closest && (e.target.closest(".surf-mini-btn") || e.target.closest(".surf-dock-bar")))) return;
           if (boxDrag) { boxDrag = null; dock.classList.remove("mini-moving"); return; } /* a second finger cancels the drag */
           boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, t: Date.now(), armed: false, dx: 0, dy: 0,
@@ -13382,6 +13464,64 @@ var STRAIN_SRC_LINKS = {
            dead-skipping cycle the flick verdict uses. */
         if (fbPrevBtn) fbPrevBtn.addEventListener("click", function () { cycleSpot(-1); });
         if (fbNextBtn) fbNextBtn.addEventListener("click", function () { cycleSpot(1); });
+        /* --- picture swipe-to-cycle (owner's order, 2026-11-06) ---
+           A horizontal swipe ON THE STREAM PICTURE cycles the break:
+           left = next, right = previous, through cycleSpot — so
+           session-dead breaks are skipped exactly as chip cycling
+           skips them, and the cycled-to stream auto-starts through
+           the ordinary startStream path. The recognizer lives on the
+           transparent layer over the picture (syncSwipeLayer keeps
+           that layer present only while a stream is truly playing)
+           and its claim is deliberately narrow:
+           · ONLY a clear horizontal-dominant drag fires: |dx| ≥ 48px
+             with |dx| ≥ 1.5 × |dy|, judged the moment the drag
+             crosses the line and again on release from the gesture's
+             total travel (the fallback card's flick numbers). A tap,
+             a press, a short slide or a vertical drag NEVER claims —
+             a vertical drag is handed to native scrolling by the
+             layer's touch-action: pan-y and simply cancels here.
+           · The layer never covers the bottom control-bar strip, so
+             the player's own controls take their touches directly;
+             and whenever the player is not playing there is no layer
+             at all, so its picture taps land exactly as they always
+             have. Nothing here calls preventDefault on a tap.
+           · A claimed swipe swallows its synthesized click whole
+             (surfSwallowClick), fires once, and can never move the
+             window: the press target is the layer, which the window
+             drag's own guard already excludes, and this recognizer
+             itself moves nothing. A second finger cancels the
+             gesture, same as the window drag. No visible control,
+             no arrow, no copy anywhere — the gesture is invisible. */
+        var swipeG = null;
+        function swipeVerdict(g, x, y) {
+          var dx = x - g.sx, dy = y - g.sy;
+          if (Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.5) {
+            swipeG = null;
+            cycleSpot(dx < 0 ? 1 : -1);
+            surfSwallowClick();
+            return true;
+          }
+          return false;
+        }
+        if (swipeLayer) {
+          swipeLayer.addEventListener("pointerdown", function (e) {
+            if (e.button !== undefined && e.button > 0) return;
+            if (swipeG) { swipeG = null; return; } /* a second finger cancels the swipe, as it cancels the window drag */
+            swipeG = { id: e.pointerId, sx: e.clientX, sy: e.clientY };
+            try { swipeLayer.setPointerCapture(e.pointerId); } catch (err) { /* capture keeps a fast drag tracked to its release; losing it only loses that one drag */ }
+          });
+          swipeLayer.addEventListener("pointermove", function (e) {
+            if (!swipeG || e.pointerId !== swipeG.id) return;
+            swipeVerdict(swipeG, e.clientX, e.clientY); /* claim the moment a clear horizontal drag crosses the line */
+          });
+          swipeLayer.addEventListener("pointerup", function (e) {
+            if (!swipeG || e.pointerId !== swipeG.id) return;
+            var g = swipeG;
+            swipeG = null;
+            swipeVerdict(g, e.clientX, e.clientY); /* a sparse-event flick is judged on its total travel at release */
+          });
+          swipeLayer.addEventListener("pointercancel", function () { swipeG = null; }); /* a vertical scroll takeover lands here — never a cycle */
+        }
         autoSwitch.addEventListener("click", function () {
           autoOn = !autoOn;
           lsSet(LS_KEY, autoOn ? "1" : "0");
@@ -13588,6 +13728,7 @@ var STRAIN_SRC_LINKS = {
           state: function () {
             return {
               mode: mode,
+              swipeOn: (function () { try { return !!swipeLayer && !swipeLayer.hidden; } catch (e) { return null; } })(),
               dock: dock.hidden ? "hidden" : dockState,
               fabHidden: !!(fab && fab.style.display === "none"),
               stageBusy: Date.now() < stageBusyUntil,
