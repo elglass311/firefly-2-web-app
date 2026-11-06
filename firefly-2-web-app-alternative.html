@@ -2774,8 +2774,8 @@
       /* Whole-box move (owner order, 2026-11-05): in the floating
          player the fallback card and the floating controls are move
          surfaces too, so the browser must never claim their slides as
-         scroll or zoom — the box-drag handler in the surf script owns
-         them. */
+         scroll or zoom — the surf script's own gesture handlers own
+         them (the fallback card's flick also cycles streams). */
       .surf-overlay .surf-fallback,
       .surf-overlay .surf-fallback .btn-small,
       .surf-overlay .surf-fallback a,
@@ -12809,16 +12809,97 @@ var STRAIN_SRC_LINKS = {
           facade.addEventListener("pointerup", fEnd);
           facade.addEventListener("pointercancel", fEnd);
         }
+        /* Load-failure fallback gestures: the same disambiguation as
+           the poster facade, for the moments the failure card — not
+           the stream, not the poster — is what fills the frame. The
+           gesture layer never covers the fallback (syncZoomUI keeps it
+           over the player only, so the card's buttons stay tappable),
+           which left this card with no flick surface at all: a swipe
+           here could only drag the mini window (via the box handler)
+           or do nothing, and the viewer was stuck on a dead stream.
+           Now the card owns its surface exactly like the facade: a
+           fast short flick cycles to the next live break (cycleSurf
+           skips dead-marked breaks and, from fallback mode, starts the
+           new stream in place); in the mini stage a sustained drag (or
+           a ~250ms hold) moves the window itself; a clean tap is left
+           completely alone, so Try again, Watch on YouTube and Back to
+           poster keep working as plain taps. Presses are tracked even
+           when they start on a button: a slide or flick that began on
+           one has its synthesized click swallowed whole, so the button
+           never fires mid-gesture — the same rule the box handler
+           applies to its surfaces. */
+        if (fallback) {
+          var gDown = null, gHoldTimer = 0, gMoveOn = false, gMoveOrigin = null;
+          function gCanMove() { return surfStage === "mini" && !surfFs && !!overlayEl; }
+          function gEngageMove() {
+            if (gMoveOn || !gDown || !gCanMove()) return false;
+            var r = overlayEl.getBoundingClientRect();
+            gMoveOn = true;
+            gMoveOrigin = { left: r.left, top: r.top };
+            if (gHoldTimer) { clearTimeout(gHoldTimer); gHoldTimer = 0; }
+            overlayEl.classList.add("is-moving");
+            return true;
+          }
+          function gSettleMove() {
+            if (!gMoveOn) return;
+            gMoveOn = false; gMoveOrigin = null;
+            if (!overlayEl) return;
+            overlayEl.classList.remove("is-moving");
+            var rr = overlayEl.getBoundingClientRect();
+            saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) }); /* the window drag moved the whole unit: the anchor (and the attached bubble) settle with it */
+            placeFab();
+          }
+          fallback.addEventListener("pointerdown", function (e) {
+            if (!e.isPrimary) return;
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            gDown = { x: e.clientX, y: e.clientY, t: Date.now() };
+            gMoveOn = false; gMoveOrigin = null;
+            if (gCanMove()) {
+              gHoldTimer = setTimeout(function () {
+                gHoldTimer = 0;
+                if (gEngageMove()) { try { if (navigator.vibrate) navigator.vibrate(10); } catch (err) { /* ignore */ } }
+              }, 250);
+            }
+          });
+          fallback.addEventListener("pointermove", function (e) {
+            if (!gDown) return;
+            var dx = e.clientX - gDown.x, dy = e.clientY - gDown.y;
+            if (!gMoveOn && Math.hypot(dx, dy) > 10) {
+              if (gHoldTimer) { clearTimeout(gHoldTimer); gHoldTimer = 0; }
+              /* Sustained drag (same tests as the facade and the live
+                 player): still going ~200ms in, or moving slowly —
+                 the window takes the drag. A fast flick never engages. */
+              if (gCanMove()) {
+                var gEl = Date.now() - gDown.t, gDist = Math.hypot(dx, dy);
+                if (gEl >= 200 || gDist / Math.max(1, gEl) < 0.3) gEngageMove();
+              }
+            }
+            if (gMoveOn && gMoveOrigin) miniPlace(gMoveOrigin.left + dx, gMoveOrigin.top + dy);
+          });
+          var gEnd = function (e) {
+            if (gHoldTimer) { clearTimeout(gHoldTimer); gHoldTimer = 0; }
+            if (!gDown) { gMoveOn = false; gMoveOrigin = null; return; }
+            var dx = e.clientX - gDown.x, dy = e.clientY - gDown.y;
+            gDown = null;
+            if (gMoveOn) { gSettleMove(); surfSwallowNextClick(); return; }
+            /* Flick-cycle from the failure state: never leave the
+               viewer stuck on a stream that didn't load — the flick
+               moves to the next break that isn't dead-marked, in
+               place, and its click is swallowed. */
+            if (Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.4) { surfSwallowNextClick(); cycleSurf(dx < 0 ? 1 : -1); }
+          };
+          fallback.addEventListener("pointerup", gEnd);
+          fallback.addEventListener("pointercancel", gEnd);
+        }
         /* --- Whole-box move (floating player): EVERY surface of the
            floating box drags the unit, in every state ---
            The live player (gesture layer) and the poster facade already
            own their surfaces with their own disambiguation (flick
            cycles, pinch zooms, zoomed drag pans, sustained drag moves)
            — untouched. Everything else inside the mini box had no move
-           at all: the load-failure fallback card (and its buttons), the
-           floating mini controls, the loading surface whenever the
-           gesture layer is down. This handler owns exactly those
-           surfaces: a press that slides past ~10px becomes a unit move
+           at all: the floating mini controls, the loading surface
+           whenever the gesture layer is down. This handler owns exactly
+           those surfaces: a press that slides past ~10px becomes a unit move
            (coupled bubble follows via miniPlace, clamped in-viewport,
            anchor persisted on release); a slide that started on a
            button has its click swallowed whole, so the button never
@@ -12844,7 +12925,7 @@ var STRAIN_SRC_LINKS = {
             if (e.pointerType === "mouse" && e.button !== 0) return;
             var t = e.target;
             if (!t || !t.closest) return;
-            if (t.closest("#surfGesture") || t.closest("#surfFacade")) return; /* surfaces with their own gesture disambiguation */
+            if (t.closest("#surfGesture") || t.closest("#surfFacade") || t.closest("#surfFallback")) return; /* surfaces with their own gesture disambiguation */
             var r = overlayEl.getBoundingClientRect();
             boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, left: r.left, top: r.top, on: false };
           });
