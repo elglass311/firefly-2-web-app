@@ -1049,7 +1049,7 @@
         position: fixed; inset: 0; z-index: 50;
         background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
         overflow-y: auto;
-        padding: calc(84px + env(safe-area-inset-top)) 22px calc(32px + env(safe-area-inset-bottom));
+        padding: calc(var(--isl-clear, 106px) + env(safe-area-inset-top)) 22px calc(32px + env(safe-area-inset-bottom));
       }
       .unsupported-inner { max-width: 520px; margin: 0 auto; }
       .unsupported h1 { font-size: 27px; margin: 18px 0 10px; }
@@ -1372,7 +1372,9 @@
       }
       .sheet-inner { max-width: 640px; margin: 0 auto; }
       .sheet-head {
-        position: sticky; top: 0; z-index: 2;
+        /* Stuck, the head parks just BELOW the fixed status island
+           (measured clearance, --isl-top) — never underneath it. */
+        position: sticky; top: calc(var(--isl-top, 79px) + env(safe-area-inset-top) + 4px); z-index: 2;
         display: flex; align-items: center; gap: 10px;
         padding: 8px 0 10px;
         background: linear-gradient(180deg, var(--bg) 82%, transparent);
@@ -1714,10 +1716,12 @@
       .isl-btns { display: flex; flex-wrap: wrap; gap: 8px; }
       .isl-btns .btn { flex: 1 1 30%; min-height: 48px; padding: 10px 8px; font-size: 14px; width: auto; }
       .isl-close { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: #fff; font-size: 15px; cursor: pointer; }
-      .sheet { padding-top: calc(56px + env(safe-area-inset-top)); }
+      .sheet { padding-top: calc(var(--isl-clear, 106px) + env(safe-area-inset-top)); }
       /* Anything scrolled into view (tab switches, Fire Up walk-ins, guide
-         jumps) must land BELOW the fixed island, never underneath it. */
-      .wrap *, .sheet * { scroll-margin-top: calc(72px + env(safe-area-inset-top)); }
+         jumps) must land BELOW the fixed island, never underneath it.
+         The margin comes from the island's measured occupied height
+         (syncIslandClearance publishes --isl-clear), never a guess. */
+      .wrap *, .sheet * { scroll-margin-top: calc(var(--isl-clear, 106px) + env(safe-area-inset-top)); }
 
       /* ---------- Favorites wheel ---------- */
       .wheel {
@@ -1807,27 +1811,12 @@
          directly — play/pause, volume, settings, fullscreen and the
          progress bar are the player's own, and no overlay, gesture
          layer or carve-out of ours sits between the viewer's finger
-         and any of them. Break cycling lives OFF the picture, on two
-         narrow Prev/Next rails at the picture's left and right edges
-         (and on the break chips on the Surf Break page); window
-         dragging lives on the player window's frame and chrome. The
-         rails are short and vertically centred, so the picture's
-         corners and its bottom control bar stay the player's alone. */
-      .surf-rail {
-        appearance: none; cursor: pointer; font: inherit;
-        position: absolute; top: 50%; transform: translateY(-50%); z-index: 7;
-        width: 32px; height: 72px; padding: 0;
-        display: flex; align-items: center; justify-content: center;
-        color: #fff; background: rgba(0, 0, 0, 0.45);
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-      }
-      .surf-rail:active { transform: translateY(-50%) scale(0.94); }
-      .surf-rail svg { width: 16px; height: 16px; flex: none; }
-      .surf-rail-prev { left: 4px; border-radius: 0 10px 10px 0; }
-      .surf-rail-next { right: 4px; border-radius: 10px 0 0 10px; }
-      .surf-rail[hidden] { display: none !important; }
+         and any of them. Break cycling lives OFF the picture, on the
+         break chips on the Surf Break page (the picture-edge Prev/Next
+         rails were removed at the owner's order, 2026-11-06 — "the
+         arrows on the stream player left and right are redundant" —
+         with no replacement control); window dragging lives on the
+         player window's frame and chrome. */
       .surf-zoom-btn { display: inline-flex; align-items: center; gap: 5px; }
       .surf-zoom-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
       /* Sound toggle: the page-owned unmute control. Streams must start
@@ -2101,7 +2090,7 @@
          sheet, which covers the screen instead of pushing it.) */
       /* Anchored jumps (scrollIntoView) must clear the island at the top
          and the surf dock at the bottom. */
-      .card, .band-detail, .tab-title { scroll-margin-top: 88px; scroll-margin-bottom: 130px; }
+      .card, .band-detail, .tab-title { scroll-margin-top: calc(var(--isl-clear, 106px) + env(safe-area-inset-top)); scroll-margin-bottom: 130px; }
 
       /* ================= Width repair — no shrink-to-fit (2026-11-05) =================
          Root cause of the shrunken app: .compound-list .c-temp carried
@@ -2214,7 +2203,7 @@
       .alt-badge-main { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 999px; background: var(--ember); color: #1d1206; vertical-align: middle; }
       .alt-badge-isl { flex: none; font-size: 11px; font-weight: 800; letter-spacing: 0.07em; padding: 2px 7px; border-radius: 999px; background: var(--ember); color: #1d1206; margin-left: 6px; }
       .isl-sub { padding: 0 14px 8px; font-size: 13px; color: #dfe3da; text-align: center; }
-      .isl-hint { position: fixed; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top) + 118px); z-index: 57; width: min(430px, calc(100vw - 20px)); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+      .isl-hint { position: fixed; left: 50%; transform: translateX(-50%); top: calc(var(--isl-clear, 106px) + env(safe-area-inset-top) + 12px); z-index: 57; width: min(430px, calc(100vw - 20px)); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
       .isl-hint[hidden] { display: none; }
       .isl-hint button { flex: none; min-height: 40px; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); font-weight: 700; cursor: pointer; }
       /* Bottom tab bar: always visible, opaque, targets >= 56px */
@@ -2251,9 +2240,16 @@
       .fc-chart svg { display: block; width: 100%; height: auto; background: rgba(0, 0, 0, 0.22); border: 1px solid var(--line); border-radius: 10px; }
       .fc-legend { font-size: 12px; color: var(--ink-soft); margin-top: 5px; line-height: 1.5; }
       .fc-chart-note { font-size: 13px; color: var(--ink-soft); padding: 10px 2px 4px; }
-      .wrap { padding-bottom: 110px !important; }
+      /* Bottom clearance (owner report, 2026-11-06: the Vibe result
+         card's last line was clipped by the bottom bar): the wrap's
+         bottom padding is the tab bar's MEASURED height plus room,
+         published as --tabbar-h by the surf module's syncTabbarClear
+         (and never the surf dock's old 54px floor, which was shorter
+         than the bar). The fallback covers the bar's full height on
+         a tall-safe-area phone before the first measure lands. */
+      .wrap { padding-bottom: calc(var(--tabbar-h, 96px) + 36px) !important; }
       /* Segmented switchers: sticky, opaque, labeled */
-      .seg-control.seg-tabs { position: sticky; top: calc(env(safe-area-inset-top) + 64px); z-index: 40; background: var(--surface); }
+      .seg-control.seg-tabs { position: sticky; top: calc(var(--isl-top, 79px) + env(safe-area-inset-top) + 4px); z-index: 40; background: var(--surface); }
       /* Session stepper */
       .alt-stepper { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
       .alt-step-mid { text-align: center; }
@@ -2870,11 +2866,23 @@
       }
       .surf-fs-btn svg { width: 18px; height: 18px; }
       .surf-fs-btn:active { transform: scale(0.92); }
+      /* Fullscreen safe-area inset (owner order, 2026-11-06): the
+         phone's Dynamic Island / camera cutout cannot move, so in
+         fullscreen the DOCK insets its frame by the safe-area insets
+         and the picture — the flex-centred stage inside — renders
+         wholly inside the safe area; no part of the stream runs
+         underneath the cutout on whichever side it sits. A slightly
+         smaller picture is the accepted trade. The floating window
+         is untouched: this applies to the fullscreen presentation
+         only, on both the native :fullscreen element and the
+         fill-viewport fallback. */
       .surf-dock:fullscreen .surf-fs-btn, .surf-dock.surf-fs-fake .surf-fs-btn { display: inline-flex; }
       .surf-dock:fullscreen {
         background: #000; width: 100%; height: 100%; max-width: 100%;
         display: flex; flex-direction: column; justify-content: center;
         overflow-y: auto; border-radius: 0;
+        box-sizing: border-box;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
       .surf-dock.surf-fs-fake {
         position: fixed !important; inset: 0 !important; z-index: 96;
@@ -2883,6 +2891,8 @@
         border-radius: 0 !important; background: #000;
         display: flex; flex-direction: column; justify-content: center;
         overflow-y: auto;
+        box-sizing: border-box;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
       body.surf-fs-lock { overflow: hidden; }
       .surf-overlay.is-moving .surf-overlay-sheet { outline: 2px solid var(--ember); outline-offset: -2px; }
@@ -2915,13 +2925,13 @@
       /* Screen transitions with depth: slide + scale instead of a hard cut */
       .panel-enter { animation: panelDepth var(--dur-3) var(--ease-out); }
       @keyframes panelDepth { from { opacity: 0; transform: translateY(12px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
-      /* Cards tilt subtly in 3D when pressed */
-      .card { transition: transform var(--dur-1) var(--ease-out); }
-      .card:active { transform: perspective(700px) rotateX(1.4deg) scale(0.995); }
-      .str-card { transition: transform var(--dur-1) var(--ease-out); }
-      .str-card:active { transform: perspective(700px) rotateX(1.6deg) scale(0.99); }
+      /* Press feedback lives ONLY on the pressed control itself
+         (owner order, 2026-11-06: "things besides the buttons animate
+         when pressed"). The card tilt that used to fire on ANY press
+         inside a card, the strain-card tilt, its photo zoom and the
+         facade poster zoom are all deleted: pressing a button must
+         never move the card around it or any picture inside it. */
       .str-photo { transition: transform var(--dur-2) var(--ease-out); }
-      .str-card:active .str-photo { transform: scale(1.04); }
       /* Bottom bar: springy press + pop when a destination becomes active */
       .alt-tabbar button { transition: transform var(--dur-1) var(--ease-out); }
       .alt-tabbar button:active { transform: scale(0.88); }
@@ -2943,7 +2953,6 @@
       @keyframes surfShimmer { 0%,72% { transform: translateX(-120%); } 88%,100% { transform: translateX(120%); } }
       .surf-fab svg { animation: waveBob 3.4s ease-in-out infinite; }
       @keyframes waveBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
-      .surf-facade:active .surf-poster { transform: scale(1.03); }
       .surf-poster { transition: transform var(--dur-3) var(--ease-out); }
       /* Loading as shimmer, not a bare block */
       .surf-loading { overflow: hidden; }
@@ -3229,12 +3238,6 @@
               <div class="surf-loading" id="surfLoading"><span class="surf-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
             </div>
           </div>
-          <button class="surf-rail surf-rail-prev" id="surfRailPrev" type="button" aria-label="Previous break" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5 8 12l6.5 7"/></svg>
-          </button>
-          <button class="surf-rail surf-rail-next" id="surfRailNext" type="button" aria-label="Next break" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 5 16 12l-6.5 7"/></svg>
-          </button>
           <button class="surf-fs-btn" id="surfFsBtn" type="button" aria-label="Exit fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5"/><path d="M15 4h5v5"/><path d="M9 20H4v-5"/><path d="M15 20h5v-5"/></svg></button>
 
           <div class="surf-fallback" id="surfFallback" hidden>
@@ -10510,7 +10513,24 @@ var STRAIN_SRC_LINKS = {
           if (!islExpanded) islCollapsedH = Math.ceil(islandEl.getBoundingClientRect().height) || islCollapsedH;
           var h = islCollapsedH || 50;
           var v = "calc(" + (8 + h + 18) + "px + env(safe-area-inset-top))";
-          if (v !== islClearLast) { islClearLast = v; appEl.style.paddingTop = v; }
+          if (v !== islClearLast) {
+            islClearLast = v;
+            appEl.style.paddingTop = v;
+            /* The same measured clearance feeds EVERY top-anchored
+               consumer via CSS vars, so the pill can never sit on
+               page content anywhere (owner report, 2026-11-06: the
+               pill clipped the strain tab row, the Strain library
+               heading, strain page titles, the Terpenes title and
+               the Forecast spot name): --isl-top is the pill's
+               occupied height from the viewport top (its 8px offset
+               + its resting height) for sticky rows, and --isl-clear
+               adds the breathing margin for reserved space and
+               scroll landings. Their CSS fallbacks cover the pill's
+               full resting height before this first measure lands. */
+            var rootEl = document.documentElement;
+            rootEl.style.setProperty("--isl-top", (8 + h) + "px");
+            rootEl.style.setProperty("--isl-clear", (8 + h + 18) + "px");
+          }
         }
         function islSetExpanded(on) {
           islExpanded = on;
@@ -11474,8 +11494,6 @@ var STRAIN_SRC_LINKS = {
         var zoomLevel = document.getElementById("surfZoomLevel");
         var zoomResetBtn = document.getElementById("surfZoomReset");
         var zoomWrap = document.getElementById("surfZoomWrap");
-        var railPrev = document.getElementById("surfRailPrev");
-        var railNext = document.getElementById("surfRailNext");
         var fbPrevBtn = document.getElementById("surfFbPrevBtn");
         var fbNextBtn = document.getElementById("surfFbNextBtn");
 
@@ -11546,6 +11564,7 @@ var STRAIN_SRC_LINKS = {
         var currentKey = bestKey(new Date()) || "pipeline";
         var mode = "idle"; /* idle | loading | playing | waiting | fallback */
         var ytPlayer = null, plainFrame = false, plainBuiltMuted = true;
+        var plainMuted = true; /* plain-iframe fallback always starts muted (the Main standard); the Sound button may rebuild it audible after an explicit tap */
         var dwellStart = 0, loadTimer = 0, slowTimer = 0;
         var manualHold = false, stoppedByUser = false, gestureArmed = false;
         var dockState = "hidden"; /* hidden | expanded — the player has no collapsed form */
@@ -11600,12 +11619,21 @@ var STRAIN_SRC_LINKS = {
 
         /* --- dock chrome: header, status line, card button, content padding --- */
         function dockVisible() { return !dock.hidden; }
+        function syncTabbarClear() {
+          /* The bottom tab bar's measured height drives the page's
+             bottom clearance (--tabbar-h, consumed by the .wrap rule):
+             scrollable content always ends fully above the bar —
+             the Vibe result card's last line included (owner report,
+             2026-11-06). The dock no longer writes the wrap's bottom
+             padding at all: the floating player needs no document
+             clearance, and the old 54px floor was shorter than the
+             bar itself. */
+          var bar = document.getElementById("altTabbar");
+          if (bar && bar.offsetHeight) document.documentElement.style.setProperty("--tabbar-h", bar.offsetHeight + "px");
+        }
         function syncDockPad() {
           var h = dock.hidden ? 0 : (dock.offsetHeight || 330);
-          /* Bottom clearance now clears only the surf dock, measured in its
-             CURRENT state — there is no bottom tab bar anymore (navigation
-             lives in the left tray, summoned by the edge handle). */
-          if (appWrap) appWrap.style.paddingBottom = (54 + (dock.hidden ? 0 : h + 10)) + "px";
+          syncTabbarClear();
           /* The dock also floats over the unsupported-browser notice (the one
              screen where the app itself never opens), so give that scroll
              area the same clearance. */
@@ -11671,7 +11699,7 @@ var STRAIN_SRC_LINKS = {
              changes the presentation form. */
           if (which === "fallback") showDock();
           syncDockChrome();
-          syncZoomUI(); /* the cycling rails track which stage child is visible */
+          syncZoomUI(); /* zoom UI tracks which stage child is visible */
         }
         function setFacade(spot) {
           var info = spotInfo(spot, new Date());
@@ -11748,13 +11776,6 @@ var STRAIN_SRC_LINKS = {
         function syncZoomUI() {
           if (zoomBtn) zoomBtn.setAttribute("aria-pressed", zoomOn ? "true" : "false");
           if (zoomBar) zoomBar.hidden = !zoomOn;
-          /* The Prev/Next cycling rails show while the player is the
-             visible stage child and the player is up — the rails are
-             the flick's new home, off the picture. Zoom transforms
-             themselves stay as the Zoom controls set them. */
-          var railsUp = !!(playerBox && !playerBox.hidden && dockState === "expanded");
-          if (railPrev) railPrev.hidden = !railsUp;
-          if (railNext) railNext.hidden = !railsUp;
           applyZoom();
         }
         function enterZoom() { if (dockState !== "expanded") return; zoomOn = true; syncZoomUI(); }
@@ -11764,6 +11785,8 @@ var STRAIN_SRC_LINKS = {
         if (zoomOutBtn) zoomOutBtn.addEventListener("click", function () { zoomScale = Math.max(1, Math.ceil(zoomScale * 2) / 2 - 0.5); applyZoom(); });
         if (zoomResetBtn) zoomResetBtn.addEventListener("click", function () { zoomScale = 1; zoomX = 0; zoomY = 0; applyZoom(); });
         window.addEventListener("resize", applyZoom);
+        window.addEventListener("resize", syncTabbarClear);
+        syncTabbarClear();
         function cycleSurf(dir) {
           var idx = -1;
           for (var i = 0; i < SPOTS.length; i++) if (SPOTS[i].key === currentKey) idx = i;
@@ -11784,24 +11807,19 @@ var STRAIN_SRC_LINKS = {
             pickSpot(next.key);
           }
         }
-        /* --- break cycling: the Prev/Next rails ---
+        /* --- break cycling ---
            The picture carries NO surface of ours (owner's order:
-           YouTube's own control buttons must actually function), so
-           the flick that used to live on a transparent layer over
-           the picture is gone, with the layer itself — pinch, pan
-           and tap handling on the picture went with it, and the
-           window's drag-from-the-picture went with it too. Cycling's
-           home is exactly where the owner put it: the two narrow
-           rails at the picture's left and right edges (the other
-           home is the break chips on the Surf Break page). A tap on
-           a rail cycles one break in its direction through the same
-           cycleSurf path the flick used — session-dead breaks
-           skipped, in place, the player's presentation untouched.
+           YouTube's own control buttons must actually function), and
+           the picture-edge Prev/Next rails were removed at the
+           owner's order (2026-11-06: "the arrows on the stream player
+           left and right are redundant") with no replacement control.
+           Cycling's homes are the break chips on the Surf Break page
+           (pickSpot) and, on the load-failure fallback card, its own
+           Prev/Next buttons and its flick — all through cycleSurf /
+           startStream, in place, the player's presentation untouched.
            The window's move drag lives on the window's frame and
            chrome (the box-drag controller below), never on the
            picture; the Zoom controls remain the zoom. */
-        if (railPrev) railPrev.addEventListener("click", function () { cycleSurf(-1); });
-        if (railNext) railNext.addEventListener("click", function () { cycleSurf(1); });
         /* The fallback card's explicit escape: Prev / Next break
            step off a dead stream through the same dead-skipping
            cycle the card's flick verdict uses. */
@@ -12057,9 +12075,9 @@ var STRAIN_SRC_LINKS = {
         }
         function buildPlainFrame(spot) {
           plainFrame = true;
-          plainBuiltMuted = !soundWanted; /* the mute state baked into this frame's URL — a later volume change rebuilds only if THIS flips */
+          plainBuiltMuted = plainMuted; /* the mute state baked into this frame's URL — a later volume change rebuilds only if THIS flips */
           var f = document.createElement("iframe");
-          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1"; /* YouTube's own control bar renders (no controls parameter): its buttons take the viewer's taps directly */
+          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (plainMuted ? "1" : "0") + "&playsinline=1&rel=0&modestbranding=1"; /* YouTube's own control bar renders (no controls parameter): its buttons take the viewer's taps directly. The frame is ALWAYS built muted (the Main standard): an autoplay=1 embed created unmuted is refused by the webview's autoplay policy and lands paused, which is exactly why cycled streams used to sit still until tapped. The Sound button may rebuild it audible after an explicit tap (plainMuted follows the tap). */
           f.title = spot.name + " live surf cam";
           f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
           f.setAttribute("allowfullscreen", "");
@@ -12110,9 +12128,18 @@ var STRAIN_SRC_LINKS = {
                    applied exactly once per stream start (onReady /
                    first PLAYING, guarded by soundApplied), never
                    re-applied over an in-player change. */
-                playerVars: { autoplay: 1, mute: soundWanted ? 0 : 1, playsinline: 1, rel: 0, modestbranding: 1 },
+                /* The embed is ALWAYS created muted with autoplay on
+                   (the Main standard): an autoplay embed created
+                   unmuted — or unmuted before its first play call —
+                   is refused by the webview's autoplay policy and
+                   lands CUED/PAUSED, which is why a cycled stream
+                   used to sit on its poster until tapped. onReady
+                   therefore mutes and calls playVideo() FIRST, and
+                   only then is the remembered sound applied, exactly
+                   once for this start. */
+                playerVars: { autoplay: 1, mute: 1, playsinline: 1, rel: 0, modestbranding: 1 },
                 events: {
-                  onReady: function (e) { try { if (!soundApplied) { soundApplied = true; applySound(e.target); } e.target.playVideo(); } catch (err) { /* ignore */ } },
+                  onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } if (!soundApplied) { soundApplied = true; applySound(e.target); } },
                   onStateChange: function (e) {
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
                     else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
@@ -12735,7 +12762,7 @@ var STRAIN_SRC_LINKS = {
            presses on it land on the embedded player itself and never
            reach this handler at all, and while a stream is up the
            only in-stage surface of ours still showing (the loading
-           veil, the cycling rails) is not a drag surface either — a
+           veil) is not a drag surface either — a
            window drag may then start only from the window's frame
            or its header-strip chrome. A press that slides past
            ~10px becomes a window move: the window follows the
@@ -12853,6 +12880,7 @@ var STRAIN_SRC_LINKS = {
             applySound(ytPlayer);
             if (soundWanted && ytPlayer.playVideo) { try { ytPlayer.playVideo(); } catch (e) { /* ignore */ } }
           } else if (plainFrame && (mode === "playing" || mode === "loading")) {
+            plainMuted = !soundWanted; /* an explicit Sound tap is the one thing that may rebuild the plain frame audible (the Main standard) */
             startStream(spotByKey(currentKey), true);
           }
           syncSoundBtn();
