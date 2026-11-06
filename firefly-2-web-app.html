@@ -1923,6 +1923,8 @@
       .surf-fallback { padding: 18px 16px; background: var(--surface); }
       .surf-fallback-title { font-size: 16px; font-weight: 800; color: var(--ink); margin: 0 0 6px; }
       .surf-fallback-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      .surf-fallback-nav { margin-top: 8px; }
+      .surf-fallback-hint { margin: 8px 0 0; font-size: 12.5px; }
       .surf-yt-link { text-decoration: none; display: inline-flex; align-items: center; }
       .surf-nowrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; min-height: 34px; }
       .surf-now { margin: 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
@@ -3023,6 +3025,11 @@
             <button class="btn-small" id="surfRetryBtn" type="button">Try again</button>
             <button class="btn-small" id="surfBackBtn" type="button">Back to poster</button>
           </div>
+          <div class="surf-fallback-actions surf-fallback-nav">
+            <button class="btn-small" id="surfFbPrevBtn" type="button">‹ Prev break</button>
+            <button class="btn-small" id="surfFbNextBtn" type="button">Next break ›</button>
+          </div>
+          <p class="muted surf-fallback-hint">You're never stuck here — flick left or right on this card to move to another break.</p>
         </div>
       </div>
     </div>
@@ -11579,6 +11586,8 @@ var STRAIN_SRC_LINKS = {
         var ytLink = document.getElementById("surfYtLink");
         var retryBtn = document.getElementById("surfRetryBtn");
         var backBtn = document.getElementById("surfBackBtn");
+        var fbPrevBtn = document.getElementById("surfFbPrevBtn");
+        var fbNextBtn = document.getElementById("surfFbNextBtn");
         var nowLine = document.getElementById("surfNow");
         var chipsBox = document.getElementById("surfChips");
         var autoSwitch = document.getElementById("surfAutoSwitch");
@@ -13150,18 +13159,37 @@ var STRAIN_SRC_LINKS = {
            left to the gesture layer, whose own disambiguation
            (flick cycles at 1x, pinch zooms, zoomed drag pans,
            sustained drag / hold moves — and, while loading, any
-           sustained slide moves) is unchanged. */
+           sustained slide moves) is unchanged.
+           One verdict of the live layer is mirrored here for the
+           FALLBACK card (owner bug fix): the card used to carry no
+           flick verdict at all, so a swipe on it was read as the
+           start of a window drag and the viewer was trapped on a
+           dead stream. A press that STARTS on the fallback card now
+           disambiguates exactly as the live state does — the move
+           arms only once the press is ~180ms old and travelling,
+           so a fast horizontal flick (release within 600ms, ≥48px
+           of travel, horizontal-dominant) is over before any drag
+           can arm and instead cycles to the next / previous break
+           on release, skipping session-dead breaks, in place, its
+           synthesized click swallowed whole (a flick that starts
+           on one of the card's buttons cycles without firing it).
+           A sustained slide still arms the move and drags the
+           whole window, and clean taps still fire their buttons.
+           The card's Prev / Next break buttons are the explicit
+           equivalent of the flick. */
         var boxDrag = null;
         dock.addEventListener("pointerdown", function (e) {
           if (dockState !== "mini" || fsActive) return;
           if (e.target === gesture) return; /* the live player's surface: the gesture layer owns it */
           if (e.button !== undefined && e.button > 0) return;
           if (boxDrag) { boxDrag = null; dock.classList.remove("mini-moving"); return; } /* a second finger cancels the drag */
-          boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, armed: false, dx: 0, dy: 0 };
+          boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, t: Date.now(), armed: false, dx: 0, dy: 0,
+                      fb: mode === "fallback" && !!fallback && fallback.contains(e.target) };
         });
         window.addEventListener("pointermove", function (e) {
           if (!boxDrag || e.pointerId !== boxDrag.id) return;
           if (!boxDrag.armed) {
+            if (boxDrag.fb && Date.now() - boxDrag.t < 180) return; /* a fallback press still young enough to be a flick: the live layer arms its mini move only once the press is ~180ms old, so a fast flick never becomes a drag */
             if (Math.hypot(e.clientX - boxDrag.sx, e.clientY - boxDrag.sy) <= 10) return; /* still a tap */
             var r0 = dock.getBoundingClientRect();
             boxDrag.dx = e.clientX - r0.left; /* grab offset taken at arm time: the window does not jump */
@@ -13179,6 +13207,7 @@ var STRAIN_SRC_LINKS = {
         function boxDragEnd(e) {
           if (!boxDrag || e.pointerId !== boxDrag.id) return;
           var wasArmed = boxDrag.armed;
+          var bd = boxDrag;
           boxDrag = null;
           dock.classList.remove("mini-moving");
           if (wasArmed) {
@@ -13186,6 +13215,21 @@ var STRAIN_SRC_LINKS = {
             miniPos = { x: Math.round(r.left), y: Math.round(r.top) };
             lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
             surfSwallowClick(); /* the release's click is not a tap: the button under the finger must not fire */
+          } else if (bd.fb && e.type === "pointerup" && mode === "fallback") {
+            /* Fallback flick verdict — the live gesture layer's own
+               numbers, judged on the gesture's total travel: a quick,
+               clearly horizontal flick cycles the break IN PLACE
+               (cycleSpot skips session-dead breaks and never touches
+               the player's presentation), and the release's
+               synthesized click is swallowed whole, so a flick that
+               started on one of the card's buttons cycles without
+               firing it. Anything else — a tap, a short or vertical
+               slide, a slow press — falls through untouched. */
+            var fdx = e.clientX - bd.sx, fdy = e.clientY - bd.sy;
+            if (Date.now() - bd.t <= 600 && Math.abs(fdx) >= 48 && Math.abs(fdx) >= Math.abs(fdy) * 1.5) {
+              cycleSpot(fdx < 0 ? 1 : -1);
+              surfSwallowClick();
+            }
           }
         }
         window.addEventListener("pointerup", boxDragEnd);
@@ -13219,6 +13263,11 @@ var STRAIN_SRC_LINKS = {
         });
         retryBtn.addEventListener("click", function () { stoppedByUser = false; startStream(spotByKey(currentKey)); });
         backBtn.addEventListener("click", function () { unload(); setNow(nowText("Showing:")); });
+        /* The fallback card's explicit escape (owner bug fix): Prev /
+           Next break step off a dead stream through the same
+           dead-skipping cycle the flick verdict uses. */
+        if (fbPrevBtn) fbPrevBtn.addEventListener("click", function () { cycleSpot(-1); });
+        if (fbNextBtn) fbNextBtn.addEventListener("click", function () { cycleSpot(1); });
         autoSwitch.addEventListener("click", function () {
           autoOn = !autoOn;
           lsSet(LS_KEY, autoOn ? "1" : "0");
