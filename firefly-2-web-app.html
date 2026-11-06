@@ -1954,7 +1954,6 @@
         background: linear-gradient(165deg, var(--card-a) 0%, var(--card-b) 55%, var(--card-c) 100%);
         -webkit-backdrop-filter: blur(14px) saturate(1.25);
         backdrop-filter: blur(14px) saturate(1.25);
-        border: 1px solid var(--card-line);
         border-radius: 14px;
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 18px 44px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.4);
         padding: 6px;
@@ -1970,10 +1969,14 @@
         touch-action: none;
       }
       .surf-dock * { -webkit-user-drag: none; }
-      .surf-dock:not([hidden]) { animation: surfMiniIn var(--dur-2) var(--ease-out); }
+      .surf-dock:not([hidden]) { animation: surfMiniIn var(--dur-2) var(--ease-out); border: 1px solid var(--card-line); }
       @keyframes surfMiniIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       @media (prefers-reduced-motion: reduce) { .surf-dock:not([hidden]) { animation: none; } }
       @keyframes surfOverlayIn { from { opacity: 0; transform: translateX(-50%) translateY(14px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+      /* The stream wears its border ONLY once opened (owner's rule,
+         the :not([hidden]) rule above): closed, the dock is
+         display:none — no border, no box, no footprint in layout or
+         hit-testing anywhere on the screen. */
       .surf-dock[hidden] { display: none !important; }
       .surf-dock .surf-stage { margin-top: 0; }
       /* The Surf Break PAGE's control-center card: ordinary page
@@ -1998,24 +2001,29 @@
       .surf-dock-status { margin: 8px 2px 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
       .surf-dock-status[hidden] { display: none !important; }
       /* ---------- Surf Break floating button — follows every screen ----------
-         A small glass wave button that is ONE unit with the floating
-         stream window: they share a single anchor spot, remembered on
-         this device (ff2.surfMiniPos). Closed, the button renders at
-         the anchor's corner spot; with the player open it overlaps the
-         window's bottom-right corner, attached. Dragging EITHER part —
-         the button itself, or the window by its frame — moves the
-         whole unit, and the unit clamp keeps it fully inside the
-         viewport and clear of the status island (top center), the
-         tray handle (left edge), the docked Forecast button
-         (bottom-left) and any screen's primary controls. A tap on the
-         button opens the floating player over the current screen and
-         closes it again; its dot shows at a glance whether a stream
-         is playing behind it (pulsing red) or loading / waiting for a
-         first tap (steady amber). On wide screens the anchor's
-         default home hugs the app column's right edge. */
+         A small glass wave button. CLOSED, it is a free button with
+         its OWN remembered spot (ff2.surfFabPos): it can be dragged
+         anywhere on the visible screen and stays where it is dropped
+         — the only clamp keeps the button itself fully inside the
+         viewport edges; nothing reserves or avoids any zone for it,
+         and dropped over another element it simply stays on top. With
+         the player OPEN it rides attached at the window's bottom-right
+         corner (the unit anchor, ff2.surfMiniPos), and dragging either
+         part then moves the whole unit, clamped only so the unit
+         stays fully inside the viewport. A tap on the button opens
+         the floating player over the current screen and closes it
+         again; its dot shows at a glance whether a stream is playing
+         behind it (pulsing red) or loading / waiting for a first tap
+         (steady amber). On wide screens the button's default home
+         hugs the app column's right edge. */
       .surf-fab {
         appearance: none; cursor: pointer; font: inherit;
-        position: fixed; z-index: 75;
+        /* Above the status island (80): dropped over it — or over
+           anything else — the button stays ON TOP and grabbable,
+           never trapped underneath (owner's free-movement order). It
+           still yields to the tray + scrim (84/85) and the photo
+           viewer (90), exactly as before. */
+        position: fixed; z-index: 81;
         right: max(12px, calc(50% - 268px + env(safe-area-inset-right)));
         bottom: calc(12px + env(safe-area-inset-bottom));
         width: 52px; height: 52px; border-radius: 50%;
@@ -2280,6 +2288,16 @@
       .vibe-sec { animation: fcRowIn 360ms var(--ease-out) both; }
       .vibe-result { animation: vibeReveal 520ms var(--ease-spring) both; }
       @keyframes vibeReveal { 0% { opacity: 0; transform: translateY(14px) scale(0.97); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+      /* Vibe taps (owner's order): once the sheet is live, a tap's
+         re-render must never replay the section entrances, the result
+         reveal, or the selected-chip pop — all the wording around the
+         tap (section headers, neighbouring chips, descriptive text)
+         stays pixel-still. The ONLY thing that pops is the tapped
+         button itself, with the same transform-only chipPop: no size,
+         padding, margin or layout change anywhere. */
+      #vibeBody[data-live="1"] .vibe-sec, #vibeBody[data-live="1"] .vibe-result { animation: none; }
+      #vibeBody[data-live="1"] .chip[aria-pressed="true"] { animation: none; }
+      #vibeBody[data-live="1"] .chip.vibe-pop, #vibeBody[data-live="1"] .seg-control button.vibe-pop { animation: chipPop 280ms var(--ease-spring); }
       @media (prefers-reduced-motion: reduce) {
         .surf-stage::after, .surf-poster, .surf-fab::after, .surf-fc-best, .surf-loading::after { animation: none !important; }
       }
@@ -11159,9 +11177,11 @@ var STRAIN_SRC_LINKS = {
           return { pool: pool, union: union, moods: moods, desired: desired, rec: rec };
         }
         var vibeOpen = false;
+        var vibePopKey = null; /* the chip a tap just hit ("want|Happy", "mood|…", "int|…", "avoid|…"): on the re-render that tap causes, that button ALONE gets the pop — see the stylesheet's Vibe tap rule */
         function vibeRender() {
           var body = strEl("vibeBody");
           if (!body) return;
+          if (body.children.length) body.setAttribute("data-live", "1"); /* every render after the first is a tap's re-render: entrances and ambient pops stay off, so nothing around a tapped chip ever moves */
           var v = vibeCompute();
           vibeSaveAnswers(); /* persist the pruned answers, never a derived result */
           var h = "";
@@ -11182,20 +11202,20 @@ var STRAIN_SRC_LINKS = {
           h += '<div class="vibe-sec" style="animation-delay:0ms;"><p class="fu-step">1 · Effects you want <span>— from your strains only</span></p><div class="chip-row" id="vibeWant">' +
             v.union.map(function (e) {
               var info = EFF_INFO[e] || { g: "F/B" };
-              return '<button type="button" class="chip" data-vwant="' + strEsc(e) + '" aria-pressed="' + (vibeAns.want.indexOf(e) !== -1 ? "true" : "false") + '"><span class="grade ' + strGradeClass(info.g) + '">' + strEsc(info.g) + "</span>" + strEsc(e) + "</button>";
+              return '<button type="button" class="chip' + (vibePopKey === "want|" + e ? " vibe-pop" : "") + '" data-vwant="' + strEsc(e) + '" aria-pressed="' + (vibeAns.want.indexOf(e) !== -1 ? "true" : "false") + '"><span class="grade ' + strGradeClass(info.g) + '">' + strEsc(info.g) + "</span>" + strEsc(e) + "</button>";
             }).join("") + "</div></div>";
           h += '<div class="vibe-sec" style="animation-delay:60ms;"><p class="fu-step">2 · The vibe</p><div class="chip-row" id="vibeMood">' +
             v.moods.map(function (m) {
-              return '<button type="button" class="chip" data-vmood="' + strEsc(m.name) + '" aria-pressed="' + (vibeAns.mood === m.name ? "true" : "false") + '">' + strEsc(m.name) + "</button>";
+              return '<button type="button" class="chip' + (vibePopKey === "mood|" + m.name ? " vibe-pop" : "") + '" data-vmood="' + strEsc(m.name) + '" aria-pressed="' + (vibeAns.mood === m.name ? "true" : "false") + '">' + strEsc(m.name) + "</button>";
             }).join("") + "</div></div>";
           h += '<div class="vibe-sec" style="animation-delay:120ms;"><p class="fu-step">3 · Intensity</p><div class="seg-control" id="vibeIntensity" role="group" aria-label="Intensity">' +
             ["Light", "Medium", "Deep"].map(function (t) {
-              return '<button type="button" data-vint="' + t + '" aria-pressed="' + (vibeAns.intensity === t ? "true" : "false") + '">' + t + "</button>";
+              return '<button type="button"' + (vibePopKey === "int|" + t ? ' class="vibe-pop"' : '') + ' data-vint="' + t + '" aria-pressed="' + (vibeAns.intensity === t ? "true" : "false") + '">' + t + "</button>";
             }).join("") + "</div></div>";
           h += '<div class="vibe-sec" style="animation-delay:180ms;"><p class="fu-step">4 · Effects to avoid</p><div class="chip-row" id="vibeAvoid">' +
             v.union.map(function (e) {
               var info = EFF_INFO[e] || { g: "F/B" };
-              return '<button type="button" class="chip" data-vavoid="' + strEsc(e) + '" aria-pressed="' + (vibeAns.avoid.indexOf(e) !== -1 ? "true" : "false") + '"><span class="grade ' + strGradeClass(info.g) + '">' + strEsc(info.g) + "</span>" + strEsc(e) + "</button>";
+              return '<button type="button" class="chip' + (vibePopKey === "avoid|" + e ? " vibe-pop" : "") + '" data-vavoid="' + strEsc(e) + '" aria-pressed="' + (vibeAns.avoid.indexOf(e) !== -1 ? "true" : "false") + '"><span class="grade ' + strGradeClass(info.g) + '">' + strEsc(info.g) + "</span>" + strEsc(e) + "</button>";
             }).join("") + "</div></div>";
           h += '<div id="vibeResult">' + vibeResultHTML(v) + "</div>";
           body.innerHTML = h;
@@ -11204,6 +11224,7 @@ var STRAIN_SRC_LINKS = {
               var e = c.getAttribute("data-vwant"), i = vibeAns.want.indexOf(e);
               if (i === -1) { vibeAns.want.push(e); var ai = vibeAns.avoid.indexOf(e); if (ai !== -1) vibeAns.avoid.splice(ai, 1); }
               else vibeAns.want.splice(i, 1);
+              vibePopKey = "want|" + e;
               haptics.tick(); vibeRender();
             });
           });
@@ -11211,21 +11232,24 @@ var STRAIN_SRC_LINKS = {
             c.addEventListener("click", function () {
               var m = c.getAttribute("data-vmood");
               vibeAns.mood = vibeAns.mood === m ? "" : m;
+              vibePopKey = "mood|" + m;
               haptics.tick(); vibeRender();
             });
           });
           Array.prototype.forEach.call(body.querySelectorAll("[data-vint]"), function (c) {
-            c.addEventListener("click", function () { vibeAns.intensity = c.getAttribute("data-vint"); haptics.tick(); vibeRender(); });
+            c.addEventListener("click", function () { vibeAns.intensity = c.getAttribute("data-vint"); vibePopKey = "int|" + vibeAns.intensity; haptics.tick(); vibeRender(); });
           });
           Array.prototype.forEach.call(body.querySelectorAll("[data-vavoid]"), function (c) {
             c.addEventListener("click", function () {
               var e = c.getAttribute("data-vavoid"), i = vibeAns.avoid.indexOf(e);
               if (i === -1) { vibeAns.avoid.push(e); var wi = vibeAns.want.indexOf(e); if (wi !== -1) vibeAns.want.splice(wi, 1); }
               else vibeAns.avoid.splice(i, 1);
+              vibePopKey = "avoid|" + e;
               haptics.tick(); vibeRender();
             });
           });
           vibeWireResult(v);
+          vibePopKey = null; /* consumed — the pop belongs to this render only */
         }
         function vibeResultHTML(v) {
           var rec = v.rec;
@@ -12279,6 +12303,45 @@ var STRAIN_SRC_LINKS = {
         })();
         var FAB_SIZE = 52;      /* the wave button's box, px (see .surf-fab) */
         var UNIT_OVERLAP = 16;  /* how far the attached button tucks OVER the window's bottom-right corner */
+        /* The wave button's OWN spot (its top-left), remembered on
+           this device (ff2.surfFabPos) and used whenever the player is
+           CLOSED: closed, the button is a free button — it renders
+           exactly where it was last dropped, anywhere on the visible
+           screen, and its clamp touches nothing but the viewport
+           edges. (An older build saved a spot under this same key;
+           it is honoured again.) With no saved button spot, one is
+           derived from a restored unit anchor's corner, so the button
+           keeps the resting place it has today. While the player is
+           OPEN the button rides attached at the window's corner and
+           this spot simply follows that corner (syncFabPosToButton),
+           so closing the player leaves the button right where it was. */
+        var FAB_POS_KEY = "ff2.surfFabPos";
+        var fabPos = null;
+        /* Clamp a button top-left so the BUTTON — nothing else —
+           stays fully inside the viewport. No zone is reserved, no
+           element is avoided: a drop over the status island, the tray
+           or bottom bar, the Forecast button or any card sticks. */
+        function clampFabXY(x, y) {
+          var vw = window.innerWidth, vh = window.innerHeight;
+          return {
+            x: Math.max(0, Math.min(Math.round(x), vw - FAB_SIZE)),
+            y: Math.max(0, Math.min(Math.round(y), vh - FAB_SIZE))
+          };
+        }
+        (function restoreFabPos() {
+          var raw = lsGet(FAB_POS_KEY);
+          if (raw) {
+            try {
+              var saved = JSON.parse(raw);
+              if (saved && isFinite(saved.x) && isFinite(saved.y)) fabPos = { x: saved.x, y: saved.y };
+            } catch (e) { /* a corrupt saved spot just leaves the default home */ }
+          }
+          if (!fabPos && miniPos) {
+            var g = unitGeom();
+            var p = clampMiniXY(miniPos.x, miniPos.y, g.w, g.h);
+            fabPos = clampFabXY(p.x + g.w - FAB_SIZE, p.y + g.h - UNIT_OVERLAP);
+          }
+        })();
         /* The mini window's height for a given width — the SAME
            formula positionMini lays the window out with, so the
            button's attached spot is identical whether the unit is
@@ -12292,34 +12355,22 @@ var STRAIN_SRC_LINKS = {
         }
         /* Clamp an anchor (the window's top-left) so the whole unit —
            window plus the button attached below its bottom-right
-           corner — stays fully in the viewport, clear of the status
-           island and clear of the docked Forecast button. */
+           corner — stays fully inside the viewport. That is the ONLY
+           clamp (owner's order): there are no forbidden zones and no
+           avoidance relocations — the unit may be dropped over the
+           status island, over the tray / bottom bar, over the docked
+           Forecast button or over any card, and it stays where it is
+           dropped, on top. (The island and Forecast avoidance that
+           used to live here is what made drops near them jump away,
+           and the window-width clamp on this shared anchor is what
+           made the closed button unable to stay on the left side of
+           the screen at all — the closed button now has its own free
+           spot and clamp, above.) */
         function clampMiniXY(x, y, w, h) {
           var vw = window.innerWidth, vh = window.innerHeight;
           var uh = h + FAB_SIZE - UNIT_OVERLAP; /* the unit's full height: window + the button's hang below it */
-          x = Math.max(8, Math.min(Math.round(x), vw - w - 8));
-          y = Math.max(8, Math.min(Math.round(y), vh - uh - 8));
-          /* Kept clear of the status island: the unit never slides
-             up underneath it. */
-          var isl = document.getElementById("island");
-          if (isl) {
-            var ir = isl.getBoundingClientRect();
-            if (ir.width > 0 && x < ir.right && x + w > ir.left && y < ir.bottom + 8) {
-              y = Math.max(8, Math.min(Math.round(ir.bottom + 8), vh - uh - 8));
-            }
-          }
-          /* …and clear of the docked Forecast button: the unit
-             rests above it (or beside it when there is no room above)
-             rather than covering it. */
-          var fcb = document.getElementById("surfFcBtn");
-          if (fcb) {
-            var fbr = fcb.getBoundingClientRect();
-            if (fbr.width > 0 && x < fbr.right + 8 && x + w > fbr.left - 8 && y < fbr.bottom + 8 && y + uh > fbr.top - 8) {
-              var above = Math.round(fbr.top - uh - 8);
-              if (above >= 8) y = above;
-              else x = Math.max(8, Math.min(Math.round(fbr.right + 8), vw - w - 8));
-            }
-          }
+          x = Math.max(0, Math.min(Math.round(x), vw - w));
+          y = Math.max(0, Math.min(Math.round(y), vh - uh));
           return { x: x, y: y };
         }
         /* Place the wave button at the anchor's corner spot:
@@ -12336,11 +12387,36 @@ var STRAIN_SRC_LINKS = {
           fab.style.left = (x + w - FAB_SIZE) + "px";
           fab.style.top = (y + h - UNIT_OVERLAP) + "px";
         }
+        /* The button's own remembered spot follows the corner a unit
+           DRAG set it down on — called at drag end only (fab drag,
+           window drag, gesture move), never on a plain open or
+           resize: merely opening the player must not relocate the
+           spot the button was dropped at. */
+        function syncFabPosToButton() {
+          if (!fab) return;
+          var r = fab.getBoundingClientRect();
+          if (r.width > 0) { fabPos = clampFabXY(r.left, r.top); lsSet(FAB_POS_KEY, JSON.stringify(fabPos)); }
+        }
         function placeFab() {
-          if (!fab || !miniPos) return;
-          var g = unitGeom();
-          var p = clampMiniXY(miniPos.x, miniPos.y, g.w, g.h);
-          fabFollow(p.x, p.y, g.w, g.h);
+          if (!fab) return;
+          if (dockState === "mini" && miniPos) {
+            /* Open: the button rides attached at the unit anchor's corner. */
+            var g = unitGeom();
+            var p = clampMiniXY(miniPos.x, miniPos.y, g.w, g.h);
+            fabFollow(p.x, p.y, g.w, g.h);
+            return;
+          }
+          if (fabPos) {
+            /* Closed: the button rests at its own free spot, exactly
+               where it was dropped — no window geometry is involved. */
+            var fp = clampFabXY(fabPos.x, fabPos.y);
+            fabPos = fp;
+            fab.style.right = "auto";
+            fab.style.bottom = "auto";
+            fab.style.left = fp.x + "px";
+            fab.style.top = fp.y + "px";
+          }
+          /* No saved spot in either state: the stylesheet home stands. */
         }
         placeFab(); /* a restored anchor puts the closed button at its spot right away */
         function positionMini() {
@@ -12366,11 +12442,12 @@ var STRAIN_SRC_LINKS = {
             y = Math.round(fr.top - h + UNIT_OVERLAP);
             if (y < 8) y = Math.round(fr.bottom - UNIT_OVERLAP);
             y = Math.max(8, Math.min(y, vh - h - 8));
+            miniPos = { x: x, y: y }; /* the anchor materialises on open, so the attached button has its spot */
           }
           dock.style.width = w + "px";
           dock.style.left = x + "px";
           dock.style.top = y + "px";
-          placeFab(); /* the button hangs attached at the window's corner */
+          placeFab(); /* the button hangs attached at the window's corner — a purely visual attachment while open: the button's own remembered spot is NOT rewritten here, so closing the player returns it to exactly where it was dropped (only a unit DRAG re-anchors its spot, at drag end) */
         }
         /* Player show/hide is DEBOUNCED (owner bug fix, defect 1b):
            while a show/hide transition is animating (~300ms — the
@@ -12384,9 +12461,13 @@ var STRAIN_SRC_LINKS = {
            Break menu lives on its own tray page, reached by
            navigation (goSurfPage), never by expanding this window. */
         var stageBusyUntil = 0;
-        function setStage(next) {
+        function setStage(next, force) {
           if (dockState === next) return false; /* already there: no-op */
-          if (Date.now() < stageBusyUntil) return false; /* a transition is still animating */
+          /* The debounce never consumes a wave-button tap (owner bug
+             fix): fabTap passes force, so the player's toggle fires on
+             the FIRST tap, every time; every other caller keeps the
+             anti-strobe debounce exactly as before. */
+          if (!force && Date.now() < stageBusyUntil) return false; /* a transition is still animating */
           stageBusyUntil = Date.now() + 300;
           if (next === "mini") {
             dock.hidden = false;
@@ -12400,13 +12481,14 @@ var STRAIN_SRC_LINKS = {
             dockState = "hidden";
             dock.setAttribute("data-state", "hidden");
             clearDockInlinePos();
+            placeFab(); /* closed, the button comes to rest at its own spot — the corner it just left */
             exitZoom(); /* closing the player resets zoom — it never survives into the next open */
           }
           syncDockChrome();
           return true;
         }
-        function openMini() { return setStage("mini"); }
-        function closeOverlay() { return setStage("hidden"); }
+        function openMini(force) { return setStage("mini", force); }
+        function closeOverlay(force) { return setStage("hidden", force); }
         /* The Surf Break PAGE is the player's menu: the window button
            on the player's frame loads it through the app's own tab
            wiring (the same click a tray tap makes, so aria state, the
@@ -12630,6 +12712,7 @@ var STRAIN_SRC_LINKS = {
           var r = dock.getBoundingClientRect();
           miniPos = { x: Math.round(r.left), y: Math.round(r.top) };
           lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+          syncFabPosToButton(); /* the button's own spot follows the corner it ended on */
         }
         if (gesture) {
           gesture.addEventListener("pointerdown", function (e) {
@@ -13081,29 +13164,55 @@ var STRAIN_SRC_LINKS = {
         miniBtnGuard(miniCloseBtn, function () { closeOverlay(); });
         miniBtnGuard(miniExpandBtn, function () { toggleStreamFs(); });
         miniBtnGuard(miniFullBtn, function () { goSurfPage(); });
-        /* The wave button drags the whole UNIT. The button and the
-           mini window share one anchor (ff2.surfMiniPos): a press on
-           the button that travels past ~8px is a drag — the anchor
-           follows the finger, the button tracks it exactly, and the
-           mini window (when open) translates in lockstep at its
-           constant attached offset; the click the press ends with is
-           suppressed, so a drag never opens or closes anything. A
-           clean tap is untouched and still summons/folds the stream
-           (below). In fullscreen the button is hidden, so it is not
-           separately movable there. An older saved button
-           spot (ff2.surfFabPos) may still sit in storage on this
-           device; the unit anchor supersedes it — it is no longer
-           read, applied or updated. */
-        var fabPress = null, fabDragMoved = false;
+        /* Dragging the wave button (owner bug fix — free movement, no
+           snap-back, first-tap opens). A press that travels past ~8px
+           is a drag; a clean tap toggles the player (fabTap, below).
+           CLOSED, the button alone travels: its own top-left follows
+           the finger and is re-saved on EVERY move, clamped only by
+           the viewport edges (clampFabXY) — it can be dropped
+           anywhere, the left side included, over any element, and it
+           stays there. OPEN, the button drags the whole unit as
+           before (shared anchor ff2.surfMiniPos, viewport-only
+           clamp). The gesture is claimed in the capture phase, the
+           button carries touch-action:none, and pointer capture is
+           taken at once, so no page swipe recognizer or scroll can
+           steal it mid-drag. A pointercancel after a true drag is a
+           DROP at the current position (fabPressEnd treats it exactly
+           like a release — the position was already applied and saved
+           move by move), never an abort back to the pre-drag spot;
+           the post-gesture click swallow arms ONLY after a true drag,
+           never after a clean tap. In fullscreen the button is
+           hidden, so it is not separately movable there. */
+        var fabPress = null, fabDragMoved = false, fabTapAt = 0;
         if (fab) {
           fab.addEventListener("pointerdown", function (e) {
             if (fsActive) return; /* fullscreen: the button is not reachable/movable */
             var fr = fab.getBoundingClientRect();
             fabPress = { id: e.pointerId, sx: e.clientX, sy: e.clientY, dx: e.clientX - fr.left, dy: e.clientY - fr.top, moved: false };
             try { fab.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-          });
+          }, true); /* capture phase: the button's claim on its own gesture precedes every page handler */
           fab.addEventListener("pointermove", function (e) {
             if (!fabPress || e.pointerId !== fabPress.id) return;
+            if (dockState !== "mini") {
+              /* Player closed: the button ALONE travels — free
+                 movement. The grab point on the button stays under
+                 the finger; the spot is applied and saved on every
+                 move, so wherever the gesture ends — release or
+                 pointercancel — the button is already there. */
+              if (!fabPress.moved) {
+                if (Math.hypot(e.clientX - fabPress.sx, e.clientY - fabPress.sy) <= 8) return; /* still a tap */
+                fabPress.moved = true;
+                fab.classList.add("fab-dragging");
+              }
+              var fp = clampFabXY(e.clientX - fabPress.dx, e.clientY - fabPress.dy);
+              fabPos = fp;
+              fab.style.right = "auto";
+              fab.style.bottom = "auto";
+              fab.style.left = fp.x + "px";
+              fab.style.top = fp.y + "px";
+              lsSet(FAB_POS_KEY, JSON.stringify(fp));
+              return;
+            }
             var g = unitGeom();
             if (!fabPress.moved) {
               if (Math.hypot(e.clientX - fabPress.sx, e.clientY - fabPress.sy) <= 8) return; /* still a tap */
@@ -13131,10 +13240,32 @@ var STRAIN_SRC_LINKS = {
             fabPress = null;
             fab.classList.remove("fab-dragging");
             if (wasDrag) {
+              /* A release — or a pointercancel (browser gesture
+                 theft, scroll takeover) — after a true drag is a
+                 DROP at the current position, never an abort: the
+                 position was applied and saved on every move, and
+                 nothing here re-anchors it. Only NOW, after a true
+                 drag, does the click swallow arm. */
               fabDragMoved = true; /* the click that follows this release is not a tap */
               surfSwallowClick(); /* …and no other tap handler may fire from it either */
-              if (miniPos) lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+              if (dockState === "mini") {
+                if (miniPos) lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+                syncFabPosToButton();
+              } else if (fabPos) {
+                lsSet(FAB_POS_KEY, JSON.stringify(fabPos));
+              }
+            } else if (e.type === "pointerup") {
+              /* A clean tap fires the toggle HERE, on the pointerup
+                 path — never on the synthesized click, which the
+                 global click swallow can race and eat, and never
+                 through the stage debounce (fabTap forces the toggle):
+                 the player opens on the FIRST tap, every time. */
+              fabTapAt = Date.now();
+              fabTap();
             }
+            /* A pointercancel that never became a drag does nothing:
+               the gesture was taken away mid-press and the button
+               simply stays where it is. */
           };
           fab.addEventListener("pointerup", fabPressEnd);
           fab.addEventListener("pointercancel", fabPressEnd);
@@ -13214,6 +13345,7 @@ var STRAIN_SRC_LINKS = {
             var r = dock.getBoundingClientRect();
             miniPos = { x: Math.round(r.left), y: Math.round(r.top) };
             lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+            syncFabPosToButton(); /* the button's own spot follows the corner it ended on */
             surfSwallowClick(); /* the release's click is not a tap: the button under the finger must not fire */
           } else if (bd.fb && e.type === "pointerup" && mode === "fallback") {
             /* Fallback flick verdict — the live gesture layer's own
@@ -13246,10 +13378,9 @@ var STRAIN_SRC_LINKS = {
            waiting for its first gesture, or playing is left exactly as
            it is. This is also the deliberate exception to Auto-play off
            and to a previous Stop: the button tap itself is the summon. */
-        if (fab) fab.addEventListener("click", function () {
-          if (fabDragMoved) { fabDragMoved = false; return; } /* a drag just ended — not a tap */
-          if (dockVisible()) { closeOverlay(); return; }
-          openMini();
+        function fabTap() {
+          if (dockVisible()) { closeOverlay(true); return; }
+          openMini(true);
           if (mode === "playing" || mode === "loading" || mode === "waiting") return;
           stoppedByUser = false;
           bgSuspended = false;
@@ -13260,6 +13391,11 @@ var STRAIN_SRC_LINKS = {
             renderChips();
           }
           startStream(spotByKey(currentKey));
+        }
+        if (fab) fab.addEventListener("click", function () {
+          if (fabDragMoved) { fabDragMoved = false; return; } /* a drag just ended — not a tap */
+          if (Date.now() - fabTapAt < 1000) return; /* this tap already fired on its pointerup */
+          fabTap(); /* a click with no pointer path behind it (keyboard, assistive tech) still toggles */
         });
         retryBtn.addEventListener("click", function () { stoppedByUser = false; startStream(spotByKey(currentKey)); });
         backBtn.addEventListener("click", function () { unload(); setNow(nowText("Showing:")); });
