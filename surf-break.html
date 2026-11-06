@@ -104,14 +104,28 @@ details[open ]>summary::after{content:" –";}
 /* Digital zoom: a transform on the wrapper around the player node.
    The iframe itself is never moved, recreated or reloaded by zoom. */
 .pl-zoomwrap{position:relative; will-change:transform;}
-/* The gesture layer stops 56px short of the stage bottom on purpose:
-   that strip is the player's own control bar (volume, play/pause),
-   and taps there must reach the player itself — a tap on the volume
-   control must never be swallowed by this layer and turned into a
-   pause. Flick, pinch and pan work over the rest of the picture. */
-.pl-gesture{position:absolute; inset:0 0 56px 0; z-index:6; touch-action:none; cursor:grab;}
-.pl-gesture:active{cursor:grabbing;}
-.pl-gesture[hidden]{display:none !important;}
+/* Break-change rails: narrow buttons at the picture's left/right
+   edges — the ONLY elements over the player. There is deliberately
+   NO full-surface gesture layer over the video: every version of
+   one swallowed the taps meant for the buttons on the stream
+   screen (the player's own play/pause, volume and fullscreen
+   controls never received them, because the layer sat on top of
+   the iframe and ate every pointer event over the picture). The
+   rails cover no player control — YouTube's sit at the top,
+   centre and bottom of the frame — so every button on the stream,
+   the player's and the app's, now takes its taps directly. A rail
+   tap, or a flick that starts on a rail, changes break. */
+.pl-rail{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:6;
+  width:44px; height:96px; border-radius:12px; cursor:pointer;
+  background:rgba(4,16,26,.5); border:1px solid rgba(255,255,255,.28);
+  color:#fff; font-size:28px; font-weight:800; line-height:1;
+  display:flex; align-items:center; justify-content:center; touch-action:pan-y;
+}
+.pl-rail:active{transform:translateY(-50%) scale(.94); background:rgba(13,77,61,.78);}
+.pl-rail-l{left:6px;}
+.pl-rail-r{right:6px;}
+.pl-rail[hidden]{display:none !important;}
 .pl-zoombar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 8px;}
 .pl-zoombar[hidden]{display:none !important;}
 .pl-zoom-level{font-weight:800; font-size:14px; min-width:42px; text-align:center;}
@@ -250,7 +264,7 @@ details[open ]>summary::after{content:" –";}
       <span class="pl-zoom-level" id="camZoomLevel" aria-live="polite">1×</span>
       <button class="btn" id="camZoomIn" type="button" aria-label="Zoom in">+</button>
       <button class="btn" id="camZoomReset" type="button">Reset 1×</button>
-      <p class="pl-zoom-note">Digital zoom — crops into the picture. The cams stream in HD, so 2× stays fairly clear. You can also pinch on the picture itself.</p>
+      <p class="pl-zoom-note">Digital zoom — crops into the picture. The cams stream in HD, so 2× stays fairly clear. Use the + / − buttons here to zoom; nothing sits over the picture, so the player's own buttons always work.</p>
     </div>
     <div class="pl-stage" id="camStage">
       <div class="pl-facade" id="camFacade">
@@ -274,7 +288,8 @@ details[open ]>summary::after{content:" –";}
           <div class="pl-loading" id="camLoading"><span class="pl-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
         </div>
       </div>
-      <div class="pl-gesture" id="camGesture" hidden aria-hidden="true"></div>
+      <button class="pl-rail pl-rail-l" id="camPrev" type="button" hidden aria-label="Previous break">‹</button>
+      <button class="pl-rail pl-rail-r" id="camNext" type="button" hidden aria-label="Next break">›</button>
       <div class="pl-fallback" id="camFallback" hidden>
         <p class="pl-fallback-title" id="camFbTitle">This stream is taking a break</p>
         <p class="small" id="camFbText" style="margin:0;"></p>
@@ -308,7 +323,7 @@ details[open ]>summary::after{content:" –";}
       </div>
     </div>
     <p class="tiny" id="camCredit" style="margin:10px 0 0;"></p>
-    <p class="tiny" style="margin:6px 0 0;">Flick left or right on the picture to change breaks; pinch zooms 1–3×, drag to pan while zoomed, double-tap to reset. The strip at the very bottom of the picture is the player's own control bar — its volume button works right there, and the Sound button only ever changes the sound: turning sound on or reaching for the volume never pauses the stream. A stream that fails to load is marked dead for this session and skipped by flicking and both auto modes — a stream that plays again clears its mark, and tapping its chip always retries it. If you land on a “couldn't load” card, you're never stuck on it: flick the card itself left or right, or use its Prev / Next break buttons, to move straight to another break. “Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break. These are live video streams and they use data; the stream unloads when the app goes into the background so nothing keeps eating data unseen.</p>
+    <p class="tiny" style="margin:6px 0 0;">Change breaks with the ‹ › rails at the sides of the picture — tap one, or flick starting on one — or tap a break chip below. Nothing covers the picture, so the player's own buttons work right on the stream: its centre button pauses and plays, and its control bar at the bottom holds its volume and fullscreen buttons. The Sound button above only ever changes the sound: turning sound on or reaching for the volume never pauses the stream. Digital zoom is the Zoom button above the picture (1–3×, + / − in its bar, Reset back to 1×). A stream that fails to load is marked dead for this session and skipped by the rails and both auto modes — a stream that plays again clears its mark, and tapping its chip always retries it. If you land on a “couldn't load” card, you're never stuck on it: flick the card itself left or right, or use its Prev / Next break buttons, to move straight to another break. “Daylight” is a simple 6:00 AM – 7:00 PM local-time window at each break. These are live video streams and they use data; the stream unloads when the app goes into the background so nothing keeps eating data unseen.</p>
   </div>
 </section>
 
@@ -927,8 +942,11 @@ var BRANDS = [
      break buttons): a stream that won't load can never trap the
      user on it, and a flick with every break marked dead still
      moves to the plain neighbour and retries it
-   · pinch zoom 1–3× with pan on a gesture layer over the player;
-     transform lives on the wrapper, never on the iframe
+   · NO overlay over the player: the player's own buttons take
+     their taps directly; break changes ride on narrow ‹ › rail
+     buttons at the picture's edges, and digital zoom 1–3× is
+     driven by the Zoom bar — its transform lives on the wrapper,
+     never on the iframe
    · fullscreen requested on the player dock node itself, with a
      fixed-position fake-fullscreen fallback
    · first-gesture primer: a stream stuck waiting for a webview
@@ -1006,101 +1024,33 @@ function makeZoom(wrap, levelEl){
   };
 }
 
-/* --- shared: gesture layer over a live player (the cross-origin
-   iframe swallows touches over the video itself, so pinch, pan,
-   flick and tap are caught here). Disambiguation: two-finger pinch
-   zooms 1–3×; zoomed past 1×, one finger pans (clamped so the
-   picture always covers the stage); at 1× a fast flick cycles;
-   double-tap returns to 1×; a clean single tap toggles play/pause
-   through the player API, deferred ~280ms so a double-tap is never
-   also a pause. The layer never covers the player's own control
-   bar (see the .pl-gesture rule), and a tap that starts in the
-   layer's own bottom band never toggles either: that band is
-   where the player's volume control shows when the picture is
-   zoomed, and reaching for the volume must only ever change the
-   volume — never pause the stream. --- */
-function attachGestures(layer, zoom, hooks){
-  if(!layer) return;
-  var pointers = {}, drag = null, pinch = null;
-  var moved = false, pinched = false, tapTimer = 0, lastTapAt = 0, tapGuard = false;
-  function cancelTap(){ if(tapTimer){ clearTimeout(tapTimer); tapTimer = 0; } }
-  layer.addEventListener("pointerdown", function(e){
-    e.preventDefault();
-    try{ layer.setPointerCapture(e.pointerId); }catch(err){}
-    pointers[e.pointerId] = { x:e.clientX, y:e.clientY };
-    var ids = Object.keys(pointers);
-    if(ids.length === 1){
-      drag = { id:e.pointerId, sx:e.clientX, sy:e.clientY, px:zoom.state.x, py:zoom.state.y, t:Date.now() };
-      moved = false; pinch = null;
-      try{ var lr = layer.getBoundingClientRect(); tapGuard = e.clientY >= lr.bottom - 56; }catch(err){ tapGuard = false; }
-    } else if(ids.length === 2){
-      cancelTap();
-      pinched = true;
-      var a = pointers[ids[0]], b = pointers[ids[1]];
-      pinch = { d:Math.hypot(a.x-b.x, a.y-b.y), s:zoom.state.scale, mx:(a.x+b.x)/2, my:(a.y+b.y)/2, px:zoom.state.x, py:zoom.state.y };
-      drag = null;
+/* --- shared: break-change rails over a live player. The rails
+   are plain buttons (tap = change break) that also accept a
+   flick starting on the rail itself (a horizontal release of
+   48px+ cycles in the flick's direction, and the trailing
+   synthesized click is swallowed so one gesture never cycles
+   twice). Nothing else overlays the video: the player's own
+   buttons — play/pause in the centre, volume and fullscreen on
+   its control bar — receive their taps directly from the
+   browser, which no covering layer can ever allow. Digital zoom
+   is driven by the Zoom button and its + / − bar, which move a
+   transform on the wrapper around the player; zooming never
+   needs a surface over the picture either. --- */
+function attachRail(btn, dir, onCycle){
+  if(!btn) return;
+  var down = null;
+  btn.addEventListener("pointerdown", function(e){ down = { x:e.clientX, y:e.clientY }; });
+  btn.addEventListener("pointerup", function(e){
+    if(!down) return;
+    var dx = e.clientX - down.x, dy = e.clientY - down.y;
+    down = null;
+    if(Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy)*1.4){
+      swallowNextClick();
+      onCycle(dx < 0 ? 1 : -1);
     }
   });
-  layer.addEventListener("pointermove", function(e){
-    if(!pointers[e.pointerId]) return;
-    pointers[e.pointerId] = { x:e.clientX, y:e.clientY };
-    if(drag && e.pointerId === drag.id){
-      var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
-      if(Math.abs(dx) + Math.abs(dy) > 6) moved = true;
-      if(zoom.state.scale > 1){
-        zoom.state.x = drag.px + dx; zoom.state.y = drag.py + dy;
-        zoom.apply();
-      }
-    } else if(pinch){
-      var ids = Object.keys(pointers);
-      if(ids.length !== 2) return;
-      var a = pointers[ids[0]], b = pointers[ids[1]];
-      var d = Math.hypot(a.x-b.x, a.y-b.y);
-      if(pinch.d > 0) zoom.state.scale = Math.max(1, Math.min(3, pinch.s * d / pinch.d));
-      zoom.state.x = pinch.px + ((a.x+b.x)/2 - pinch.mx);
-      zoom.state.y = pinch.py + ((a.y+b.y)/2 - pinch.my);
-      zoom.apply();
-    }
-  });
-  function end(e){
-    var wasDrag = !!(drag && e.pointerId === drag.id);
-    var endDrag = wasDrag ? drag : null;
-    delete pointers[e.pointerId];
-    var ids = Object.keys(pointers);
-    if(ids.length === 1){
-      var p = pointers[ids[0]];
-      drag = { id:Number(ids[0]), sx:p.x, sy:p.y, px:zoom.state.x, py:zoom.state.y, t:Date.now() };
-      pinch = null;
-    } else if(ids.length === 0){
-      if(wasDrag && endDrag && !pinched && zoom.state.scale <= 1){
-        var sdx = e.clientX - endDrag.sx, sdy = e.clientY - endDrag.sy;
-        if(Math.abs(sdx) >= 48 && Math.abs(sdx) >= Math.abs(sdy)*1.4){
-          cancelTap(); swallowNextClick(); lastTapAt = 0;
-          hooks.onFlick(sdx < 0 ? 1 : -1);
-          drag = null; pinch = null; moved = false; pinched = false;
-          return;
-        }
-      }
-      if(wasDrag && !pinched && !moved && !tapGuard){
-        var now = Date.now();
-        if(now - lastTapAt < 300){
-          lastTapAt = 0; cancelTap(); zoom.reset();
-        } else {
-          lastTapAt = now; cancelTap();
-          tapTimer = setTimeout(function(){ tapTimer = 0; hooks.onTapToggle(); }, 280);
-        }
-      }
-      drag = null; pinch = null; moved = false; pinched = false; tapGuard = false;
-    }
-  }
-  layer.addEventListener("pointerup", end);
-  layer.addEventListener("pointercancel", end);
-  layer.addEventListener("wheel", function(e){
-    e.preventDefault();
-    zoom.state.scale = Math.max(1, Math.min(3, Math.round((zoom.state.scale + (e.deltaY < 0 ? 0.25 : -0.25))*4)/4));
-    if(zoom.state.scale === 1){ zoom.state.x = 0; zoom.state.y = 0; }
-    zoom.apply();
-  }, { passive:false });
+  btn.addEventListener("pointercancel", function(){ down = null; });
+  btn.addEventListener("click", function(){ onCycle(dir); });
 }
 
 /* --- shared: poster-facade flicks (ported from the reference's
@@ -1193,7 +1143,7 @@ var camDock = $('#camDock'), camFacade = $('#camFacade'), camPoster = $('#camPos
     camDockSpot = $('#camDockSpot'), camDockMeta = $('#camDockMeta'), camDockStatus = $('#camDockStatus'),
     camSoundBtn = $('#camSound'), camSoundLbl = $('#camSoundLbl'),
     camZoomBtn = $('#camZoomBtn'), camZoomBar = $('#camZoomBar'),
-    camGesture = $('#camGesture'), camZoomWrap = $('#camZoomWrap');
+    camPrevBtn = $('#camPrev'), camNextBtn = $('#camNext'), camZoomWrap = $('#camZoomWrap');
 
 function spotByKey(k){ for(var i=0;i<CAMS.length;i++) if(CAMS[i].key===k) return CAMS[i]; return CAMS[0]; }
 function spotInfo(spot, date){
@@ -1293,7 +1243,10 @@ function showOnly(which){
   syncDockChrome();
 }
 function syncGestureVis(){
-  if(camGesture) camGesture.hidden = camPlayerBox.hidden;
+  /* The break-change rails show exactly while the player does —
+     and they are the only things over the picture. */
+  if(camPrevBtn) camPrevBtn.hidden = camPlayerBox.hidden;
+  if(camNextBtn) camNextBtn.hidden = camPlayerBox.hidden;
   camZoom.apply();
 }
 function setFacade(spot){
@@ -1346,15 +1299,14 @@ function cycleSurf(dir){
     pickSpot(next.key);
   }
 }
-function tapToggleCam(){
-  if(!camPlayer) return;
-  try{
-    var st = camPlayer.getPlayerState ? camPlayer.getPlayerState() : -1;
-    if(st === 1 && camPlayer.pauseVideo) camPlayer.pauseVideo();
-    else if(camPlayer.playVideo) camPlayer.playVideo();
-  }catch(e){}
-}
-attachGestures(camGesture, camZoom, { onFlick: cycleSurf, onTapToggle: tapToggleCam });
+/* Break changes while a stream plays happen on the edge rails —
+   plain buttons over the picture's left/right edges, and the only
+   overlay the player carries. Play/pause is the player's own
+   centre button, volume and fullscreen are its own control bar:
+   all of them receive their taps directly now that no layer
+   covers the iframe. */
+attachRail(camPrevBtn, -1, cycleSurf);
+attachRail(camNextBtn, 1, cycleSurf);
 attachFacadeGestures(camFacade, { onFlick: cycleSurf });
 
 /* --- failure-card escape: the fallback card is a flick surface
@@ -1787,7 +1739,8 @@ if(autoMode === "best" && !loaded.forecast){ loaded.forecast = true; loadAll(F_S
    has its OWN player through the SAME core as the cams: facade
    first, IFrame-API player (enablejsapi) on the channel's
    live_stream embed, page-owned sound intent + ~2s watchdog,
-   gesture layer over the player, fullscreen on the dock itself.
+   no overlay over the player (its own buttons take their taps
+   directly), fullscreen on the dock itself.
    A feed has exactly two end states:
      · LIVE — the channel is really streaming an event now;
      · REPLAY — the channel's most recent contest footage,
@@ -1880,7 +1833,6 @@ function makeFeed(f){
             '<div class="pl-loading" id="' + p + 'loading"><span class="pl-spinner" aria-hidden="true"></span><span>Loading…</span></div>' +
           '</div>' +
         '</div>' +
-        '<div class="pl-gesture" id="' + p + 'gesture" hidden aria-hidden="true"></div>' +
       '</div>' +
       '<p class="pl-status" id="' + p + 'status" role="status" aria-live="polite" hidden></p>' +
     '</div>';
@@ -1895,7 +1847,6 @@ function makeFeed(f){
     playerBox: document.getElementById(p + "playerbox"),
     frameWrap: document.getElementById(p + "framewrap"),
     loading: document.getElementById(p + "loading"),
-    gesture: document.getElementById(p + "gesture"),
     zoomWrap: document.getElementById(p + "zoomwrap"),
     status: document.getElementById(p + "status"),
     soundBtn: document.getElementById(p + "sound"),
@@ -1915,7 +1866,6 @@ function makeFeed(f){
   function showOnly(which){
     el.facade.hidden = which !== "facade";
     el.playerBox.hidden = which !== "player";
-    el.gesture.hidden = el.playerBox.hidden;
     zoom.apply();
   }
   function setStatus(t){
@@ -2065,14 +2015,6 @@ function makeFeed(f){
     el.facadeSub.textContent = DEFAULT_SUB;
   }
   function unload(){ toFacade(); setStatus(""); }
-  function tapToggle(){
-    if(!player) return;
-    try{
-      var st = player.getPlayerState ? player.getPlayerState() : -1;
-      if(st === 1 && player.pauseVideo) player.pauseVideo();
-      else if(player.playVideo) player.playVideo();
-    }catch(e){}
-  }
   el.playBtn.addEventListener("click", start);
   document.getElementById(p + "stop").addEventListener("click", function(){
     stopped = true;
@@ -2104,7 +2046,9 @@ function makeFeed(f){
   });
   var fs = makeFullscreen(el.dock);
   document.getElementById(p + "full").addEventListener("click", function(){ fs.toggle(); });
-  attachGestures(el.gesture, zoom, { onFlick: function(){ /* one feed — nowhere to cycle to */ }, onTapToggle: tapToggle });
+  /* No overlay over a feed player either: one feed has nowhere to
+     flick to, and the player's own buttons take their taps
+     directly — the same rule as the Cams player. */
   /* Watchdog: the same ~2s sound/pause guard as the cams player. */
   setInterval(function(){
     if(!player || mode !== "playing" || stopped || document.hidden) return;
