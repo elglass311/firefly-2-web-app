@@ -1827,10 +1827,20 @@
       /* Digital zoom: a transform on the wrapper around the player node.
          The iframe itself is never moved, recreated or reloaded by zoom. */
       .surf-zoomwrap { position: relative; will-change: transform; }
+      /* The gesture layer covers the picture — pinch, pan, flick,
+         hold-to-move, double-tap — but it STOPS above the embedded
+         player's own control bar (owner's order: functional volume).
+         The bottom strip of the frame is never covered, so the bar's
+         own buttons — play/pause and the speaker/volume at its left
+         end — receive their taps directly from the browser; no
+         handler of ours ever sees a tap that lands there, so none
+         can reinterpret it as anything else. The strip grows in
+         fullscreen, where the player's bar is taller. */
       .surf-gesture {
-        position: absolute; inset: 0; z-index: 6;
+        position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 6;
         touch-action: none; cursor: grab;
       }
+      .surf-dock.fs-on .surf-gesture { bottom: 88px; }
       .surf-gesture:active { cursor: grabbing; }
       .surf-gesture[hidden] { display: none !important; }
       .surf-zoom-btn { display: inline-flex; align-items: center; gap: 5px; }
@@ -3878,7 +3888,7 @@
         </div>
   <p class="surf-dock-status" id="surfDockStatus" role="status" aria-live="polite" hidden></p>
         <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this page</strong>, or the speaker inside the player. Turn sound on once and the app <strong style="color:var(--ink);">remembers</strong>: phones sometimes drop a stream's sound on their own a little way in, and when that happens the app notices and puts the sound back by itself within a couple of seconds — no need to touch the volume buttons. Your sound also comes back by itself when Follow the Sun moves to the next break and when you return to the app. To turn sound off, use this page's Sound button (the player's own speaker is treated as a dropped signal and gets restored). The player itself is a <strong style="color:var(--ink);">floating window</strong>, not a screen: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it over whichever screen you're on — just the stream, small enough to keep an eye on while you do anything else — and it stays usable right there: flick sideways on it to flip to the next or previous break, pinch to zoom into the feed and drag to look around the whole frame, double-tap to put the full frame back. The wave button and the player are one piece: drag either one — hold the player for a moment, then drag, or simply drag the wave button — to move them together, and they stay where you leave them. The window button on the player (bottom-right of its frame) loads <strong style="color:var(--ink);">this page</strong> — Surf Break's own screen in the tray, where this break menu lives. Pressing Play anywhere always plays the stream right where it is. This page is its control center: pick a break, close or stop the player, and set auto-play here.</p>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this page</strong>, or the speaker in the player's own control bar at the bottom of the picture. Nothing covers that bar, so the player's own buttons take your taps directly — and whatever you set there stays set: turn sound on or off from either control and the app <strong style="color:var(--ink);">remembers</strong> your choice, bringing it back when Follow the Sun moves to the next break and when you return to the app. Sound controls only ever change the sound — they never pause the picture. If a webview quirk ever pauses the feed right after you touch the volume, the app notices and starts the picture again by itself. The player itself is a <strong style="color:var(--ink);">floating window</strong>, not a screen: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it over whichever screen you're on — just the stream, small enough to keep an eye on while you do anything else — and it stays usable right there: flick sideways on it to flip to the next or previous break, pinch to zoom into the feed and drag to look around the whole frame, double-tap to put the full frame back. The wave button and the player are one piece: drag either one — hold the player for a moment, then drag, or simply drag the wave button — to move them together, and they stay where you leave them. The window button on the player (bottom-right of its frame) loads <strong style="color:var(--ink);">this page</strong> — Surf Break's own screen in the tray, where this break menu lives. Pressing Play anywhere always plays the stream right where it is. This page is its control center: pick a break, close or stop the player, and set auto-play here.</p>
 
         <div class="surf-nowrow">
           <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
@@ -11518,17 +11528,21 @@ var STRAIN_SRC_LINKS = {
          With Auto-play on (default), the best daylight break starts by itself,
          muted, as soon as the app opens — presented through the floating
          player, opened automatically over the starting screen. Sound is a
-         remembered choice: once the viewer turns it on (the page's Sound
-         button, or the speaker in YouTube's own controls), a 2-second watchdog
-         adopts that choice and restores it whenever the player is found muted
-         while playing — phones (iOS webviews especially) are known to drop a
-         stream's audio on their own shortly after unmute, which reads as
-         silence until a hardware volume press re-asserts it. The watchdog
-         makes that press unnecessary. The same restore covers every player
-         reload (Follow the Sun advance, background resume, recovery chain).
-         Turning sound OFF is the page Sound button's job; a mute seen only
-         inside the player's own UI is treated as a dropped signal, not an
-         opt-out. The stream unloads only on Stop or on the app going into the
+         remembered choice, set from either of two controls that do the
+         same job: the page's Sound button, or the speaker/volume in the
+         player's own control bar — a 2-second watchdog adopts whatever
+         either control set last (a mute, an unmute, or a new level) as
+         the remembered choice, and re-applies that choice at every
+         player (re)start (Follow the Sun advance, background resume,
+         recovery chain). The player's bar is never covered by any
+         surface of ours (the gesture layer stops above it), so its
+         buttons take their taps directly and whatever they set stays
+         set. Sound controls change sound ONLY: nothing in this app ever
+         pauses the player, and as a safety net a pause the player
+         reports within ~8s of a volume interaction — the known webview
+         side-effect of an in-player unmute — is resumed by the grace in
+         the state handler / watchdog, never left sitting paused.
+         The stream unloads only on Stop or on the app going into the
          background (visibilitychange) — never on a screen switch, and never
          on the player closing. On a stream error/end, an automatic start
          advances through the untried spots in Follow the Sun daylight-rank
@@ -12166,6 +12180,21 @@ var STRAIN_SRC_LINKS = {
         var soundVol = parseInt(lsGet(VOL_LS_KEY) || "100", 10);
         if (!(soundVol >= 1 && soundVol <= 100)) soundVol = 100;
         var plainMuted = true; /* plain-iframe fallback always starts muted; the Sound button may rebuild it audible after an explicit tap */
+        /* Volume-interaction stamp + grace counter (owner's order —
+           functional volume). lastVolAt marks the last time the sound
+           changed through ANY volume control: this page's Sound button,
+           or the player's own speaker/volume, whose changes the
+           watchdog detects and adopts. This app never issues a pause,
+           so a pause the player reports within ~8s of that stamp is
+           the known webview side-effect of touching the volume, and
+           the grace (onStateChange + the watchdog) resumes it.
+           volResumes counts those resumes for the test hook.
+           sawAudible records that this stream has actually been heard
+           (unmuted, level > 0) since it started: a muted reading is
+           only adopted as the viewer's choice once the stream has
+           been audible — before that, muted is just the start state
+           (streams always start muted), never a choice to adopt. */
+        var lastVolAt = 0, volResumes = 0, sawAudible = false;
         /* Auto-pick mode: "best" (live forecast conditions win), "sun"
            (the original Follow the Sun daylight pick) or "off" (no
            automatic picking at all). Best falls back to Follow the Sun
@@ -12236,12 +12265,15 @@ var STRAIN_SRC_LINKS = {
         }
         /* Re-apply the remembered sound choice to a (re)started player.
            A platform may refuse an unmute before the player has seen any
-           interaction; the watchdog below keeps re-applying while playing,
-           so the sound lands on its own as soon as the platform allows. */
+           interaction; the call is retried at every (re)start and on the
+           first real gesture, so the sound lands as soon as the platform
+           allows. The unmute is itself a volume interaction, so it stamps
+           the grace: a player that pauses itself in response is resumed. */
         function applySoundPref(target) {
           if (!soundOn) return;
           var p = target || ytPlayer;
           if (!p || plainFrame) return;
+          lastVolAt = Date.now();
           try { p.unMute(); p.setVolume(soundVol); } catch (e) { /* ignore */ }
         }
         /* The floating wave button mirrors the player + stream state at
@@ -12677,7 +12709,11 @@ var STRAIN_SRC_LINKS = {
 
         window.addEventListener("resize", applyZoom);
         /* Gestures on the transparent layer over the stage (the
-           cross-origin iframe swallows touches over the video itself):
+           cross-origin iframe swallows touches over the video itself).
+           The layer covers the picture only — it ends above the
+           player's own control bar (see the .surf-gesture rule), so
+           taps on that bar, its speaker/volume included, go straight
+           to the player and no verdict here can ever see them:
            one finger drags to pan; two fingers pinch to scale; a
            double-tap returns to full-frame 1x fit. A pan is never a
            tap: a press that travels past a small threshold, a hold,
@@ -13012,6 +13048,8 @@ var STRAIN_SRC_LINKS = {
           if (!keepChain) resetChain();
           currentKey = spot.key;
           bgPaused = false;
+          lastVolAt = 0; /* a fresh stream starts a fresh grace window — its own unmute (applySoundPref) stamps it when the sound lands */
+          sawAudible = false; /* and nothing counts as a mute choice until this stream has actually been heard */
           /* Starting a stream never forces the player open or closed:
              summons (app open, wave button, fallback) open it themselves,
              and a Follow the Sun advance or a background resume behind a
@@ -13040,6 +13078,17 @@ var STRAIN_SRC_LINKS = {
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
                     else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
                     else if ((e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) && mode === "loading") onWaitingGesture();
+                    else if (e.data === YT.PlayerState.PAUSED && mode === "playing" && !stoppedByUser && Date.now() - lastVolAt <= 8000) {
+                      /* Sound-interaction grace (safety net only): this
+                         app never commands a pause, so a pause landing
+                         within ~8s of a volume interaction is the
+                         webview's unmute side-effect — resume it; a
+                         volume tap must never read as tap-to-pause. A
+                         pause outside the window is the viewer's own
+                         (the player's pause button) and is respected. */
+                      volResumes++;
+                      try { e.target.playVideo(); } catch (err) { /* ignore */ }
+                    }
                   },
                   onError: function () { handleStreamFailure("error"); }
                 }
@@ -13112,13 +13161,19 @@ var STRAIN_SRC_LINKS = {
           startStream(spotByKey(currentKey));
         });
         dockStopBtn.addEventListener("click", stopStream);
-        /* The Surf Break page's Sound button is THE sound control: its tap is a real
-           gesture in this document, so the unmute it asks for is the most
-           reliable kind. Off is also only here — a mute pressed inside
-           YouTube's own controls is indistinguishable from the phone
-           dropping the audio, and the watchdog treats it as a drop. */
+        /* The Surf Break page's Sound button: one of the two sound
+           controls — the player's own speaker/volume is the other, and
+           the watchdog adopts whatever either one set last. This button
+           changes SOUND ONLY: mute / unMute / setVolume on the API path,
+           a same-stream rebuild with the new mute flag on the plain
+           path — it never issues a play/pause command on any path. Its
+           tap is a real gesture in this document, so the unmute it asks
+           for is the most reliable kind; it also stamps the
+           volume-interaction grace, so if the player pauses itself in
+           response to the change, the grace resumes it. */
         if (soundBtn) soundBtn.addEventListener("click", function () {
           soundOn = !soundOn;
+          lastVolAt = Date.now();
           persistSound();
           syncSoundBtn();
           if (plainFrame) {
@@ -13440,34 +13495,53 @@ var STRAIN_SRC_LINKS = {
           window.addEventListener(ev, arm, { capture: true, passive: true });
         });
 
-        /* --- Sound watchdog (2s): the repair for sound that dies on its
-           own ~30s after unmute. Nothing in this app touches the player at
-           that mark (the only surf timer is the 20s clock below, and it
-           writes text only) — the silence arrives from the player/webview
-           side: the stream keeps playing but returns to muted, and a
-           hardware volume press revives it by re-asserting the phone's
-           media volume. The watchdog closes the loop from here instead:
-           while a stream is playing it reads the player's real mute/volume
-           state. Sound heard (unmuted, volume > 0) is ADOPTED as the
-           remembered choice, so unmuting inside YouTube's own controls
-           counts too. Silence found while sound is wanted is RESTORED —
-           unMute + the remembered volume — so a mid-stream drop heals
-           itself within a couple of seconds, no volume button needed. --- */
+        /* --- Sound watchdog (2s): keeps the remembered choice in sync
+           with the player's REAL sound state, and stands guard over the
+           volume grace. The player's own speaker/volume and this page's
+           Sound button are equals: whichever changed the sound last is
+           the choice. While a stream plays, the watchdog reads the
+           player's mute/volume and ADOPTS any state our bookkeeping
+           didn't command — an unmute, a mute, or a new level set inside
+           the player's own controls becomes the remembered choice
+           (button label included) and stamps the volume interaction.
+           A mute the viewer pressed in the player is never "restored"
+           away: the player's volume controls are functional, full stop.
+           (A muted reading is adopted only once the stream has actually
+           been heard — sawAudible — so a start-state mute, or an unmute
+           the platform hasn't allowed yet, is never misread as a choice.)
+           The one heal that remains is level-only: unmuted but sitting
+           at zero volume is the known silent-drop symptom (no control
+           was touched — the mute state never changed), so the remembered
+           level is re-asserted. The watchdog also carries the grace's
+           second chance: a player found PAUSED within ~8s of a volume
+           interaction (in case the state-change event was swallowed) is
+           resumed — this app never commands a pause, so a pause inside
+           that window is the webview's unmute side-effect, not a choice. --- */
         setInterval(function () {
           if (!ytPlayer || plainFrame || mode !== "playing") return;
-          var muted, vol;
-          try { muted = ytPlayer.isMuted(); vol = ytPlayer.getVolume(); } catch (e) { return; }
+          var muted, vol, pstate;
+          try { muted = ytPlayer.isMuted(); vol = ytPlayer.getVolume(); pstate = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1; } catch (e) { return; }
           if (typeof muted !== "boolean") return;
           if (!muted) {
             if (typeof vol === "number" && vol > 0) {
-              if (!soundOn) { soundOn = true; persistSound(); syncSoundBtn(); }
-              else if (vol !== soundVol) { soundVol = vol; persistSound(); }
+              sawAudible = true;
+              if (!soundOn) { soundOn = true; lastVolAt = Date.now(); persistSound(); syncSoundBtn(); }
+              else if (vol !== soundVol) { soundVol = vol; lastVolAt = Date.now(); persistSound(); }
             } else if (soundOn) {
               /* Unmuted but at zero volume: same silent symptom, same heal. */
               try { ytPlayer.setVolume(soundVol); } catch (e) { /* ignore */ }
             }
-          } else if (soundOn) {
-            try { ytPlayer.unMute(); ytPlayer.setVolume(soundVol); } catch (e) { /* ignore */ }
+          } else if (soundOn && sawAudible) {
+            /* Muted after having been heard, and nothing here commanded
+               it: the press happened on the player's own speaker — adopt
+               it as the choice (functional volume), and stamp the
+               interaction so a side-effect pause right behind it is
+               covered by the grace below. */
+            soundOn = false; lastVolAt = Date.now(); persistSound(); syncSoundBtn();
+          }
+          if (pstate === 2 /* YT.PlayerState.PAUSED */ && !stoppedByUser && Date.now() - lastVolAt <= 8000) {
+            volResumes++;
+            try { ytPlayer.playVideo(); } catch (e) { /* ignore */ }
           }
         }, 2000);
 
@@ -13598,6 +13672,10 @@ var STRAIN_SRC_LINKS = {
               soundOn: soundOn,
               soundVol: soundVol,
               playerMuted: (function () { try { return ytPlayer && !plainFrame ? ytPlayer.isMuted() : null; } catch (e) { return null; } })(),
+              playerState: (function () { try { return ytPlayer && !plainFrame && ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : null; } catch (e) { return null; } })(),
+              playerVol: (function () { try { return ytPlayer && !plainFrame ? ytPlayer.getVolume() : null; } catch (e) { return null; } })(),
+              volAt: lastVolAt,
+              volResumes: volResumes,
               iframes: frameWrap.querySelectorAll("iframe").length,
               inPanel: !!dock.closest("[role='tabpanel']"),
               head: dockSpot.textContent + " | " + dockMeta.textContent
@@ -13736,7 +13814,10 @@ var STRAIN_SRC_LINKS = {
          gesture themselves: range sliders (temperature and its kin), the
          favorites wheel, and the Surf stage/dock (drag-pan/pinch) — plus
          the tray, an open sheet, and the photo viewer, which are not
-         menu screens. Recognition is forgiving on purpose: once a move
+         menu screens. The Terpenes panel is excluded as well (owner's
+         order): no touch starting there may navigate away from it; its
+         one sanctioned exit is the band card's deliberate
+         tap-to-load-temperature click. Recognition is forgiving on purpose: once a move
          is clearly horizontal-dominant the recognizer claims it
          (preventDefault on touchmove) so the page's own slight scroll
          can neither steal it into a touchcancel nor veto it, minor
@@ -13768,6 +13849,7 @@ var STRAIN_SRC_LINKS = {
           if (!t || !t.closest) return true;
           if (window.__surfClaim && window.__surfClaim.ownsTarget(t)) return true; /* surf subtree (the floating player, at any state) + wave button: claimed by the surf layer */
           if (t.closest("#navTray, #trayHandle, .surf-dock, #surfStage, #surfFab, #surfFcPanel, #surfFcBtn, .sheet, .photo-zoom")) return true;
+          if (t.closest("#panel-terpene")) return true; /* Terpenes (owner's order): no touch that starts in the panel may navigate away from it — its one sanctioned exit is the band card's deliberate tap-to-load-temperature, which is a click on the load button, never a swipe; scrolling the panel, however diagonal the drift, stays in the panel */
           if (t.closest(".wheel")) return true;
           if (t.closest('input[type="range"]')) return true;
           return false;
