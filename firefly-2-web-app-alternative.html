@@ -1817,6 +1817,17 @@
       .surf-sound-btn .surf-sound-waves { opacity: 0.35; }
       .surf-sound-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
       .surf-sound-btn[aria-pressed="true"] .surf-sound-waves { opacity: 1; }
+      /* Volume: the stream's real level control, in THIS page's chrome.
+         The speaker control drawn inside the cross-origin player can
+         never receive a tap — the gesture layer over the picture takes
+         every touch there and answers a tap with play/pause — so volume
+         lives here instead. The slider only ever drives the player's
+         volume/mute API; it never touches play/pause. */
+      .surf-volbar { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+      .surf-vol-ic { display: inline-flex; color: var(--ink-soft); }
+      .surf-vol-lbl { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+      .surf-vol-slider { flex: 1 1 auto; min-width: 0; height: 28px; margin: 0; accent-color: var(--leaf-deep); cursor: pointer; touch-action: pan-y; }
+      .surf-vol-level { min-width: 42px; text-align: right; font-weight: 800; font-size: 13.5px; font-variant-numeric: tabular-nums; color: var(--ink); }
       .surf-zoombar {
         display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
         margin-top: 8px;
@@ -3163,6 +3174,12 @@
         <button class="btn-small" id="surfZoomIn" type="button" aria-label="Zoom in">+</button>
         <button class="btn-small" id="surfZoomReset" type="button">Reset 1×</button>
         <p class="surf-zoom-note">Digital zoom — crops into the picture. The cams stream in HD, so 2× stays fairly clear.</p>
+      </div>
+      <div class="surf-volbar" id="surfVolBar">
+        <span class="surf-vol-ic" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9.4 9.4 0 0 1 0 13"/></svg></span>
+        <label class="surf-vol-lbl" for="surfVolSlider">Volume</label>
+        <input class="surf-vol-slider" id="surfVolSlider" type="range" min="0" max="100" step="1" value="0" aria-label="Stream volume" />
+        <span class="surf-vol-level" id="surfVolLevel" aria-live="polite">0%</span>
       </div>
       <div class="surf-dock-body" id="surfDockBody">
         <div class="surf-stage" id="surfStage">
@@ -11411,6 +11428,8 @@ var STRAIN_SRC_LINKS = {
         var zoneSwitch = document.getElementById("surfZoneSwitch");
         var soundBtn = document.getElementById("surfSoundBtn");
         var soundLbl = document.getElementById("surfSoundLbl");
+        var volSlider = document.getElementById("surfVolSlider");
+        var volLevel = document.getElementById("surfVolLevel");
         var zoomBtn = document.getElementById("surfZoomBtn");
         var zoomBar = document.getElementById("surfZoomBar");
         var zoomOutBtn = document.getElementById("surfZoomOut");
@@ -11486,7 +11505,7 @@ var STRAIN_SRC_LINKS = {
         var zonesOn = lsGet(ZONE_LS_KEY) !== "0"; /* lineup zones: default ON, remembered on this device */
         var currentKey = bestKey(new Date()) || "pipeline";
         var mode = "idle"; /* idle | loading | playing | waiting | fallback */
-        var ytPlayer = null, plainFrame = false;
+        var ytPlayer = null, plainFrame = false, plainBuiltMuted = true;
         var dwellStart = 0, loadTimer = 0, slowTimer = 0;
         var manualHold = false, stoppedByUser = false, gestureArmed = false;
         var dockState = "hidden"; /* hidden | expanded — the player has no collapsed form */
@@ -12018,12 +12037,23 @@ var STRAIN_SRC_LINKS = {
           setNow(nowText("Now showing:"));
           syncDockChrome();
         }
+        /* The volume slider shows what the viewer actually hears:
+           the level while sound is on, 0 while it is off. While the
+           viewer is mid-drag the slider is theirs — state syncs never
+           move it under their finger. */
+        var volDragging = false;
+        function syncVolUI() {
+          var shown = soundWanted ? soundVolume : 0;
+          if (volSlider && !volDragging) volSlider.value = String(shown);
+          if (volLevel) volLevel.textContent = shown + "%";
+        }
         function syncSoundBtn() {
           if (soundBtn) {
             soundBtn.setAttribute("aria-pressed", soundWanted ? "true" : "false");
             soundBtn.setAttribute("aria-label", soundWanted ? "Turn the stream sound off" : "Turn the stream sound on");
           }
           if (soundLbl) soundLbl.textContent = soundWanted ? "Sound on" : "Sound off";
+          syncVolUI();
         }
         function applySound(player) {
           if (!player) return;
@@ -12061,7 +12091,7 @@ var STRAIN_SRC_LINKS = {
               soundRestores++;
             } else if (soundWanted && ytPlayer.getVolume) {
               var v = ytPlayer.getVolume();
-              if (typeof v === "number" && v > 0) soundVolume = v; /* follow volume set inside the player */
+              if (typeof v === "number" && v > 0 && v !== soundVolume) { soundVolume = v; syncSoundBtn(); } /* follow volume set inside the player */
             }
             var st = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
             if (st === 2 && !watchdogStandDown) { /* 2 = YT.PlayerState.PAUSED */
@@ -12146,6 +12176,7 @@ var STRAIN_SRC_LINKS = {
         }
         function buildPlainFrame(spot) {
           plainFrame = true;
+          plainBuiltMuted = !soundWanted; /* the mute state baked into this frame's URL — a later volume change rebuilds only if THIS flips */
           var f = document.createElement("iframe");
           f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (soundWanted ? "0" : "1") + "&playsinline=1&rel=0&modestbranding=1";
           f.title = spot.name + " live surf cam";
@@ -13044,7 +13075,7 @@ var STRAIN_SRC_LINKS = {
             if (e.pointerType === "mouse" && e.button !== 0) return;
             var t = e.target;
             if (!t || !t.closest) return;
-            if (t.closest("#surfGesture") || t.closest("#surfFacade") || t.closest("#surfFallback")) return; /* surfaces with their own gesture disambiguation */
+            if (t.closest("#surfGesture") || t.closest("#surfFacade") || t.closest("#surfFallback") || t.closest("#surfVolBar")) return; /* surfaces with their own gesture disambiguation — a volume drag is a volume drag, never a window move */
             var r = overlayEl.getBoundingClientRect();
             boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, left: r.left, top: r.top, on: false };
           });
@@ -13101,6 +13132,44 @@ var STRAIN_SRC_LINKS = {
           }
         });
         syncSoundBtn();
+        /* --- Volume slider: the stream's real level control ---
+           Until now the app offered no way to set a level at all: the
+           Sound button only muted or un-muted at whatever level the
+           player happened to hold, and the volume control drawn inside
+           the video itself is unreachable — the gesture layer over the
+           picture takes every tap there and answers it with play/pause,
+           which is exactly the reported "tapping the volume button
+           pauses and resumes the feed". This slider lives in the dock's
+           own chrome and drives ONLY the player's volume/mute API
+           (setVolume / unMute / mute): it never calls play or pause,
+           and dragging it is excluded from the mini-window drag below,
+           so a volume drag can never move the window either.
+           Dragging to 0 is a mute; soundVolume keeps the last level,
+           so Sound-on afterwards restores it. With the no-API fallback
+           player a level cannot be set at all — only its mute state
+           exists, baked into the frame URL — so a release that flips
+           the mute state applies it the same way the Sound button does:
+           one rebuild. Level-only moves never rebuild it. */
+        if (volSlider) {
+          volSlider.addEventListener("pointerdown", function () { volDragging = true; });
+          volSlider.addEventListener("input", function () {
+            var v = parseInt(volSlider.value, 10);
+            if (isNaN(v)) v = 0;
+            v = Math.max(0, Math.min(100, v));
+            if (v > 0) { soundVolume = v; soundWanted = true; }
+            else soundWanted = false;
+            watchdogStandDown = false;
+            if (ytPlayer) applySound(ytPlayer); /* volume/mute ONLY — never play/pause */
+            syncSoundBtn(); /* reflects the level live; volDragging keeps the thumb where the finger put it */
+          });
+          volSlider.addEventListener("change", function () {
+            volDragging = false;
+            if (!ytPlayer && plainFrame && (mode === "playing" || mode === "loading") && plainBuiltMuted === soundWanted) {
+              startStream(spotByKey(currentKey), true); /* the fallback frame's baked-in mute state flipped: rebuild once, on release */
+            }
+            syncSoundBtn();
+          });
+        }
         dockStopBtn.addEventListener("click", stopStream);
         if (showHideBtn) showHideBtn.addEventListener("click", function () {
           if (surfStage !== "closed") {
