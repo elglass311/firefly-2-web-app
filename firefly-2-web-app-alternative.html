@@ -2764,6 +2764,14 @@
       .surf-overlay .surf-facade-meta { display: none !important; }
       .surf-overlay .surf-play { width: 46px; height: 46px; }
       .surf-overlay .surf-play svg { width: 20px; height: 20px; }
+      /* The floating window's top row is the volume bar, and the mini
+         controls (expand / page / close) are absolutely positioned over
+         its right end — without clearance the level readout ("85%") is
+         squeezed into the last few pixels beside the close button and
+         clipped by the window edge (probe-measured, 2026-11-05).
+         Reserve the controls' width on the volbar row so the slider
+         flexes shorter and the level stays fully inside the window. */
+      .surf-overlay .surf-volbar { padding-right: 118px; }
       /* Load-failure fallback INSIDE the floating player: a failure
          renders in place within the frame — same 16:9 box, title +
          actions only; the long explanation lives on the Surf Break
@@ -9861,27 +9869,30 @@ var STRAIN_SRC_LINKS = {
           syncBandHighlight();
         }
 
-        /* ---- Range tap = load + go (the stacked order) ----
-           Tapping a range card does everything at once: (1) the range's
-           what's-releasing science opens in place in the detail panel
-           directly under the list, scrolled into view; (2) its setpoint
-           loads into the Session control — capped at the Burn Guard
-           flower ceiling when it exceeds it, the cap announced on screen
-           and in the log, never silent; (3) when connected, the EXISTING
-           Set pipeline sends it (setTempBtn.click() — same ceiling guard,
-           compensation, startPending read-back, and the one writeFrame
-           site every temperature send shares; no new write site); the
-           pending is tagged pending.band, mirroring Fire Up's pending.fu,
-           so read-back success/failure also updates the Temperature banner;
-           (4) after a one-second beat (long enough to see the science
-           that just opened), the app switches to the Session tab, where
-           the same release summary is pinned at the top in #bandCarry.
-           When not connected nothing is sent and nothing is faked: the
-           temperature is staged and both status surfaces say so.
+        /* ---- Range tap = load in place (owner correction, 2026-11-05) ----
+           Tapping a range card does its work WITHOUT leaving the Terpenes
+           tab: (1) the range's what's-releasing science opens in place in
+           the detail panel directly under the list, scrolled into view;
+           (2) its setpoint loads into the Session control — capped at the
+           Burn Guard flower ceiling when it exceeds it, the cap announced
+           on screen and in the log, never silent; (3) when connected, the
+           EXISTING Set pipeline sends it (setTempBtn.click() — same ceiling
+           guard, compensation, startPending read-back, and the one
+           writeFrame site every temperature send shares; no new write
+           site); the pending is tagged pending.band, mirroring Fire Up's
+           pending.fu, so read-back success/failure also updates the
+           Temperature banner. The same release summary is pinned at the
+           top of the Session tab in #bandCarry, waiting there for when the
+           user chooses to head over — an earlier build auto-switched to
+           Session one second after every range tap, which the owner
+           reported as the tab "reverting to Session" the moment anything
+           was tapped; that forced navigation is removed and must not
+           return. When not connected nothing is sent and nothing is
+           faked: the temperature is staged and both status surfaces say so.
            The card's › button is science-only: it opens the same detail
-           (and stages the setpoint, as before) without loading/sending
-           or leaving the tab. One expansion at a time: the detail panel
-           is shared, so selecting another range swaps its content. */
+           (and stages the setpoint, as before) without loading/sending.
+           One expansion at a time: the detail panel is shared, so
+           selecting another range swaps its content. */
         var bcEl = document.getElementById("bandCarry");
         var bcTitle = document.getElementById("bcTitle");
         var bcRel = document.getElementById("bcRel");
@@ -9923,8 +9934,8 @@ var STRAIN_SRC_LINKS = {
           if (material === "flower" && target > settings.ceilingF) { target = settings.ceilingF; capped = true; }
           setSetpoint(target);
           bdSub.textContent = capped
-            ? "Burn Guard capped this range: " + band.name + " aims for " + band.setpoint + "°F, above your " + settings.ceilingF + "°F flower ceiling — " + target + "°F was loaded instead. Taking you to the Session tab."
-            : "Loaded " + target + "°F from the " + band.name + " range — taking you to the Session tab, where this summary is pinned at the top.";
+            ? "Burn Guard capped this range: " + band.name + " aims for " + band.setpoint + "°F, above your " + settings.ceilingF + "°F flower ceiling — " + target + "°F was loaded instead. This summary is also pinned at the top of the Session tab for when you head over — you stay right here."
+            : "Loaded " + target + "°F from the " + band.name + " range. This summary is also pinned at the top of the Session tab for when you head over — you stay right here.";
           document.getElementById("bandDetail").scrollIntoView({ block: "start" });
           var connected = isConnected && !!rxChar;
           bandCarryShow(band, target, capped, connected
@@ -9944,8 +9955,11 @@ var STRAIN_SRC_LINKS = {
             setSetStatus("", "Staged from the Terpenes chart: " + band.name + " loaded " + fmtTemp(target) + (capped ? " (capped from " + band.setpoint + "°F by your Burn Guard flower ceiling)" : "") + " — connect and authenticate, then tap Set to send it. A change only counts when your Firefly reads it back.");
             log("Terpenes chart: loaded " + band.name + " (" + band.min + "–" + band.max + "°F) at " + target + "°F — staged only, not connected, nothing sent.", "info");
           }
-          if (bandGoTimer) window.clearTimeout(bandGoTimer);
-          bandGoTimer = window.setTimeout(function () { switchTab("session"); }, 1000);
+          /* No tab switch: the user stays on Terpenes (owner correction,
+             2026-11-05 — the old one-second auto-jump to Session read as
+             the tab reverting the moment anything was tapped). The
+             summary waits at the top of Session in #bandCarry. */
+          if (bandGoTimer) { window.clearTimeout(bandGoTimer); bandGoTimer = 0; }
         }
 
         BANDS.forEach(function (band, i) {
@@ -9956,7 +9970,7 @@ var STRAIN_SRC_LINKS = {
           b.type = "button";
           b.className = "band-load";
           b.setAttribute("aria-pressed", "false");
-          b.setAttribute("aria-label", band.name + ", " + band.min + " to " + band.max + " degrees — load this temperature and go to the Session tab");
+          b.setAttribute("aria-label", band.name + ", " + band.min + " to " + band.max + " degrees — load this temperature and show what releases here");
           b.innerHTML =
             '<span class="band-temps">' + band.min + "–" + band.max + "°F</span>" +
             '<span class="band-main"><span class="band-name">' + band.name + '</span>' +
