@@ -2024,19 +2024,26 @@
       .surf-dock-status { margin: 8px 2px 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
       .surf-dock-status[hidden] { display: none !important; }
       /* ---------- Surf Break floating button — follows every screen ----------
-         A small glass wave button, FIXED in the bottom-right corner
-         of the screen (owner's order): it never drags, never slides
-         and keeps no remembered spot — its stylesheet corner IS its
-         place, on load and after every reload. It is decoupled from
-         the player window: the window opens and drags on its own and
-         never moves the button, and wherever the two meet the WINDOW
-         renders on top (the button's z-index sits below the dock's),
-         so the button never covers the feed. A tap on the button
-         opens the floating player over the current screen and closes
-         it again; its dot shows at a glance whether a stream is
-         playing behind it (pulsing red) or loading / waiting for a
-         first tap (steady amber). On wide screens the corner hugs
-         the app column's right edge. */
+         A small glass wave button (owner's order). With the player
+         CLOSED it is FREE: it starts in the bottom-right corner of
+         the screen, can be dragged anywhere and stays where it is
+         dropped (its spot is remembered on this device). With the
+         player OPEN it is ATTACHED to the player window's
+         bottom-right corner — docked to that corner from outside
+         the window, its upper-left edge meeting the corner and
+         overlapping only the window's corner frame edge, never the
+         picture and never any control — and the pair moves as one
+         unit: dragging either the window or the button carries
+         both, keeping the same corner offset. The surf script sets
+         its inline left/top for both modes; the stylesheet corner
+         below is its home whenever no spot has been saved. Wherever
+         the two meet the WINDOW renders on top (the button's
+         z-index sits below the dock's), so the button never covers
+         the feed. A tap on the button opens the floating player over
+         the current screen and closes it again; its dot shows at a
+         glance whether a stream is playing behind it (pulsing red)
+         or loading / waiting for a first tap (steady amber). On
+         wide screens the corner hugs the app column's right edge. */
       .surf-fab {
         appearance: none; cursor: pointer; font: inherit;
         /* Below the player window (70): the feed renders above the
@@ -3083,14 +3090,16 @@
     </div>
 
     <!-- ============ Surf Break floating button: a small wave mark that
-         follows every screen, fixed in the bottom-right corner — it
-         never drags and keeps no remembered spot. Tap it to
-         open the floating live player over the current screen; tap it
-         again to put the player away. Wherever the player window
-         passes over its corner, the player renders on top: the
-         button never covers the feed. It wears the
-         wave in both states; its dot shows at a glance whether a stream
-         is playing behind it. ============ -->
+         follows every screen. Tap it to open the floating live
+         player over the current screen; tap it again to put the
+         player away. While the player is open the button rides
+         ATTACHED at the player's bottom-right corner and the pair
+         drags as one unit; while the player is closed the button is
+         free — drag it anywhere and it stays where it drops. The
+         player renders on top wherever the two meet: the button
+         never covers the feed. It wears the wave in both states;
+         its dot shows at a glance whether a stream is playing
+         behind it. ============ -->
     <button class="surf-fab" id="surfFab" type="button" aria-pressed="false" aria-label="Open Surf Break" data-play="off">
       <svg class="fab-wave" aria-hidden="true"><use href="#i-wave"/></svg>
       <span class="surf-fab-dot" aria-hidden="true"></span>
@@ -3910,7 +3919,7 @@
         </div>
   <p class="surf-dock-status" id="surfDockStatus" role="status" aria-live="polite" hidden></p>
         <h2 id="surf-h">Surf Break — live cams</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this page</strong>, or the speaker in the player's own control bar at the bottom of the picture. Nothing covers the picture at all, so the player's own buttons — play/pause, volume, settings, fullscreen, progress — take your taps directly — and whatever you set there stays set: turn sound on or off from either control and the app <strong style="color:var(--ink);">remembers</strong> your choice, bringing it back when Follow the Sun moves to the next break and when you return to the app. Sound controls only ever change the sound — they never pause the picture. If a webview quirk ever pauses the feed right after you touch the volume, the app notices and starts the picture again by itself. The player itself is a <strong style="color:var(--ink);">floating window</strong>, not a screen: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it over whichever screen you're on — just the stream, small enough to keep an eye on while you do anything else — and it stays usable right there: tap the arrow at the left or right edge of the picture to flip to the previous or next break, and this page's Zoom control zooms into the feed. Drag the player by its frame to move it, and it stays where you leave it. The wave button never moves: it sits fixed in the bottom-right corner, and wherever the player window passes over that corner the player shows on top — the button never covers the feed. The window button on the player's header strip loads <strong style="color:var(--ink);">this page</strong> — Surf Break's own screen in the tray, where this break menu lives. Pressing Play anywhere always plays the stream right where it is. This page is its control center: pick a break, close or stop the player, and set auto-play here.</p>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams start <strong style="color:var(--ink);">muted</strong> — a stream can only start by itself if it starts silent — but the sound of the ocean is one tap away: the <strong style="color:var(--ink);">Sound button at the top of this page</strong>, or the speaker in the player's own control bar at the bottom of the picture. Nothing covers the picture at all, so the player's own buttons — play/pause, volume, settings, fullscreen, progress — take your taps directly — and whatever you set there stays set: turn sound on or off from either control and the app <strong style="color:var(--ink);">remembers</strong> your choice, bringing it back when Follow the Sun moves to the next break and when you return to the app. Sound controls only ever change the sound — they never pause the picture. If a webview quirk ever pauses the feed right after you touch the volume, the app notices and starts the picture again by itself. The player itself is a <strong style="color:var(--ink);">floating window</strong>, not a screen: the <strong style="color:var(--ink);">wave button</strong> floating at the bottom-right of every screen opens it over whichever screen you're on — just the stream, small enough to keep an eye on while you do anything else — and it stays usable right there: tap the arrow at the left or right edge of the picture to flip to the previous or next break, and this page's Zoom control zooms into the feed. Drag the player by its frame to move it, and it stays where you leave it. While the player is open, the wave button rides attached at the player's bottom-right corner — drag either one and the pair moves together. Close the player and the button is free again: drag it anywhere on the screen and it stays where you drop it. The button never covers the feed. The window button on the player's header strip loads <strong style="color:var(--ink);">this page</strong> — Surf Break's own screen in the tray, where this break menu lives. Pressing Play anywhere always plays the stream right where it is. This page is its control center: pick a break, close or stop the player, and set auto-play here.</p>
 
         <div class="surf-nowrow">
           <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
@@ -11589,6 +11598,7 @@ var STRAIN_SRC_LINKS = {
         var SOUND_LS_KEY = "ff2.surfSound";
         var VOL_LS_KEY = "ff2.surfVol";
         var MINI_POS_KEY = "ff2.surfMiniPos";
+        var FAB_POS_KEY = "ff2.surfFabPos";
         var AUTO_MODE_KEY = "ff2.surfAutoMode";
         var FC_KEY = "ff2.surfForecast.v1";
         /* Dead-stream marks (owner's order): a break whose stream
@@ -12311,8 +12321,8 @@ var STRAIN_SRC_LINKS = {
           fab.setAttribute("data-play", mode === "playing" ? "playing" : (mode === "loading" || mode === "waiting" ? "busy" : "off"));
           fab.setAttribute("aria-label", open ? "Close Surf Break" : (mode === "playing" ? "Surf Break is playing — tap to open it" : "Open Surf Break"));
           /* The wave button is HIDDEN only while the stream itself
-             is fullscreen — it stays in its corner beside the closed
-             player and under the open one alike. */
+             is fullscreen — otherwise it rides attached at the open
+             player's corner or sits free at its own spot. */
           var hideFab = fsActive;
           fab.style.display = hideFab ? "none" : "";
           fab.setAttribute("aria-hidden", hideFab ? "true" : "false");
@@ -12333,19 +12343,27 @@ var STRAIN_SRC_LINKS = {
         function clearDockInlinePos() {
           dock.style.left = ""; dock.style.top = ""; dock.style.width = "";
         }
-        /* THE FLOATING WINDOW AND THE WAVE BUTTON ARE DECOUPLED
-           (owner's order). The window keeps its own anchor — its
-           top-left corner — remembered on this device
-           (ff2.surfMiniPos) and restored on every load; dragging the
-           window by its frame moves the window alone. The wave
-           button is FIXED in the bottom-right corner of the screen:
-           it never drags, keeps no remembered spot (any spot an older
-           build saved under ff2.surfFabPos is dropped below and never
-           read again), and the window never moves it. Wherever the
-           window passes over the button's corner, the window renders
-           on top (its z-index is the higher one) — the button never
-           covers the feed. Until a window anchor exists, the window
-           opens just above the button's corner. */
+        /* THE FLOATING WINDOW AND THE WAVE BUTTON ARE AN ATTACHED
+           PAIR while the player is open, and the button is FREE
+           while it is closed (owner's order). The window keeps its
+           own anchor — its top-left corner — remembered on this
+           device (ff2.surfMiniPos) and restored on every load. While
+           the player is open the wave button sits ATTACHED at the
+           window's bottom-right corner: docked to that corner from
+           outside the window, its upper-left edge meeting the corner
+           and overlapping only the window's corner frame edge (the
+           ATTACH_IN inset below) — never the picture, never any
+           control — and the pair moves as one unit, dragging either
+           the window or the button carrying both at the same offset.
+           The window renders on top wherever the two meet (its
+           z-index is the higher one), so the button never covers the
+           feed. When the player closes, the button stays at the spot
+           it is on and is free from there: it drags anywhere on its
+           own, drops stick where dropped, and its spot is remembered
+           on this device (ff2.surfFabPos); with no remembered spot
+           its home is the stylesheet's bottom-right corner. Until a
+           window anchor exists, the window opens just above the
+           button's current spot. */
         var miniPos = null;
         (function restoreMiniPos() {
           var raw = lsGet(MINI_POS_KEY);
@@ -12356,10 +12374,69 @@ var STRAIN_SRC_LINKS = {
           } catch (e) { /* a corrupt saved spot just leaves the default home */ }
         })();
         var UNIT_OVERLAP = 16;  /* the default window anchor tucks this far over the wave button's corner spot */
-        /* The wave button's old remembered spot is retired: the
-           button is fixed in its corner now, so any value an older
-           build saved is removed once and never read. */
-        try { window.localStorage.removeItem("ff2.surfFabPos"); } catch (e) { /* ignore */ }
+        var FAB_SIZE = 52;      /* the wave button's box, matching its stylesheet size */
+        var ATTACH_IN = 12;     /* the attached button's top-left sits this far inside the window's bottom-right corner: the circle meets the corner and overlaps only the corner frame edge — at this inset the circle stays clear of the picture, whose own corner is inset by the window's 6px frame padding */
+        var fabFreePos = null;  /* the free button's own spot (its top-left), restored below; null = the stylesheet corner */
+        (function restoreFabPos() {
+          var raw = lsGet(FAB_POS_KEY);
+          if (!raw) return;
+          try {
+            var saved = JSON.parse(raw);
+            if (saved && isFinite(saved.x) && isFinite(saved.y)) fabFreePos = { x: saved.x, y: saved.y };
+          } catch (e) { /* a corrupt saved spot just leaves the corner home */ }
+        })();
+        function setFabXY(x, y) {
+          if (!fab) return;
+          fab.style.left = Math.round(x) + "px";
+          fab.style.top = Math.round(y) + "px";
+          fab.style.right = "auto";
+          fab.style.bottom = "auto";
+        }
+        function clampFabXY(x, y) {
+          var vw = window.innerWidth, vh = window.innerHeight;
+          x = Math.max(0, Math.min(Math.round(x), vw - FAB_SIZE));
+          y = Math.max(0, Math.min(Math.round(y), vh - FAB_SIZE));
+          return { x: x, y: y };
+        }
+        /* Dock the button at the window's bottom-right corner, from
+           outside: its top-left sits ATTACH_IN inside the corner, so
+           only the corner frame edge is overlapped. Geometry comes
+           from the window's layout box (offsets), never from its
+           animated rect, so the attachment is exact even while the
+           window's rise-in animation is still settling. */
+        function attachFab() {
+          if (!fab || dockState !== "mini") return;
+          setFabXY(dock.offsetLeft + dock.offsetWidth - ATTACH_IN,
+                   dock.offsetTop + dock.offsetHeight - ATTACH_IN);
+        }
+        /* The button's one placement door: attached at the window's
+           corner while the player is open (and not fullscreen — the
+           button is hidden then), free at its own spot while the
+           player is closed. */
+        function placeFab() {
+          if (!fab) return;
+          if (dockState === "mini" && !fsActive) { attachFab(); return; }
+          if (fabFreePos) {
+            var p = clampFabXY(fabFreePos.x, fabFreePos.y);
+            setFabXY(p.x, p.y);
+          } else {
+            fab.style.left = ""; fab.style.top = "";
+            fab.style.right = ""; fab.style.bottom = "";
+          }
+        }
+        /* Closing the player detaches the button where it stands:
+           the spot it is on becomes its free spot (remembered), and
+           it is free from there. */
+        function detachFab() {
+          if (!fab) return;
+          var r = fab.getBoundingClientRect();
+          if (r.width > 0) {
+            fabFreePos = { x: Math.round(r.left), y: Math.round(r.top) };
+            lsSet(FAB_POS_KEY, JSON.stringify(fabFreePos));
+          }
+          placeFab();
+        }
+        placeFab(); /* a remembered free spot applies from the first paint */
         /* The mini window's height for a given width — the SAME
            formula positionMini lays the window out with, so geometry
            computed ahead of layout matches the laid-out window. */
@@ -12370,16 +12447,29 @@ var STRAIN_SRC_LINKS = {
           if (w < 160) w = Math.max(120, vw - 16);
           return { w: w, h: miniWinH(w) };
         }
-        /* Clamp an anchor (the window's top-left) so the WINDOW —
-           the window alone; the button is not attached to it — stays
-           fully inside the viewport. That is the only clamp: no
-           forbidden zones, no avoidance relocations, and the
-           button's corner is not excluded — the window may pass over
-           it and simply renders on top there. */
+        /* Clamp an anchor (the window's top-left) so the window
+           stays fully inside the viewport. */
         function clampMiniXY(x, y, w, h) {
           var vw = window.innerWidth, vh = window.innerHeight;
           x = Math.max(0, Math.min(Math.round(x), vw - w));
           y = Math.max(0, Math.min(Math.round(y), vh - h));
+          return { x: x, y: y };
+        }
+        /* Clamp an anchor for the ATTACHED PAIR: while the player
+           is open the button rides at the window's bottom-right
+           corner, extending FAB_SIZE − ATTACH_IN beyond the window
+           on the right and below, so the pair clamps as one unit —
+           the window stops that much earlier and the button keeps
+           its exact corner offset, fully on screen. On a viewport
+           too small for that, it falls back to the window's own
+           clamp. */
+        function clampPairXY(x, y, w, h) {
+          var vw = window.innerWidth, vh = window.innerHeight;
+          var ext = FAB_SIZE - ATTACH_IN;
+          var mx = vw - w - ext, my = vh - h - ext;
+          if (mx < 0 || my < 0) return clampMiniXY(x, y, w, h);
+          x = Math.max(0, Math.min(Math.round(x), mx));
+          y = Math.max(0, Math.min(Math.round(y), my));
           return { x: x, y: y };
         }
         function positionMini() {
@@ -12387,7 +12477,7 @@ var STRAIN_SRC_LINKS = {
              it stays a small window even on a wide screen, and never
              wider than the viewport), 16:9. The window renders AT its
              own saved anchor; with no saved anchor it anchors just
-             above the wave button's fixed corner spot — below it when
+             above the wave button's current spot — below it when
              there is no room above. */
           if (dockState !== "mini" || !fab) return;
           var vw = window.innerWidth, vh = window.innerHeight;
@@ -12395,8 +12485,7 @@ var STRAIN_SRC_LINKS = {
           var w = g.w, h = g.h;
           var x, y;
           if (miniPos) {
-            var p = clampMiniXY(miniPos.x, miniPos.y, w, h);
-            x = p.x; y = p.y;
+            x = miniPos.x; y = miniPos.y;
           } else {
             var fr = fab.getBoundingClientRect();
             x = Math.round(fr.right - w);
@@ -12406,11 +12495,17 @@ var STRAIN_SRC_LINKS = {
             y = Math.max(8, Math.min(y, vh - h - 8));
             miniPos = { x: x, y: y }; /* the anchor materialises on open */
           }
+          /* Whichever anchor the window came from, the ATTACHED
+             PAIR clamps as one unit, so the button docked at the
+             window's corner is always fully on screen too. */
+          var pc = clampPairXY(x, y, w, h);
+          x = pc.x; y = pc.y;
           dock.style.width = w + "px";
           dock.style.left = x + "px";
           dock.style.top = y + "px";
-          /* The wave button is not touched: it stays fixed in its
-             corner whether the window is here or not. */
+          /* The wave button attaches at the window's bottom-right
+             corner (placeFab's attached mode). */
+          placeFab();
         }
         /* Player show/hide is DEBOUNCED (owner bug fix, defect 1b):
            while a show/hide transition is animating (~300ms — the
@@ -12444,6 +12539,7 @@ var STRAIN_SRC_LINKS = {
             dockState = "hidden";
             dock.setAttribute("data-state", "hidden");
             clearDockInlinePos();
+            detachFab(); /* the button detaches where it stands and is free from there */
             exitZoom(); /* closing the player resets zoom — it never survives into the next open */
           }
           syncDockChrome();
@@ -12468,7 +12564,7 @@ var STRAIN_SRC_LINKS = {
           }
           b.click();
         }
-        window.addEventListener("resize", function () { if (dockState === "mini") positionMini(); });
+        window.addEventListener("resize", function () { if (dockState === "mini") positionMini(); else placeFab(); });
         function showOnly(which) {
           facade.hidden = which !== "facade";
           playerBox.hidden = which !== "player";
@@ -12998,23 +13094,84 @@ var STRAIN_SRC_LINKS = {
         miniBtnGuard(miniCloseBtn, function () { closeOverlay(); });
         miniBtnGuard(miniExpandBtn, function () { toggleStreamFs(); });
         miniBtnGuard(miniFullBtn, function () { goSurfPage(); });
-        /* The wave button is TAP-ONLY (owner's order): it is FIXED
-           in the bottom-right corner and never drags — no press
-           tracking, no drag threshold, no saved spot anywhere. A
-           clean tap fires the toggle HERE, on the pointerup path —
-           never on the synthesized click, which the global click
-           swallow can race and eat, and never through the stage
-           debounce (fabTap forces the toggle): the player opens on
-           the FIRST tap, every time. The click handler further down
-           covers taps with no pointer path behind them (keyboard,
-           assistive tech) and dedupes against this stamp. */
+        /* The wave button is TAP-OR-DRAG (owner's order). A clean
+           tap fires the toggle HERE, on the pointerup path — never
+           on the synthesized click, which the global click swallow
+           can race and eat, and never through the stage debounce
+           (fabTap forces the toggle): the player opens on the FIRST
+           tap, every time. A press that slides past ~10px is a drag
+           instead: with the player CLOSED the free button follows
+           the finger anywhere on the screen and the drop sticks
+           where it lands (its spot persists to ff2.surfFabPos); with
+           the player OPEN the attached pair moves as one unit — the
+           window follows, keeping the button's corner offset, and
+           the window's anchor persists to ff2.surfMiniPos. An
+           interrupted drag (pointercancel) drops the button (or the
+           pair) right where it is — it never snaps back. The click
+           handler further down covers taps with no pointer path
+           behind them (keyboard, assistive tech) and dedupes against
+           this stamp; a drag's release click is swallowed whole. */
         var fabTapAt = 0;
+        var fabDrag = null;
         if (fab) {
-          fab.addEventListener("pointerup", function () {
-            fabTapAt = Date.now();
-            fabTap();
+          fab.addEventListener("pointerdown", function (e) {
+            if (e.button !== undefined && e.button > 0) return;
+            if (fabDrag) { fabDrag = null; return; } /* a second finger cancels the drag */
+            var r = fab.getBoundingClientRect();
+            fabDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, armed: false,
+                        gx: e.clientX - r.left, gy: e.clientY - r.top,
+                        attached: dockState === "mini" && !fsActive,
+                        offX: dock.offsetWidth - ATTACH_IN, offY: dock.offsetHeight - ATTACH_IN,
+                        ww: dock.offsetWidth, wh: dock.offsetHeight };
           });
         }
+        window.addEventListener("pointermove", function (e) {
+          if (!fabDrag || e.pointerId !== fabDrag.id) return;
+          if (!fabDrag.armed) {
+            if (Math.hypot(e.clientX - fabDrag.sx, e.clientY - fabDrag.sy) <= 10) return; /* still a tap */
+            fabDrag.armed = true;
+          }
+          if (fabDrag.attached) {
+            /* The pair moves as one: the grabbed point of the button
+               stays under the finger and the window follows at the
+               pair clamp, the button re-docking at its corner. */
+            var wx = (e.clientX - fabDrag.gx) - fabDrag.offX;
+            var wy = (e.clientY - fabDrag.gy) - fabDrag.offY;
+            var p = clampPairXY(wx, wy, fabDrag.ww, fabDrag.wh);
+            dock.style.left = p.x + "px";
+            dock.style.top = p.y + "px";
+            attachFab();
+          } else {
+            var p2 = clampFabXY(e.clientX - fabDrag.gx, e.clientY - fabDrag.gy);
+            setFabXY(p2.x, p2.y);
+          }
+          if (e.cancelable) e.preventDefault();
+        }, { passive: false });
+        function fabDragEnd(e) {
+          if (!fabDrag || e.pointerId !== fabDrag.id) return;
+          var fd = fabDrag;
+          fabDrag = null;
+          fabTapAt = Date.now(); /* every release stamps: the click path dedupes against it */
+          if (fd.armed) {
+            /* A drop, not a tap: the button (or the pair) stays
+               exactly where it was left — an interrupted drag drops
+               in place the same way — and the spot persists. */
+            if (fd.attached) {
+              var r = dock.getBoundingClientRect();
+              miniPos = { x: Math.round(r.left), y: Math.round(r.top) };
+              lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+            } else {
+              var fr = fab.getBoundingClientRect();
+              fabFreePos = { x: Math.round(fr.left), y: Math.round(fr.top) };
+              lsSet(FAB_POS_KEY, JSON.stringify(fabFreePos));
+            }
+            surfSwallowClick(); /* the release's click is not a tap */
+          } else if (e.type === "pointerup") {
+            fabTap(); /* a clean tap toggles the player */
+          }
+        }
+        window.addEventListener("pointerup", fabDragEnd);
+        window.addEventListener("pointercancel", fabDragEnd);
         /* --- window move drag: the frame and chrome ONLY (owner's
            order) ---
            A window drag starts from the player window's own frame
@@ -13026,14 +13183,14 @@ var STRAIN_SRC_LINKS = {
            presses on it land on the embedded player itself and are
            the player's alone. A press that slides past ~10px
            becomes a window move: the window follows the finger,
-           clamped so the window stays fully inside the viewport,
-           and its anchor persists to ff2.surfMiniPos on release.
-           The wave button never takes part — it stays fixed in its
-           corner, and the window simply renders on top wherever the
-           two meet. The release's synthesized click is swallowed
-           whole, so the button under the finger never fires from a
-           drag; a clean tap with no slide is untouched and
-           activates its button normally.
+           clamped so the attached pair stays fully inside the
+           viewport, and its anchor persists to ff2.surfMiniPos on
+           release. The attached wave button rides along at the
+           window's bottom-right corner, keeping the same offset —
+           the pair moves as one unit. The release's synthesized
+           click is swallowed whole, so the button under the finger
+           never fires from a drag; a clean tap with no slide is
+           untouched and activates its button normally.
            One verdict is kept for the FALLBACK card (owner bug
            fix): the card is ours, not YouTube's, so it keeps its
            flick. A press that STARTS on the fallback card
@@ -13078,10 +13235,12 @@ var STRAIN_SRC_LINKS = {
             dock.classList.add("mini-moving");
           }
           var w = dock.offsetWidth, h = dock.offsetHeight;
-          var p = clampMiniXY(e.clientX - boxDrag.dx, e.clientY - boxDrag.dy, w, h);
+          var p = clampPairXY(e.clientX - boxDrag.dx, e.clientY - boxDrag.dy, w, h);
           dock.style.left = p.x + "px";
           dock.style.top = p.y + "px";
-          /* The wave button is NOT followed: it stays fixed in its corner. */
+          /* The pair moves as one: the attached wave button follows
+             at the window's bottom-right corner, same offset. */
+          attachFab();
           if (e.cancelable) e.preventDefault();
         }, { passive: false });
         function boxDragEnd(e) {
