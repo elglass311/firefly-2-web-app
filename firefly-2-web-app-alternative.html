@@ -1805,18 +1805,22 @@
       /* Digital zoom: a transform on the wrapper around the player node.
          The iframe itself is never moved, recreated or reloaded by zoom. */
       .surf-zoomwrap { position: relative; will-change: transform; }
-      /* NOTHING of ours covers the video picture (owner's order:
-         YouTube's own control buttons must actually function). The
-         embedded iframe receives every touch on the whole video area
-         directly — play/pause, volume, settings, fullscreen and the
-         progress bar are the player's own, and no overlay, gesture
-         layer or carve-out of ours sits between the viewer's finger
-         and any of them. Break cycling lives OFF the picture, on the
-         break chips on the Surf Break page (the picture-edge Prev/Next
+      /* YouTube's own control buttons must actually function: the
+         player's control bar (the bottom 56px of the picture —
+         play/pause, volume, settings, fullscreen, progress) is NEVER
+         covered by anything of ours and receives every touch directly.
+         Over the rest of the picture sits exactly one surface of ours,
+         the swipe layer (.surf-swipe below, owner's order 2026-11-06):
+         it claims only a clear horizontal-dominant drag past the flick
+         threshold and cycles the break; a tap there is handed to the
+         player's own play/pause through the player API; a vertical
+         drag is never claimed. Break cycling also lives on the break
+         chips on the Surf Break page (the picture-edge Prev/Next
          rails were removed at the owner's order, 2026-11-06 — "the
          arrows on the stream player left and right are redundant" —
-         with no replacement control); window dragging lives on the
-         player window's frame and chrome. */
+         and no visible control replaces them; the swipe is a gesture,
+         not a control); window dragging lives on the player window's
+         frame and chrome, never on the picture. */
       .surf-zoom-btn { display: inline-flex; align-items: center; gap: 5px; }
       .surf-zoom-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
       /* Sound toggle: the page-owned unmute control. Streams must start
@@ -1899,6 +1903,26 @@
       .surf-spot-sub { color: rgba(255,255,255,0.88); font-size: 12.5px; font-weight: 600; margin-top: 2px; text-shadow: 0 1px 6px rgba(0,0,0,0.7); font-variant-numeric: tabular-nums; }
       .surf-frame-wrap { position: relative; aspect-ratio: 16 / 9; background: #000; }
       .surf-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+      /* Picture swipe layer (owner's order, 2026-11-06 — the ONLY
+         surface of ours over the picture): it exists solely to catch
+         a horizontal swipe and cycle the break. It stops 56px short
+         of the player's bottom edge on purpose: that strip is
+         YouTube's own control bar (play/pause, volume, settings,
+         fullscreen, progress), and every tap there reaches the player
+         itself, physically untouched, exactly as before. On the rest
+         of the picture the layer claims NOTHING but a clear
+         horizontal-dominant drag past the flick threshold (judged at
+         release in the surf script): a tap is handed to the player's
+         own play/pause through the player API, never cycled; a
+         vertical drag is never claimed at all — touch-action: pan-y
+         leaves vertical pans to the browser's own scrolling, which
+         cancels the pointer before any verdict. The layer is a child
+         of the player box, so it shows exactly when the player shows
+         and never over the facade or the fallback card; it rides
+         above the loading veil (z-index 2) while staying transparent,
+         so the spinner shows through and a swipe can cycle even
+         mid-load — the layer order the standard has always used. */
+      .surf-swipe { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 3; touch-action: pan-y; }
       .surf-loading {
         position: absolute; inset: 0; z-index: 2;
         display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -3235,6 +3259,7 @@
           <div class="surf-zoomwrap" id="surfZoomWrap">
             <div class="surf-player" id="surfPlayer" hidden>
               <div class="surf-frame-wrap" id="surfFrameWrap"></div>
+              <div class="surf-swipe" id="surfSwipe" aria-hidden="true"></div>
               <div class="surf-loading" id="surfLoading"><span class="surf-spinner" aria-hidden="true"></span><span>Loading the live stream…</span></div>
             </div>
           </div>
@@ -4765,6 +4790,18 @@
               el.setAttribute("aria-hidden", "true");
               el.tabIndex = -1;
               el.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;";
+              /* The proxy's click is a machine event, never a user
+                 tap: it must not travel. Left bubbling, it reached
+                 document-level outside-tap closers as a phantom tap
+                 outside whatever the user had just opened — worst
+                 case, the status island: islSetExpanded ticks BEFORE
+                 it renders, so the tick's own proxy click collapsed
+                 the card again inside the very tap that opened it,
+                 and the pill could never be opened by tapping
+                 (glitch scan, 2026-11-06). The Taptic tick comes from
+                 the toggle on this element itself, which stopping
+                 propagation does not affect. */
+              el.addEventListener("click", function (e) { e.stopPropagation(); });
               document.body.appendChild(el);
               this.el = el;
             } catch (e) { /* unsupported — tick() just no-ops */ }
@@ -11808,23 +11845,102 @@ var STRAIN_SRC_LINKS = {
           }
         }
         /* --- break cycling ---
-           The picture carries NO surface of ours (owner's order:
-           YouTube's own control buttons must actually function), and
-           the picture-edge Prev/Next rails were removed at the
+           The picture-edge Prev/Next rails were removed at the
            owner's order (2026-11-06: "the arrows on the stream player
            left and right are redundant") with no replacement control.
            Cycling's homes are the break chips on the Surf Break page
-           (pickSpot) and, on the load-failure fallback card, its own
-           Prev/Next buttons and its flick — all through cycleSurf /
-           startStream, in place, the player's presentation untouched.
-           The window's move drag lives on the window's frame and
-           chrome (the box-drag controller below), never on the
-           picture; the Zoom controls remain the zoom. */
+           (pickSpot), the load-failure fallback card's own Prev/Next
+           buttons and its flick, and — at the owner's order later
+           that day ("add the ability to swipe left and right on the
+           streams to cycle through them") — a horizontal swipe on the
+           stream picture itself (the swipe layer wired below) — all
+           through cycleSurf / startStream, in place, the player's
+           presentation untouched. The window's move drag lives on the
+           window's frame and chrome (the box-drag controller below),
+           never on the picture; the Zoom controls remain the zoom. */
         /* The fallback card's explicit escape: Prev / Next break
            step off a dead stream through the same dead-skipping
            cycle the card's flick verdict uses. */
         if (fbPrevBtn) fbPrevBtn.addEventListener("click", function () { cycleSurf(-1); });
         if (fbNextBtn) fbNextBtn.addEventListener("click", function () { cycleSurf(1); });
+
+        /* --- picture swipe (owner's order, 2026-11-06: "Don't change
+           anything except add the ability to swipe left and right on
+           the streams to cycle through them") ---
+           The cross-origin iframe swallows every touch over the video
+           itself, so the swipe is caught on the one transparent layer
+           of ours over the picture (#surfSwipe, styled above): it
+           covers the picture EXCEPT the bottom 56px control-bar
+           strip, which is never covered — every tap on YouTube's own
+           play/pause, volume, settings, fullscreen and progress
+           controls reaches the player itself, physically untouched,
+           exactly as before this layer existed.
+           The verdict is the app's own flick verdict (the same
+           numbers the fallback card's flick uses), judged on the
+           gesture's total travel at release: within 600ms, 48px+ of
+           horizontal travel, horizontal-dominant at 1.5:1. A swipe
+           LEFT cycles to the NEXT break, a swipe RIGHT to the
+           PREVIOUS, through cycleSurf — dead-marked breaks are
+           skipped exactly as chip cycling skips them, and the
+           cycled-to stream auto-starts through the same startStream
+           path a chip pick uses. The release's synthesized click is
+           swallowed whole, so a swipe can never also land on a
+           control. NOTHING else is claimed:
+           · a tap (within the app's 10px tap slop) is never a cycle:
+             it is handed to the player's OWN play/pause through the
+             player API — the same state change a tap on the picture
+             itself makes — so picture taps keep toggling play/pause.
+             (The plain no-API fallback frame exposes no API to hand
+             a tap to; its control bar is uncovered and works whole.)
+           · a press / long hold is never claimed and never cycles.
+           · a vertical drag is never claimed: the layer's
+             touch-action: pan-y hands vertical pans to the browser's
+             own scrolling, which cancels the pointer (pointercancel
+             is never a verdict), so page scrolling and the bottom
+             tab bar behave exactly as they do anywhere else.
+           · a second finger cancels the gesture outright:
+             multi-touch is never a swipe.
+           A picture swipe NEVER drags the floating window: this
+           layer starts no window move (the box-drag controller
+           already refuses presses that land on the live player), the
+           window moves only from its header/frame, as always. No new
+           visible control, no arrows, no layout or copy change. */
+        var swipeEl = document.getElementById("surfSwipe");
+        function surfTapToggle() {
+          if (!ytPlayer || plainFrame) return;
+          try {
+            var st = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
+            if (st === 1 && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+            else if (ytPlayer.playVideo) ytPlayer.playVideo();
+          } catch (e) { /* player mid-teardown — the tap is simply not forwarded */ }
+        }
+        if (swipeEl) {
+          var swDown = null;
+          swipeEl.addEventListener("pointerdown", function (e) {
+            if (!e.isPrimary || swDown) { swDown = null; return; } /* a second finger cancels: multi-touch is never a swipe */
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            e.preventDefault();
+            try { swipeEl.setPointerCapture(e.pointerId); } catch (err) { /* capture is a nicety; the verdict reads the release point either way */ }
+            swDown = { id: e.pointerId, sx: e.clientX, sy: e.clientY, t: Date.now() };
+          });
+          var swEnd = function (e) {
+            if (!swDown || e.pointerId !== swDown.id) return;
+            var sd = swDown;
+            swDown = null;
+            if (e.type !== "pointerup") return; /* pointercancel — a vertical pan the browser took for scrolling, or a cancelled touch: never a verdict */
+            var dx = e.clientX - sd.sx, dy = e.clientY - sd.sy;
+            if (Date.now() - sd.t <= 600 && Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.5) {
+              cycleSurf(dx < 0 ? 1 : -1); /* left = next break, right = previous — dead-skipping, auto-starting, exactly as chip cycling */
+              surfSwallowNextClick(); /* the release's click is not a tap: nothing under the finger may fire */
+            } else if (Math.hypot(dx, dy) <= 10) {
+              surfTapToggle(); /* a clean tap: not claimed — handed to the player's own play/pause */
+            }
+            /* anything else — a press, a short or vertical slide, a
+               slow drag — falls through untouched and never cycles */
+          };
+          swipeEl.addEventListener("pointerup", swEnd);
+          swipeEl.addEventListener("pointercancel", swEnd);
+        }
 
         function nowText(prefix) {
           var spot = spotByKey(currentKey), info = spotInfo(spot, new Date());
@@ -12119,9 +12235,10 @@ var STRAIN_SRC_LINKS = {
                 /* YouTube's own control bar renders (no `controls`
                    parameter): play/pause, volume, settings and
                    fullscreen are the player's own buttons and take the
-                   viewer's taps directly — NOTHING of ours covers the
-                   picture at all, so no part of the bar (or any other
-                   part of the frame) sits under an app-made layer.
+                   viewer's taps directly — the one layer of ours over
+                   the picture (the swipe layer) stops 56px short of
+                   the frame's bottom edge, so no part of the bar ever
+                   sits under an app-made layer.
                    Sound set inside the player is the
                    viewer's choice: the watchdog adopts it (see the
                    sound state note), and the remembered sound is
