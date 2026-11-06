@@ -2700,7 +2700,7 @@
         color: var(--ember);
         box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
         cursor: pointer; font: inherit; padding: 0;
-        touch-action: none; /* the bubble is FIXED in the bottom-right corner (owner order, 2026-11-05) — it never drags; a press on it must never pan or scroll the page underneath */
+        touch-action: none; /* the script owns every gesture on the bubble (a tap toggles the player; a drag moves it — free on its own while the feed is closed, carrying the window with it while attached), so a press on it must never pan or scroll the page underneath */
         user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
       }
       .surf-fab:active { transform: scale(0.93); }
@@ -11777,7 +11777,7 @@ var STRAIN_SRC_LINKS = {
           zMoveOn = false; zMoveOrigin = null;
           if (!overlayEl) return;
           overlayEl.classList.remove("is-moving");
-          settleUnitFromWindow(); /* the window drag set the window down: persist its anchor (the bubble is fixed and untouched) */
+          settleUnitFromWindow(); /* the drag set the pair down: persist the window's anchor — the bubble rides attached at its corner */
         }
         function cycleSurf(dir) {
           var idx = -1;
@@ -12393,39 +12393,77 @@ var STRAIN_SRC_LINKS = {
           w = Math.max(180, Math.min(w, vw - 16));
           return { w: w, h: Math.round(w * 9 / 16), vw: vw, vh: vh };
         }
-        /* ---- The window anchor + the FIXED bubble (owner orders, 2026-11-05) ----
-           The wave bubble and the mini stream window are fully
-           decoupled:
-             · the bubble is FIXED at its CSS home in the
-               bottom-right corner, above the bottom bar. It does
-               not drag, no position is saved for it, and nothing —
-               opening, dragging or closing the window — ever moves
-               it. A tap on it opens or folds the player, nothing
-               more.
+        /* ---- The window anchor + the wave bubble (owner orders, 2026-11-05) ----
+             · feed OPEN: the bubble sits ATTACHED at the window's
+               bottom-right corner — docked to that corner from
+               outside, its top-left tucked ATTACH px under the
+               corner, so the only overlap is the window's corner
+               frame edge. The pair moves as ONE unit: dragging the
+               window carries the bubble along at its corner, and
+               dragging the bubble carries the window with it — the
+               relative offset never changes. The WINDOW renders
+               above the bubble (the overlay's z-index sits over
+               the bubble's), so the bubble never covers the video
+               picture or any control.
+             · feed CLOSED: the bubble detaches and is FREE again —
+               it stays at the spot it was in when the feed closed
+               (or its last dropped spot), drags anywhere on its
+               own, and drops stick. Until it has ever been dragged
+               it sits at its CSS home in the bottom-right corner.
+               A clean tap opens the feed, which re-attaches it to
+               the window's corner.
              · the window keeps its own persisted top-left anchor
                (miniPos, under ff2alt.surfMiniPos.v1, exactly as
                that key has always stored it): it opens at the
                anchor, drags by its own surfaces, and settles back
                to the anchor on release. With nothing saved, the
-               default anchor parks it right-aligned just above the
-               bubble's corner.
-             · where the two happen to meet, the WINDOW renders
-               above the bubble (the overlay's z-index sits over
-               the bubble's): the bubble never covers the feed.
+               default anchor parks it in the lower right, just
+               above the bubble's home corner.
            In fullscreen the bubble is not rendered at all. ---- */
         var MINI_POS_KEY = "ff2alt.surfMiniPos.v1";
-        var FAB_PX = 52, UNIT_GAP = 10; /* bubble size + the gap the default anchor leaves above it */
+        var FAB_PX = 52, UNIT_GAP = 10; /* bubble size + the gap the default anchor leaves above its home */
+        var ATTACH = 14; /* attached overlap: how far the bubble tucks under the window's bottom-right corner — the corner frame edge only, never the picture or a control */
+        var FAB_POS_KEY = "ff2alt.surfBubblePos.v1";
+        var fabFreePos = null; /* the bubble's own spot while the feed is closed: where it was left, drops stick */
+        try {
+          var fbSaved = JSON.parse(lsGet(FAB_POS_KEY) || "null");
+          if (fbSaved && isFinite(fbSaved.left) && isFinite(fbSaved.top)) fabFreePos = { left: fbSaved.left, top: fbSaved.top };
+        } catch (e) { /* ignore: no saved spot — the CSS home applies */ }
         var miniPos = null;
         try {
           var mpSaved = JSON.parse(lsGet(MINI_POS_KEY) || "null");
           if (mpSaved && isFinite(mpSaved.left) && isFinite(mpSaved.top)) miniPos = { left: mpSaved.left, top: mpSaved.top };
         } catch (e) { /* ignore: no saved anchor — defaults apply */ }
-        /* The bubble has NO persisted position (owner order,
-           2026-11-05): it is fixed at its CSS home in the
-           bottom-right corner. Any spot an older build saved is
-           discarded outright, so it can never pull the bubble away
-           from that corner again. */
-        try { window.localStorage.removeItem("ff2alt.surfBubblePos.v1"); } catch (e) { /* ignore */ }
+        function clampFabFree(left, top) {
+          /* Keep a free bubble fully on screen wherever it drops. */
+          var vw = window.innerWidth || 360, vh = window.innerHeight || 640;
+          return {
+            left: Math.min(Math.max(4, Math.round(left)), Math.max(4, vw - FAB_PX - 4)),
+            top: Math.min(Math.max(4, Math.round(top)), Math.max(4, vh - FAB_PX - 4))
+          };
+        }
+        function saveFabFree(left, top) {
+          fabFreePos = clampFabFree(left, top);
+          lsSet(FAB_POS_KEY, JSON.stringify(fabFreePos));
+          return fabFreePos;
+        }
+        function fabSetInline(left, top) {
+          if (!fabBtn) return;
+          fabBtn.style.left = Math.round(left) + "px";
+          fabBtn.style.top = Math.round(top) + "px";
+          fabBtn.style.right = "auto";
+          fabBtn.style.bottom = "auto";
+        }
+        function fabCurrentPos() {
+          /* The bubble's layout spot, read from its inline position
+             when it has one (immune to the :active press scale);
+             the rendered rect is the fallback. */
+          if (!fabBtn) return null;
+          var l = parseFloat(fabBtn.style.left), t = parseFloat(fabBtn.style.top);
+          if (isFinite(l) && isFinite(t)) return { left: l, top: t };
+          var r = fabBtn.getBoundingClientRect();
+          return r.width ? { left: r.left, top: r.top } : null;
+        }
         function unitBottomLimit() {
           /* The lowest y the window's bottom edge may reach: just
              above the bottom tab bar. */
@@ -12435,14 +12473,17 @@ var STRAIN_SRC_LINKS = {
           return vh - 74;
         }
         function clampUnitAnchor(left, top) {
-          /* Clamp the window's anchor (its top-left) so the window
-             itself stays fully inside the viewport and above the
-             bottom bar. The bubble is not part of this geometry at
-             all — it is fixed in the bottom-right corner, and the
-             window simply renders above it wherever they meet. */
+          /* Clamp the window's anchor (its top-left) so the whole
+             attached unit stays on screen: the window itself fully
+             inside the viewport and above the bottom bar, and the
+             bubble docked at its corner — overhanging the window's
+             right and bottom edges by FAB_PX - ATTACH — fully
+             inside too. The corner offset never changes; only how
+             far the pair may travel is limited. */
           var g = miniGeom();
-          var l = Math.min(Math.max(8, Math.round(left)), Math.max(8, g.vw - g.w - 8));
-          var maxT = Math.min(g.vh - g.h - 8, unitBottomLimit() - g.h);
+          var over = FAB_PX - ATTACH;
+          var l = Math.min(Math.max(8, Math.round(left)), Math.max(8, g.vw - g.w - 8 - over));
+          var maxT = Math.min(g.vh - g.h - 8 - over, unitBottomLimit() - g.h);
           if (maxT < 8) maxT = Math.max(8, g.vh - g.h - 8);
           var t = Math.min(Math.max(8, Math.round(top)), maxT);
           return { left: l, top: t };
@@ -12478,9 +12519,10 @@ var STRAIN_SRC_LINKS = {
           return miniPos;
         }
         function settleUnitFromWindow() {
-          /* A window-surface drag set the window down: persist the
-             window's anchor where it came to rest. The bubble is
-             fixed in its corner and is no part of the settle. */
+          /* A unit drag set the pair down: persist the window's
+             anchor where it came to rest — the bubble's attached
+             spot is derived from that anchor, so nothing else is
+             saved for it. */
           if (!overlayEl) return;
           var rr = overlayEl.getBoundingClientRect();
           saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) });
@@ -12491,27 +12533,40 @@ var STRAIN_SRC_LINKS = {
           fabBtn.style.right = ""; fabBtn.style.bottom = "";
         }
         function placeFab() {
-          /* The bubble is FIXED at its CSS home — the bottom-right
-             corner, above the bottom bar (owner order, 2026-11-05):
-             it never drags, no position is ever saved for it, and
-             nothing in the window's placement moves it. placeFab
-             only keeps the CSS home in force (any stale inline
-             position cleared) and hides the bubble in fullscreen,
-             where it is not rendered at all. */
+          /* Bubble placement (owner orders, 2026-11-05):
+             · fullscreen: not rendered at all.
+             · feed OPEN: ATTACHED at the window's bottom-right
+               corner — the bubble's top-left sits ATTACH px inside
+               that corner, so its disc is docked to the corner from
+               outside and the only overlap is the window's corner
+               frame edge, which paints ABOVE the bubble (z-order):
+               the bubble never covers the picture or any control.
+             · feed CLOSED: FREE at its own spot — where it was left
+               when the feed closed, or its last dropped spot; with
+               neither, its CSS home in the bottom-right corner
+               (inline position cleared). */
           if (!fabBtn) return;
           if (surfFsOn()) { fabBtn.hidden = true; fabClearInline(); return; }
           fabBtn.hidden = false;
+          if (surfStage === "mini" && overlayEl) {
+            var r = overlayEl.getBoundingClientRect();
+            if (r.width) { fabSetInline(r.right - ATTACH, r.bottom - ATTACH); return; }
+          }
+          if (fabFreePos) { var c = clampFabFree(fabFreePos.left, fabFreePos.top); fabSetInline(c.left, c.top); return; }
           fabClearInline();
         }
         function miniPlace(left, top) {
-          /* Place the window — and only the window. The bubble is
-             decoupled: miniPlace never touches it. */
+          /* Place the window — the bubble rides ATTACHED at its
+             bottom-right corner: placeFab re-docks it to the
+             window's fresh rect, so every window move carries the
+             pair as one unit at the same offset. */
           if (!overlayEl) return null;
           var g = miniGeom();
           var c = clampUnitAnchor(left, top);
           overlayEl.style.left = c.left + "px";
           overlayEl.style.top = c.top + "px";
           overlayEl.style.width = g.w + "px";
+          placeFab();
           return { left: c.left, top: c.top };
         }
         function positionMini() {
@@ -12523,7 +12578,7 @@ var STRAIN_SRC_LINKS = {
           overlayEl.style.left = a.left + "px";
           overlayEl.style.top = a.top + "px";
           overlayEl.style.width = g.w + "px";
-          fabClearInline(); /* the bubble stays at its fixed CSS home — the default window spot parks just above it */
+          placeFab(); /* the bubble attaches at the window's bottom-right corner */
         }
         /* ---- Stream fullscreen, in place ----
            The enlarge control takes #surfDock ITSELF fullscreen (the
@@ -12553,7 +12608,7 @@ var STRAIN_SRC_LINKS = {
              stylesheet's mini-stage rule owns it again) when
              fullscreen exits. */
           if (miniControlsEl) miniControlsEl.style.display = surfFs ? "none" : "";
-          placeFab(); /* fullscreen: the bubble is hidden; exiting returns it to its fixed corner */
+          placeFab(); /* fullscreen: the bubble is hidden; exiting re-attaches it at the window's corner (or frees it at its own spot if the feed is closed) */
         }
         function fakeFsEnter() {
           surfFs = true; surfFsFake = true;
@@ -12628,7 +12683,15 @@ var STRAIN_SRC_LINKS = {
             window.scrollTo(0, savedScrollY);
           }
           if (next === "mini") positionMini();
-          placeFab(); /* the bubble stays at its fixed corner, whatever the window does */
+          if (next === "closed" && prev === "mini") {
+            /* Closing detaches the bubble exactly where it sits:
+               its current spot becomes its free spot (owner order,
+               2026-11-05) — it stays there and is draggable from
+               there. */
+            var cp = fabCurrentPos();
+            if (cp) saveFabFree(cp.left, cp.top);
+          }
+          placeFab(); /* open: attached at the window's corner · closed: free at its own spot */
           applyZoom(); /* re-clamp any live pan to the frame's new size */
           syncFab();
         }
@@ -12677,14 +12740,65 @@ var STRAIN_SRC_LINKS = {
         }
         if (fabBtn) fabBtn.addEventListener("click", fabToggle);
         window.addEventListener("resize", positionMini);
-        /* --- The bubble does not drag (owner order, 2026-11-05) ---
-           It is fixed in the bottom-right corner: no pointer-drag
-           handlers, no saved spot, no click-swallow machinery — a
-           plain tap is all it takes, and the click handler above
-           opens or folds the player on the first tap. The feed
-           window renders above it wherever they meet. */
+        /* --- Bubble drags (owner orders, 2026-11-05) ---
+           Feed OPEN (attached): a drag on the bubble drags the
+           WINDOW with it through miniPlace — the pair moves as one
+           unit, the corner offset kept exactly; on release the
+           pair's anchor is persisted like any window drag.
+           Feed CLOSED (free): a drag moves the bubble alone,
+           anywhere on screen; the drop sticks (its own saved spot),
+           and an interrupted drag (pointercancel) drops it in place
+           rather than snapping back. A press that never slides past
+           the threshold is a clean tap: nothing here touches it and
+           the click handler above opens or folds the player. A real
+           drag's synthesized click is swallowed whole, so a drag can
+           never toggle the player. */
+        var fabDrag = null;
+        function fabDragSettle() {
+          if (!fabDrag) return;
+          var d = fabDrag; fabDrag = null;
+          if (!d.on) return;
+          if (overlayEl) overlayEl.classList.remove("is-moving");
+          if (d.mode === "unit") settleUnitFromWindow(); /* persist the pair's resting anchor */
+          else { var cp2 = fabCurrentPos(); if (cp2) saveFabFree(cp2.left, cp2.top); } /* the free drop sticks */
+          surfSwallowNextClick();
+        }
+        if (fabBtn) {
+          fabBtn.addEventListener("pointerdown", function (e) {
+            if (!e.isPrimary) { fabDragSettle(); return; } /* a second finger settles any bubble drag in flight */
+            fabDrag = null;
+            if (surfFsOn()) return;
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            var fr = fabBtn.getBoundingClientRect();
+            var wr = (surfStage === "mini" && overlayEl) ? overlayEl.getBoundingClientRect() : null;
+            fabDrag = {
+              id: e.pointerId, sx: e.clientX, sy: e.clientY, on: false,
+              mode: (wr && wr.width) ? "unit" : "free",
+              winLeft: wr ? wr.left : 0, winTop: wr ? wr.top : 0,
+              fabLeft: fr.left, fabTop: fr.top
+            };
+            try { fabBtn.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+          });
+          fabBtn.addEventListener("pointermove", function (e) {
+            if (!fabDrag || e.pointerId !== fabDrag.id) return;
+            var dx = e.clientX - fabDrag.sx, dy = e.clientY - fabDrag.sy;
+            if (!fabDrag.on) {
+              if (Math.hypot(dx, dy) <= 10) return;
+              fabDrag.on = true;
+              if (overlayEl && fabDrag.mode === "unit") overlayEl.classList.add("is-moving");
+            }
+            if (fabDrag.mode === "unit") {
+              miniPlace(fabDrag.winLeft + dx, fabDrag.winTop + dy); /* moves the window; placeFab carries the bubble along at its corner */
+            } else {
+              var c = clampFabFree(fabDrag.fabLeft + dx, fabDrag.fabTop + dy);
+              fabSetInline(c.left, c.top);
+            }
+          });
+          fabBtn.addEventListener("pointerup", fabDragSettle);
+          fabBtn.addEventListener("pointercancel", fabDragSettle);
+        }
         window.addEventListener("resize", function () { placeFab(); });
-        placeFab(); /* boot: the bubble takes its fixed CSS home */
+        placeFab(); /* boot: attached if the feed starts open, else the bubble's free spot / CSS home */
         function fabMinTop() {
           var minTop = 76;
           var isl = document.querySelector(".island");
@@ -12743,7 +12857,7 @@ var STRAIN_SRC_LINKS = {
             fMoveOn = false; fMoveOrigin = null;
             if (!overlayEl) return;
             overlayEl.classList.remove("is-moving");
-            settleUnitFromWindow(); /* the window drag set the window down: persist its anchor (the bubble is fixed and untouched) */
+            settleUnitFromWindow(); /* the drag set the pair down: persist the window's anchor — the bubble rides attached at its corner */
           }
           facade.addEventListener("pointerdown", function (e) {
             if (e.target.closest && e.target.closest("button, a")) return;
@@ -12818,7 +12932,7 @@ var STRAIN_SRC_LINKS = {
             gMoveOn = false; gMoveOrigin = null;
             if (!overlayEl) return;
             overlayEl.classList.remove("is-moving");
-            settleUnitFromWindow(); /* the window drag set the window down: persist its anchor (the bubble is fixed and untouched) */
+            settleUnitFromWindow(); /* the drag set the pair down: persist the window's anchor — the bubble rides attached at its corner */
           }
           fallback.addEventListener("pointerdown", function (e) {
             if (!e.isPrimary) return;
@@ -12872,7 +12986,8 @@ var STRAIN_SRC_LINKS = {
            whenever the gesture layer is down. This handler owns exactly
            those surfaces: a press that slides past ~10px becomes a window
            move (miniPlace, clamped in-viewport, anchor persisted on
-           release — the fixed bubble is never part of the move); a slide that started on a
+           release — the bubble rides attached at the window's corner
+           through miniPlace); a slide that started on a
            button has its click swallowed whole, so the button never
            fires; a clean tap with no slide is left completely alone
            and activates its button normally. */
