@@ -1801,8 +1801,18 @@
       /* Digital zoom: a transform on the wrapper around the player node.
          The iframe itself is never moved, recreated or reloaded by zoom. */
       .surf-zoomwrap { position: relative; will-change: transform; }
+      /* The gesture layer covers the picture but stops 44px short
+         of the frame's bottom edge. That strip is YouTube's own
+         control bar, and it must receive taps directly: volume,
+         mute, play/pause, fullscreen and settings are the player's
+         own buttons — no app-made layer may sit over them and turn
+         their taps into something else (owner order, 2026-11-05:
+         make YouTube's own controls function; no substitute
+         controls). Everywhere else on the picture the app's
+         gestures keep working: flick to cycle, pinch to zoom,
+         tap to play/pause. */
       .surf-gesture {
-        position: absolute; inset: 0; z-index: 6;
+        position: absolute; inset: 0 0 44px 0; z-index: 6;
         touch-action: none; cursor: grab;
       }
       .surf-gesture:active { cursor: grabbing; }
@@ -1817,17 +1827,6 @@
       .surf-sound-btn .surf-sound-waves { opacity: 0.35; }
       .surf-sound-btn[aria-pressed="true"] { background: var(--leaf-deep); border-color: var(--leaf-deep); color: #fff; }
       .surf-sound-btn[aria-pressed="true"] .surf-sound-waves { opacity: 1; }
-      /* Volume: the stream's real level control, in THIS page's chrome.
-         The speaker control drawn inside the cross-origin player can
-         never receive a tap — the gesture layer over the picture takes
-         every touch there and answers a tap with play/pause — so volume
-         lives here instead. The slider only ever drives the player's
-         volume/mute API; it never touches play/pause. */
-      .surf-volbar { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-      .surf-vol-ic { display: inline-flex; color: var(--ink-soft); }
-      .surf-vol-lbl { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
-      .surf-vol-slider { flex: 1 1 auto; min-width: 0; height: 28px; margin: 0; accent-color: var(--leaf-deep); cursor: pointer; touch-action: pan-y; }
-      .surf-vol-level { min-width: 42px; text-align: right; font-weight: 800; font-size: 13.5px; font-variant-numeric: tabular-nums; color: var(--ink); }
       .surf-zoombar {
         display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
         margin-top: 8px;
@@ -2683,7 +2682,13 @@
          the sheet, so a live stream keeps playing behind the button —
          and the button's red live dot says so at a glance. */
       .surf-fab {
-        position: fixed; z-index: 75;
+        /* z-index sits BELOW the feed window (.surf-overlay, 70):
+           wherever the two meet, the window renders over the
+           bubble — the bubble never covers the feed (owner order,
+           2026-11-05). It stays above the page content and the
+           bottom tab bar (56), so its corner is fully visible and
+           tappable whenever the window is closed. */
+        position: fixed; z-index: 65;
         right: calc(14px + env(safe-area-inset-right));
         bottom: calc(78px + env(safe-area-inset-bottom));
         width: 52px; height: 52px; border-radius: 50%;
@@ -2695,11 +2700,10 @@
         color: var(--ember);
         box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.10);
         cursor: pointer; font: inherit; padding: 0;
-        touch-action: none; /* the bubble drags the whole surf unit (bubble + mini window, one shared anchor) — a press on it must never pan or scroll the page underneath */
+        touch-action: none; /* the bubble is FIXED in the bottom-right corner (owner order, 2026-11-05) — it never drags; a press on it must never pan or scroll the page underneath */
         user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
       }
       .surf-fab:active { transform: scale(0.93); }
-      .surf-fab.is-dragging { cursor: grabbing; transform: none; box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55), 0 0 0 2px var(--ember), inset 0 1px 0 rgba(255, 255, 255, 0.10); }
       .surf-fab svg { width: 26px; height: 26px; }
       .surf-fab.is-open {
         background: linear-gradient(180deg, var(--btn-a) 0%, var(--btn-b) 45%, var(--btn-c) 100%);
@@ -2764,14 +2768,6 @@
       .surf-overlay .surf-facade-meta { display: none !important; }
       .surf-overlay .surf-play { width: 46px; height: 46px; }
       .surf-overlay .surf-play svg { width: 20px; height: 20px; }
-      /* The floating window's top row is the volume bar, and the mini
-         controls (expand / page / close) are absolutely positioned over
-         its right end — without clearance the level readout ("85%") is
-         squeezed into the last few pixels beside the close button and
-         clipped by the window edge (probe-measured, 2026-11-05).
-         Reserve the controls' width on the volbar row so the slider
-         flexes shorter and the level stays fully inside the window. */
-      .surf-overlay .surf-volbar { padding-right: 118px; }
       /* Load-failure fallback INSIDE the floating player: a failure
          renders in place within the frame — same 16:9 box, title +
          actions only; the long explanation lives on the Surf Break
@@ -3182,12 +3178,6 @@
         <button class="btn-small" id="surfZoomIn" type="button" aria-label="Zoom in">+</button>
         <button class="btn-small" id="surfZoomReset" type="button">Reset 1×</button>
         <p class="surf-zoom-note">Digital zoom — crops into the picture. The cams stream in HD, so 2× stays fairly clear.</p>
-      </div>
-      <div class="surf-volbar" id="surfVolBar">
-        <span class="surf-vol-ic" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z" fill="currentColor" stroke="none"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9.4 9.4 0 0 1 0 13"/></svg></span>
-        <label class="surf-vol-lbl" for="surfVolSlider">Volume</label>
-        <input class="surf-vol-slider" id="surfVolSlider" type="range" min="0" max="100" step="1" value="0" aria-label="Stream volume" />
-        <span class="surf-vol-level" id="surfVolLevel" aria-live="polite">0%</span>
       </div>
       <div class="surf-dock-body" id="surfDockBody">
         <div class="surf-stage" id="surfStage">
@@ -4427,7 +4417,7 @@
       <h2 class="tab-title">Surf Break</h2>
     <section class="card surf-card" aria-labelledby="surf-h">
         <h2 id="surf-h">Surf Break — control center</h2>
-        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player above if you want the sound of the ocean. Once sound is on it stays on when the break changes, and if the player ever goes quiet on its own the app brings the sound back by itself within a couple of seconds — no need to touch your phone's volume buttons. Surf Break is its own page, like every other section of this app. The player itself floats: tap the wave button on any screen and the stream opens in a small floating window you can watch while you use the rest of the app — drag the window (or the wave button it rides with) to move it, and closing the window never stops the stream, which keeps playing behind the wave button; its red dot shows while a stream is live. The window button on the player brings you back to this page. This card is the player's control center: pick a break, show or hide the player, and set auto-play here.</p>
+        <p class="card-sub">Live surf cams from breaks around the planet. <strong style="color:var(--ink);">Follow the Sun</strong> is automatic: it picks the break where it's daytime right now and cycles while you watch. Streams always start <strong style="color:var(--ink);">muted</strong> — tap <strong style="color:var(--ink);">Sound</strong> in the player above if you want the sound of the ocean. Once sound is on it stays on when the break changes. The player's own buttons work right on the picture, too — tap the control bar at the bottom of the stream for YouTube's volume, pause and fullscreen. Surf Break is its own page, like every other section of this app. The player itself floats: tap the wave button on any screen and the stream opens in a small floating window you can watch while you use the rest of the app — drag the window to move it, and closing the window never stops the stream, which keeps playing behind the wave button; its red dot shows while a stream is live. The wave button itself stays put in the bottom-right corner. The window button on the player brings you back to this page. This card is the player's control center: pick a break, show or hide the player, and set auto-play here.</p>
 
         <div class="surf-nowrow">
           <p class="surf-now" id="surfNow" role="status" aria-live="polite"></p>
@@ -11442,8 +11432,6 @@ var STRAIN_SRC_LINKS = {
         var zoneSwitch = document.getElementById("surfZoneSwitch");
         var soundBtn = document.getElementById("surfSoundBtn");
         var soundLbl = document.getElementById("surfSoundLbl");
-        var volSlider = document.getElementById("surfVolSlider");
-        var volLevel = document.getElementById("surfVolLevel");
         var zoomBtn = document.getElementById("surfZoomBtn");
         var zoomBar = document.getElementById("surfZoomBar");
         var zoomOutBtn = document.getElementById("surfZoomOut");
@@ -11547,8 +11535,13 @@ var STRAIN_SRC_LINKS = {
            soundWanted is set by the dock's Sound button (a tap in this
            frame — the gesture iOS counts), it is re-applied to every new
            player (rotation, recovery chain, background resume, plain
-           fallback), and a 2-second watchdog restores it if the player
-           is found muted or paused while it should be playing. */
+           fallback), and the 2-second watchdog follows it. The
+           watchdog's sound role is adoption, not override: YouTube's
+           own mute/volume buttons are reachable on the picture, and
+           whichever control the viewer used last — the player's or
+           the dock's — is the intent the page keeps (owner order,
+           2026-11-05). The watchdog still resumes a stream the
+           webview paused on its own. */
         var soundWanted = false, soundVolume = 100;
         var soundRestores = 0, watchdogResumes = 0;
         var lastWatchdogResumeAt = 0, watchdogStandDown = false;
@@ -11784,7 +11777,7 @@ var STRAIN_SRC_LINKS = {
           zMoveOn = false; zMoveOrigin = null;
           if (!overlayEl) return;
           overlayEl.classList.remove("is-moving");
-          settleUnitFromWindow(); /* the window drag moved the whole unit: the anchor (and the bubble's own spot, at its attached corner) settle with it */
+          settleUnitFromWindow(); /* the window drag set the window down: persist its anchor (the bubble is fixed and untouched) */
         }
         function cycleSurf(dir) {
           var idx = -1;
@@ -12051,23 +12044,12 @@ var STRAIN_SRC_LINKS = {
           setNow(nowText("Now showing:"));
           syncDockChrome();
         }
-        /* The volume slider shows what the viewer actually hears:
-           the level while sound is on, 0 while it is off. While the
-           viewer is mid-drag the slider is theirs — state syncs never
-           move it under their finger. */
-        var volDragging = false;
-        function syncVolUI() {
-          var shown = soundWanted ? soundVolume : 0;
-          if (volSlider && !volDragging) volSlider.value = String(shown);
-          if (volLevel) volLevel.textContent = shown + "%";
-        }
         function syncSoundBtn() {
           if (soundBtn) {
             soundBtn.setAttribute("aria-pressed", soundWanted ? "true" : "false");
             soundBtn.setAttribute("aria-label", soundWanted ? "Turn the stream sound off" : "Turn the stream sound on");
           }
           if (soundLbl) soundLbl.textContent = soundWanted ? "Sound on" : "Sound off";
-          syncVolUI();
         }
         function applySound(player) {
           if (!player) return;
@@ -12081,31 +12063,41 @@ var STRAIN_SRC_LINKS = {
           } catch (e) { /* ignore */ }
         }
         /* --- playback watchdog: while a stream should be playing, check
-           every 2 seconds that it still IS playing and, if the viewer
-           turned sound on, that it is still audible. iOS webviews can
-           drop a stream's audio (or pause it) shortly after an in-player
-           unmute — the viewer then hears silence until some system event
-           (like a hardware volume press) revives the audio session. The
-           watchdog revives it from the page instead, within ~2 seconds.
-           A deliberate pause inside the player is respected: if the
-           viewer pauses again within 5 seconds of a watchdog resume, the
-           watchdog stands down until the next stream start. The plain
-           (no-API) fallback player exposes no state to poll, so the
-           watchdog can only guard API players; the fallback still
-           inherits soundWanted on every rebuild. --- */
+           every 2 seconds that it still IS playing. iOS webviews can
+           pause a stream shortly after it starts — the watchdog resumes
+           it from the page instead, within ~2 seconds. A deliberate
+           pause inside the player is respected: if the viewer pauses
+           again within 5 seconds of a watchdog resume, the watchdog
+           stands down until the next stream start. Sound state is NOT
+           the watchdog's to restore: the player's own mute/volume
+           buttons are reachable and their state is adopted as the
+           viewer's intent (see the tick). The plain (no-API) fallback
+           player exposes no state to poll, so the watchdog can only
+           guard API players; the fallback still inherits soundWanted
+           on every rebuild. --- */
         function watchdogTick() {
           if (!ytPlayer || mode !== "playing" || stoppedByUser || document.hidden || dock.hidden) return;
           try {
-            /* Adopt an unmute done inside the player itself: if the
-               player is audibly playing, that IS the viewer's intent —
-               protect it exactly like a dock Sound tap. */
-            if (!soundWanted && ytPlayer.isMuted && !ytPlayer.isMuted()) { soundWanted = true; syncSoundBtn(); }
-            if (soundWanted && ytPlayer.isMuted && ytPlayer.isMuted()) {
-              applySound(ytPlayer);
-              soundRestores++;
-            } else if (soundWanted && ytPlayer.getVolume) {
-              var v = ytPlayer.getVolume();
-              if (typeof v === "number" && v > 0 && v !== soundVolume) { soundVolume = v; syncSoundBtn(); } /* follow volume set inside the player */
+            /* YouTube's own controls are reachable now (the gesture
+               layer stops above the player's control bar), so the
+               mute/volume state inside the player IS the viewer's
+               intent — whichever control he used last wins. The
+               watchdog adopts it in BOTH directions and never
+               overrides it: an unmute or a mute done inside the
+               player is followed exactly like a dock Sound tap, and
+               a level set on the player's own volume control
+               becomes the level the app remembers. (The watchdog
+               still guards the picture below: a stream the webview
+               paused on its own is resumed, with the same
+               stand-down if he pauses again right after.) */
+            if (ytPlayer.isMuted) {
+              var mutedNow = ytPlayer.isMuted();
+              if (mutedNow && soundWanted) { soundWanted = false; syncSoundBtn(); } /* muted inside the player: adopt it */
+              else if (!mutedNow && !soundWanted) { soundWanted = true; syncSoundBtn(); } /* unmuted inside the player: adopt it */
+              else if (!mutedNow && soundWanted && ytPlayer.getVolume) {
+                var v = ytPlayer.getVolume();
+                if (typeof v === "number" && v > 0 && v !== soundVolume) { soundVolume = v; syncSoundBtn(); } /* follow volume set inside the player */
+              }
             }
             var st = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
             if (st === 2 && !watchdogStandDown) { /* 2 = YT.PlayerState.PAUSED */
@@ -12401,85 +12393,59 @@ var STRAIN_SRC_LINKS = {
           w = Math.max(180, Math.min(w, vw - 16));
           return { w: w, h: Math.round(w * 9 / 16), vw: vw, vh: vh };
         }
-        /* ---- ONE surf unit: a window anchor + the bubble's OWN spot ----
-           The wave bubble and the mini stream window travel as one
-           unit, but each keeps its own persisted position:
-             · miniPos — the window's top-left anchor, under
-               ff2alt.surfMiniPos.v1, exactly as that key has always
-               stored it (saved window positions keep their meaning);
-             · bubblePos — the bubble's own top-left, under
-               ff2alt.surfBubblePos.v1. The bubble moves FREELY
-               (owner order, 2026-11-05): anywhere on screen, clamped
-               only by the screen edges, the island and the bottom
-               bar — and it stays exactly where it is dropped. Its
-               spot is never re-derived from the window anchor: the
-               old model did that, and because the anchor clamps to
-               the window's on-screen fit, every drop left of the
-               window's width (or high on the screen) snapped back
-               to the window's corner on release. With no bubble spot
-               saved, one is derived from a saved anchor (positions
-               saved by older builds keep their meaning), and with
-               nothing saved at all the defaults are exactly what
-               they have always been: the bubble at its CSS home
-               (bottom-right, above the bottom bar) and the window
-               derived from it.
-           How the two spots interact:
-             · closed: only the bubble shows, at its own spot; the
-               anchor trails it, so the window opens hugging the
-               bubble as closely as its own clamp allows;
-             · mini open: the window renders at the anchor and the
-               bubble stays at its own spot;
-             · grabbing the BUBBLE moves the bubble freely; in the
-               mini state the window translates by the same travel;
-             · grabbing the WINDOW (any of its drag surfaces) moves
-               the unit in lockstep — the bubble rides at the
-               window's bottom-right corner — and on release both
-               spots settle from the window's resting place;
-             · closing leaves the bubble at its own spot, and
-               reopening restores the window at its anchor.
+        /* ---- The window anchor + the FIXED bubble (owner orders, 2026-11-05) ----
+           The wave bubble and the mini stream window are fully
+           decoupled:
+             · the bubble is FIXED at its CSS home in the
+               bottom-right corner, above the bottom bar. It does
+               not drag, no position is saved for it, and nothing —
+               opening, dragging or closing the window — ever moves
+               it. A tap on it opens or folds the player, nothing
+               more.
+             · the window keeps its own persisted top-left anchor
+               (miniPos, under ff2alt.surfMiniPos.v1, exactly as
+               that key has always stored it): it opens at the
+               anchor, drags by its own surfaces, and settles back
+               to the anchor on release. With nothing saved, the
+               default anchor parks it right-aligned just above the
+               bubble's corner.
+             · where the two happen to meet, the WINDOW renders
+               above the bubble (the overlay's z-index sits over
+               the bubble's): the bubble never covers the feed.
            In fullscreen the bubble is not rendered at all. ---- */
         var MINI_POS_KEY = "ff2alt.surfMiniPos.v1";
-        var FAB_PX = 52, UNIT_GAP = 10; /* bubble size + the fixed gap between window bottom and bubble top */
-        var fabDragging = false; /* a bubble drag is in flight (declared here: miniPlace's bubble sync reads it) */
+        var FAB_PX = 52, UNIT_GAP = 10; /* bubble size + the gap the default anchor leaves above it */
         var miniPos = null;
         try {
           var mpSaved = JSON.parse(lsGet(MINI_POS_KEY) || "null");
           if (mpSaved && isFinite(mpSaved.left) && isFinite(mpSaved.top)) miniPos = { left: mpSaved.left, top: mpSaved.top };
         } catch (e) { /* ignore: no saved anchor — defaults apply */ }
-        var BUBBLE_POS_KEY = "ff2alt.surfBubblePos.v1";
-        var bubblePos = null;
-        try {
-          var bpSaved2 = JSON.parse(lsGet(BUBBLE_POS_KEY) || "null");
-          if (bpSaved2 && isFinite(bpSaved2.left) && isFinite(bpSaved2.top)) bubblePos = { left: bpSaved2.left, top: bpSaved2.top };
-        } catch (e) { /* ignore: no saved bubble spot — derived from the anchor, or the CSS home */ }
+        /* The bubble has NO persisted position (owner order,
+           2026-11-05): it is fixed at its CSS home in the
+           bottom-right corner. Any spot an older build saved is
+           discarded outright, so it can never pull the bubble away
+           from that corner again. */
+        try { window.localStorage.removeItem("ff2alt.surfBubblePos.v1"); } catch (e) { /* ignore */ }
         function unitBottomLimit() {
-          /* The lowest y the UNIT's bottom edge (the bubble's bottom)
-             may reach: just above the bottom tab bar. */
+          /* The lowest y the window's bottom edge may reach: just
+             above the bottom tab bar. */
           var bar = document.getElementById("altTabbar");
           if (bar) { var br = bar.getBoundingClientRect(); if (br.height) return Math.round(br.top) - 4; }
           var vh = window.innerHeight || 640;
           return vh - 74;
         }
         function clampUnitAnchor(left, top) {
-          /* Clamp an anchor (window top-left) so the WHOLE unit —
-             window plus the attached bubble below its right corner —
-             stays fully inside the viewport and above the bottom bar. */
+          /* Clamp the window's anchor (its top-left) so the window
+             itself stays fully inside the viewport and above the
+             bottom bar. The bubble is not part of this geometry at
+             all — it is fixed in the bottom-right corner, and the
+             window simply renders above it wherever they meet. */
           var g = miniGeom();
           var l = Math.min(Math.max(8, Math.round(left)), Math.max(8, g.vw - g.w - 8));
-          var maxT = Math.min(g.vh - g.h - 8, unitBottomLimit() - UNIT_GAP - FAB_PX - g.h);
+          var maxT = Math.min(g.vh - g.h - 8, unitBottomLimit() - g.h);
           if (maxT < 8) maxT = Math.max(8, g.vh - g.h - 8);
           var t = Math.min(Math.max(8, Math.round(top)), maxT);
           return { left: l, top: t };
-        }
-        function bubblePosForAnchor(a) {
-          /* The bubble's top-left for an anchor: right-aligned with
-             the window, UNIT_GAP below its bottom edge. */
-          var g = miniGeom();
-          return { left: a.left + g.w - FAB_PX, top: a.top + g.h + UNIT_GAP };
-        }
-        function anchorForBubblePos(bp) {
-          var g = miniGeom();
-          return clampUnitAnchor(bp.left - (g.w - FAB_PX), bp.top - (g.h + UNIT_GAP));
         }
         function defaultAnchor() {
           /* The anchor implied by the bubble's untouched CSS home —
@@ -12504,7 +12470,6 @@ var STRAIN_SRC_LINKS = {
             var r = overlayEl.getBoundingClientRect();
             if (r.width) return clampUnitAnchor(r.left, r.top);
           }
-          if (bubblePos) return anchorForBubble();
           return defaultAnchor();
         }
         function saveAnchor(a) {
@@ -12512,123 +12477,53 @@ var STRAIN_SRC_LINKS = {
           lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
           return miniPos;
         }
-        function saveBubblePos(p) {
-          bubblePos = clampBubblePos(p.left, p.top);
-          lsSet(BUBBLE_POS_KEY, JSON.stringify(bubblePos));
-          return bubblePos;
-        }
-        function currentBubblePos() {
-          /* The bubble's resting spot: its own saved position first;
-             a spot derived from a saved window anchor for positions
-             saved by older builds; null when nothing is saved (the
-             CSS home rules). Always clamped to the free-bubble
-             bounds, so a stored spot can never rest off screen. */
-          if (bubblePos) return clampBubblePos(bubblePos.left, bubblePos.top);
-          if (miniPos) {
-            var ab = bubblePosForAnchor(clampUnitAnchor(miniPos.left, miniPos.top));
-            return clampBubblePos(ab.left, ab.top);
-          }
-          return null;
-        }
-        function anchorForBubble() {
-          var bp = currentBubblePos();
-          if (!bp) return defaultAnchor();
-          return anchorForBubblePos(bp);
-        }
         function settleUnitFromWindow() {
-          /* A window-surface drag set the unit down: persist the
-             window's anchor AND the bubble's own spot (its attached
-             corner for that anchor), then render the bubble there. */
+          /* A window-surface drag set the window down: persist the
+             window's anchor where it came to rest. The bubble is
+             fixed in its corner and is no part of the settle. */
           if (!overlayEl) return;
           var rr = overlayEl.getBoundingClientRect();
-          var a = saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) });
-          saveBubblePos(bubblePosForAnchor(a));
-          placeFab();
-        }
-        function fabSetInline(left, top) {
-          if (!fabBtn) return;
-          fabBtn.style.left = Math.round(left) + "px";
-          fabBtn.style.top = Math.round(top) + "px";
-          fabBtn.style.right = "auto";
-          fabBtn.style.bottom = "auto";
+          saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) });
         }
         function fabClearInline() {
           if (!fabBtn) return;
           fabBtn.style.left = ""; fabBtn.style.top = "";
           fabBtn.style.right = ""; fabBtn.style.bottom = "";
         }
-        function clampBubblePos(left, top) {
-          /* Closed-state bubble clamp: fully inside the viewport,
-             clear of the status island up top and the bottom bar. */
-          var vw = window.innerWidth || 360;
-          var l = Math.min(Math.max(8, Math.round(left)), Math.max(8, vw - FAB_PX - 8));
-          var maxT = Math.max(8, unitBottomLimit() - FAB_PX);
-          var t = Math.min(Math.max(fabMinTop(), Math.round(top)), maxT);
-          if (t < 8) t = 8;
-          return { left: l, top: t };
-        }
         function placeFab() {
-          /* Render the bubble at ITS OWN spot (owner order,
-             2026-11-05: the bubble moves freely and stays where it
-             is dropped — its place is never re-derived from the
-             window anchor, which is what used to snap left-side and
-             top drops back to the window's corner). Fullscreen: the
-             bubble is NOT rendered at all — it must never float on
-             top of the fullscreen frame. Nothing saved: the CSS
-             home. */
+          /* The bubble is FIXED at its CSS home — the bottom-right
+             corner, above the bottom bar (owner order, 2026-11-05):
+             it never drags, no position is ever saved for it, and
+             nothing in the window's placement moves it. placeFab
+             only keeps the CSS home in force (any stale inline
+             position cleared) and hides the bubble in fullscreen,
+             where it is not rendered at all. */
           if (!fabBtn) return;
           if (surfFsOn()) { fabBtn.hidden = true; fabClearInline(); return; }
           fabBtn.hidden = false;
-          var bp = currentBubblePos();
-          if (!bp) { fabClearInline(); return; }
-          fabSetInline(bp.left, bp.top);
-        }
-        function syncFabAttached(winLeft, winTop) {
-          /* Mini stage: keep the bubble where it belongs for a
-             window placed at (winLeft, winTop) — called on every
-             miniPlace.
-               · a bubble drag owns the bubble outright (it follows
-                 the finger; the window translates alongside through
-                 miniPlace) — never pin it here;
-               · a window-surface drag (gesture layer, facade,
-                 fallback card, box) carries the unit in lockstep, so
-                 the bubble rides at the window's attached corner, as
-                 it always has;
-               · otherwise the bubble simply keeps its OWN spot:
-                 opening or placing the window never yanks it. */
-          if (!fabBtn || surfStage !== "mini" || surfFsOn()) return;
-          if (fabDragging) return;
-          if (zMoveOn || fMoveOn || gMoveOn || (typeof boxDrag !== "undefined" && boxDrag && boxDrag.on)) {
-            var g = miniGeom();
-            var ap = clampBubblePos(winLeft + g.w - FAB_PX, winTop + g.h + UNIT_GAP);
-            fabSetInline(ap.left, ap.top);
-            return;
-          }
-          var bp = currentBubblePos();
-          if (!bp) { fabClearInline(); return; }
-          fabSetInline(bp.left, bp.top);
+          fabClearInline();
         }
         function miniPlace(left, top) {
+          /* Place the window — and only the window. The bubble is
+             decoupled: miniPlace never touches it. */
           if (!overlayEl) return null;
           var g = miniGeom();
           var c = clampUnitAnchor(left, top);
           overlayEl.style.left = c.left + "px";
           overlayEl.style.top = c.top + "px";
           overlayEl.style.width = g.w + "px";
-          syncFabAttached(c.left, c.top);
           return { left: c.left, top: c.top };
         }
         function positionMini() {
           if (!overlayEl || surfStage !== "mini" || !fabBtn) return;
           if (surfFsOn()) return; /* fullscreen owns the frame right now */
           if (miniPos) { miniPlace(miniPos.left, miniPos.top); return; }
-          if (bubblePos) { var ba = anchorForBubble(); miniPlace(ba.left, ba.top); return; }
           var a = defaultAnchor();
           var g = miniGeom();
           overlayEl.style.left = a.left + "px";
           overlayEl.style.top = a.top + "px";
           overlayEl.style.width = g.w + "px";
-          fabClearInline(); /* the CSS home IS the attached spot for the default anchor */
+          fabClearInline(); /* the bubble stays at its fixed CSS home — the default window spot parks just above it */
         }
         /* ---- Stream fullscreen, in place ----
            The enlarge control takes #surfDock ITSELF fullscreen (the
@@ -12658,7 +12553,7 @@ var STRAIN_SRC_LINKS = {
              stylesheet's mini-stage rule owns it again) when
              fullscreen exits. */
           if (miniControlsEl) miniControlsEl.style.display = surfFs ? "none" : "";
-          placeFab(); /* fullscreen: the bubble is hidden; exiting returns it to the unit */
+          placeFab(); /* fullscreen: the bubble is hidden; exiting returns it to its fixed corner */
         }
         function fakeFsEnter() {
           surfFs = true; surfFsFake = true;
@@ -12733,7 +12628,7 @@ var STRAIN_SRC_LINKS = {
             window.scrollTo(0, savedScrollY);
           }
           if (next === "mini") positionMini();
-          placeFab(); /* the bubble takes its place in the unit: attached to the window, or at the anchor's corner when closed */
+          placeFab(); /* the bubble stays at its fixed corner, whatever the window does */
           applyZoom(); /* re-clamp any live pan to the frame's new size */
           syncFab();
         }
@@ -12782,104 +12677,14 @@ var STRAIN_SRC_LINKS = {
         }
         if (fabBtn) fabBtn.addEventListener("click", fabToggle);
         window.addEventListener("resize", positionMini);
-        /* --- Wave bubble drag: grabbing the bubble moves the UNIT ---
-           The bubble and the mini window are one unit (see the
-           anchor block above), so the bubble drags in BOTH of its
-           states:
-             · closed — the bubble follows the finger to its own
-               spot, clamped fully inside the viewport above the
-               bottom bar; the anchor trails it (the window will
-               open at that anchor);
-             · mini open — the bubble still follows the finger to
-               its own spot, and the window translates by the same
-               travel through miniPlace (clamped on screen); the
-               bubble is never re-pinned to the window's corner.
-           A press that travels beyond ~14px is a drag: on release
-           the bubble's spot is saved under ff2alt.surfBubblePos.v1
-           (and the anchor under ff2alt.surfMiniPos.v1), and the
-           click that follows is swallowed, so a drag never also
-           opens or folds the stream. The threshold sits above
-           ordinary fingertip drift, so a slightly wobbly tap still
-           counts as a tap. A clean tap is untouched and keeps its
-           meaning (open from closed, fold from mini) via the click
-           handler above. In fullscreen the bubble does not drag — it
-           is hidden there entirely.
-           fabMinTop stays: it is the island clearance the closed
-           bubble clamp and the default anchor both respect. --- */
-        var fabDrag = null, fabDragMoved = false, fabSuppressClickAt = 0;
-        if (fabBtn) {
-          fabBtn.addEventListener("pointerdown", function (e) {
-            if (surfFsOn()) { fabDrag = null; return; }
-            fabSuppressClickAt = 0; /* a fresh press supersedes any earlier drag's click-swallow window — that drag's trailing click has long since fired, so a tap now must never be eaten by it */
-            var r = fabBtn.getBoundingClientRect();
-            fabDrag = {
-              id: e.pointerId, sx: e.clientX, sy: e.clientY,
-              bl: r.left, bt: r.top,
-              anchor: currentAnchor()
-            };
-            fabDragMoved = false; fabDragging = false;
-            try { fabBtn.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-          });
-          fabBtn.addEventListener("pointermove", function (e) {
-            if (!fabDrag || e.pointerId !== fabDrag.id) return;
-            var dx = e.clientX - fabDrag.sx, dy = e.clientY - fabDrag.sy;
-            if (!fabDragMoved && Math.hypot(dx, dy) <= 14) return;
-            if (!fabDragMoved) {
-              fabDragMoved = true; fabDragging = true;
-              fabBtn.classList.add("is-dragging");
-              if (surfStage === "mini" && overlayEl) overlayEl.classList.add("is-moving");
-            }
-            /* The bubble follows the finger to its OWN spot, in both
-               states — clamped only by the screen edges, the island
-               and the bottom bar, never by the window's geometry. In
-               the mini state the window translates by the same
-               travel through miniPlace (which leaves the bubble
-               itself alone while fabDragging). */
-            var nb = clampBubblePos(fabDrag.bl + dx, fabDrag.bt + dy);
-            fabSetInline(nb.left, nb.top);
-            if (surfStage === "mini") {
-              var na = clampUnitAnchor(fabDrag.anchor.left + dx, fabDrag.anchor.top + dy);
-              miniPlace(na.left, na.top);
-            }
-          });
-          var fabDragEnd = function (e) {
-            if (!fabDrag || (e && e.pointerId !== undefined && e.pointerId !== fabDrag.id)) return;
-            var wasDrag = fabDragMoved;
-            fabDrag = null; fabDragMoved = false; fabDragging = false;
-            fabBtn.classList.remove("is-dragging");
-            if (overlayEl) overlayEl.classList.remove("is-moving");
-            if (!wasDrag) return; /* a clean tap: the click that follows does its usual work */
-            fabSuppressClickAt = Date.now();
-            /* The drop spot is saved AS the bubble's own spot —
-               never round-tripped through the window anchor (that
-               round-trip clamped the anchor to the window's fit and
-               snapped left/top drops back to its corner). The anchor
-               is still derived for the window, so the player opens
-               hugging the bubble as closely as its own on-screen
-               clamp allows. */
-            var br = fabBtn.getBoundingClientRect();
-            saveBubblePos({ left: Math.round(br.left), top: Math.round(br.top) });
-            if (surfStage === "mini" && overlayEl) {
-              var rr = overlayEl.getBoundingClientRect();
-              saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) });
-            } else {
-              saveAnchor(anchorForBubblePos({ left: br.left, top: br.top }));
-            }
-            placeFab();
-          };
-          fabBtn.addEventListener("pointerup", fabDragEnd);
-          fabBtn.addEventListener("pointercancel", fabDragEnd);
-          /* Swallow the click a drag leaves behind (capture phase, so
-             it runs ahead of the open/fold click handler above). */
-          fabBtn.addEventListener("click", function (e) {
-            if (Date.now() - fabSuppressClickAt < 700) {
-              e.preventDefault(); e.stopImmediatePropagation();
-              fabSuppressClickAt = 0;
-            }
-          }, true);
-        }
+        /* --- The bubble does not drag (owner order, 2026-11-05) ---
+           It is fixed in the bottom-right corner: no pointer-drag
+           handlers, no saved spot, no click-swallow machinery — a
+           plain tap is all it takes, and the click handler above
+           opens or folds the player on the first tap. The feed
+           window renders above it wherever they meet. */
         window.addEventListener("resize", function () { placeFab(); });
-        placeFab(); /* boot: a saved anchor puts the closed bubble at its corner spot */
+        placeFab(); /* boot: the bubble takes its fixed CSS home */
         function fabMinTop() {
           var minTop = 76;
           var isl = document.querySelector(".island");
@@ -12938,7 +12743,7 @@ var STRAIN_SRC_LINKS = {
             fMoveOn = false; fMoveOrigin = null;
             if (!overlayEl) return;
             overlayEl.classList.remove("is-moving");
-            settleUnitFromWindow(); /* the window drag moved the whole unit: the anchor (and the bubble's own spot) settle with it */
+            settleUnitFromWindow(); /* the window drag set the window down: persist its anchor (the bubble is fixed and untouched) */
           }
           facade.addEventListener("pointerdown", function (e) {
             if (e.target.closest && e.target.closest("button, a")) return;
@@ -13013,7 +12818,7 @@ var STRAIN_SRC_LINKS = {
             gMoveOn = false; gMoveOrigin = null;
             if (!overlayEl) return;
             overlayEl.classList.remove("is-moving");
-            settleUnitFromWindow(); /* the window drag moved the whole unit: the anchor (and the bubble's own spot) settle with it */
+            settleUnitFromWindow(); /* the window drag set the window down: persist its anchor (the bubble is fixed and untouched) */
           }
           fallback.addEventListener("pointerdown", function (e) {
             if (!e.isPrimary) return;
@@ -13065,9 +12870,9 @@ var STRAIN_SRC_LINKS = {
            — untouched. Everything else inside the mini box had no move
            at all: the floating mini controls, the loading surface
            whenever the gesture layer is down. This handler owns exactly
-           those surfaces: a press that slides past ~10px becomes a unit move
-           (coupled bubble follows via miniPlace, clamped in-viewport,
-           anchor persisted on release); a slide that started on a
+           those surfaces: a press that slides past ~10px becomes a window
+           move (miniPlace, clamped in-viewport, anchor persisted on
+           release — the fixed bubble is never part of the move); a slide that started on a
            button has its click swallowed whole, so the button never
            fires; a clean tap with no slide is left completely alone
            and activates its button normally. */
@@ -13089,7 +12894,7 @@ var STRAIN_SRC_LINKS = {
             if (e.pointerType === "mouse" && e.button !== 0) return;
             var t = e.target;
             if (!t || !t.closest) return;
-            if (t.closest("#surfGesture") || t.closest("#surfFacade") || t.closest("#surfFallback") || t.closest("#surfVolBar")) return; /* surfaces with their own gesture disambiguation — a volume drag is a volume drag, never a window move */
+            if (t.closest("#surfGesture") || t.closest("#surfFacade") || t.closest("#surfFallback")) return; /* surfaces with their own gesture disambiguation */
             var r = overlayEl.getBoundingClientRect();
             boxDrag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, left: r.left, top: r.top, on: false };
           });
@@ -13146,44 +12951,6 @@ var STRAIN_SRC_LINKS = {
           }
         });
         syncSoundBtn();
-        /* --- Volume slider: the stream's real level control ---
-           Until now the app offered no way to set a level at all: the
-           Sound button only muted or un-muted at whatever level the
-           player happened to hold, and the volume control drawn inside
-           the video itself is unreachable — the gesture layer over the
-           picture takes every tap there and answers it with play/pause,
-           which is exactly the reported "tapping the volume button
-           pauses and resumes the feed". This slider lives in the dock's
-           own chrome and drives ONLY the player's volume/mute API
-           (setVolume / unMute / mute): it never calls play or pause,
-           and dragging it is excluded from the mini-window drag below,
-           so a volume drag can never move the window either.
-           Dragging to 0 is a mute; soundVolume keeps the last level,
-           so Sound-on afterwards restores it. With the no-API fallback
-           player a level cannot be set at all — only its mute state
-           exists, baked into the frame URL — so a release that flips
-           the mute state applies it the same way the Sound button does:
-           one rebuild. Level-only moves never rebuild it. */
-        if (volSlider) {
-          volSlider.addEventListener("pointerdown", function () { volDragging = true; });
-          volSlider.addEventListener("input", function () {
-            var v = parseInt(volSlider.value, 10);
-            if (isNaN(v)) v = 0;
-            v = Math.max(0, Math.min(100, v));
-            if (v > 0) { soundVolume = v; soundWanted = true; }
-            else soundWanted = false;
-            watchdogStandDown = false;
-            if (ytPlayer) applySound(ytPlayer); /* volume/mute ONLY — never play/pause */
-            syncSoundBtn(); /* reflects the level live; volDragging keeps the thumb where the finger put it */
-          });
-          volSlider.addEventListener("change", function () {
-            volDragging = false;
-            if (!ytPlayer && plainFrame && (mode === "playing" || mode === "loading") && plainBuiltMuted === soundWanted) {
-              startStream(spotByKey(currentKey), true); /* the fallback frame's baked-in mute state flipped: rebuild once, on release */
-            }
-            syncSoundBtn();
-          });
-        }
         dockStopBtn.addEventListener("click", stopStream);
         if (showHideBtn) showHideBtn.addEventListener("click", function () {
           if (surfStage !== "closed") {
