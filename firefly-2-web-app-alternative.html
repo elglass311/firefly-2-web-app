@@ -3291,7 +3291,7 @@
       <div class="swipe-nav" id="swipeNav" aria-label="Menu navigation">
         <button type="button" class="swipe-arrow prev" id="swipePrev" aria-label="Previous menu"><svg aria-hidden="true"><use href="#i-chev-r"/></svg></button>
         <div class="swipe-mid">
-          <span class="swipe-label" id="swipeLabel">Connect · 1 of 5</span>
+          <span class="swipe-label" id="swipeLabel">Connect</span>
           <span class="swipe-dots" id="swipeDots" aria-hidden="true"></span>
           <span class="swipe-hint">Swipe left or right to change menu</span>
         </div>
@@ -11080,6 +11080,17 @@ var STRAIN_SRC_LINKS = {
           return '<button type="button" class="chip" ' + attr + '="' + strEsc(val) + '" aria-pressed="' + (on ? "true" : "false") + '">' +
             (grade ? '<span class="grade ' + strGradeClass(grade) + '">' + strEsc(grade) + "</span>" : "") + strEsc(label) + "</button>";
         }
+        function vibeSyncChips(body) {
+          /* Reflect vibeAns onto the EXISTING survey chips: only
+             aria-pressed attributes change — no node is created,
+             moved or resized, so nothing around a tapped chip can
+             shift, slide or re-animate. */
+          if (!body) return;
+          Array.prototype.forEach.call(body.querySelectorAll("[data-vibe-fx]"), function (c) { c.setAttribute("aria-pressed", vibeAns.effects.indexOf(c.getAttribute("data-vibe-fx")) !== -1 ? "true" : "false"); });
+          Array.prototype.forEach.call(body.querySelectorAll("[data-vibe-mood]"), function (c) { c.setAttribute("aria-pressed", vibeAns.mood === c.getAttribute("data-vibe-mood") ? "true" : "false"); });
+          Array.prototype.forEach.call(body.querySelectorAll("[data-vibe-int]"), function (c) { c.setAttribute("aria-pressed", vibeAns.intensity === c.getAttribute("data-vibe-int") ? "true" : "false"); });
+          Array.prototype.forEach.call(body.querySelectorAll("[data-vibe-avoid]"), function (c) { c.setAttribute("aria-pressed", vibeAns.avoid.indexOf(c.getAttribute("data-vibe-avoid")) !== -1 ? "true" : "false"); });
+        }
         function vibeRender() {
           var body = strEl("vibeBody");
           if (!body) return;
@@ -11123,7 +11134,21 @@ var STRAIN_SRC_LINKS = {
           body.innerHTML = h;
           function wire(attr, fn) {
             Array.prototype.forEach.call(body.querySelectorAll("[" + attr + "]"), function (c) {
-              c.addEventListener("click", function () { haptics.tick(); fn(c.getAttribute(attr)); strSave(VIBE_KEY, vibeAns); vibeRender(); });
+              c.addEventListener("click", function () {
+                haptics.tick(); fn(c.getAttribute(attr)); strSave(VIBE_KEY, vibeAns);
+                /* In-place state sync ONLY (owner order, 2026-11-05):
+                   a chip tap flips aria-pressed on the affected chips
+                   and nothing else — the survey is NOT rebuilt, so the
+                   section headers, neighbouring chips and every other
+                   word on the card stay pixel-still, and the tapped
+                   chip's own pop (chipPop on its pressed state,
+                   transform only, layout-neutral) is the only motion.
+                   The full rebuild still happens when the survey is
+                   (re)opened or the stash changes — never on an
+                   answer tap. */
+                vibeSyncChips(body);
+                if (vibeAsked) vibeRenderResult(pool);
+              });
             });
           }
           wire("data-vibe-fx", function (e) { var i = vibeAns.effects.indexOf(e); if (i === -1) vibeAns.effects.push(e); else vibeAns.effects.splice(i, 1); });
@@ -11726,9 +11751,7 @@ var STRAIN_SRC_LINKS = {
           zMoveOn = false; zMoveOrigin = null;
           if (!overlayEl) return;
           overlayEl.classList.remove("is-moving");
-          var rr = overlayEl.getBoundingClientRect();
-          saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) }); /* the window drag moved the whole unit: the anchor (and the attached bubble) settle with it */
-          placeFab();
+          settleUnitFromWindow(); /* the window drag moved the whole unit: the anchor (and the bubble's own spot, at its attached corner) settle with it */
         }
         function cycleSurf(dir) {
           var idx = -1;
@@ -12333,32 +12356,43 @@ var STRAIN_SRC_LINKS = {
           w = Math.max(180, Math.min(w, vw - 16));
           return { w: w, h: Math.round(w * 9 / 16), vw: vw, vh: vh };
         }
-        /* ---- ONE surf unit, ONE shared anchor ----
-           The wave bubble and the mini stream window are a single
-           unit with a single anchor position, persisted under
-           ff2alt.surfMiniPos.v1. The anchor (miniPos) is the mini
-           window's top-left corner, exactly as this key has always
-           stored it — saved positions keep their meaning, and with
-           nothing saved the defaults are exactly what they have
-           always been: the bubble at its CSS home (bottom-right,
-           above the bottom bar) and the window derived from it.
-           The bubble's place in the unit is FIXED relative to the
-           window — right-aligned with it, 10px below its bottom
-           edge, at the unit's bottom-right corner — so:
-             · closed: only the bubble shows, sitting at the
-               anchor's corner spot;
+        /* ---- ONE surf unit: a window anchor + the bubble's OWN spot ----
+           The wave bubble and the mini stream window travel as one
+           unit, but each keeps its own persisted position:
+             · miniPos — the window's top-left anchor, under
+               ff2alt.surfMiniPos.v1, exactly as that key has always
+               stored it (saved window positions keep their meaning);
+             · bubblePos — the bubble's own top-left, under
+               ff2alt.surfBubblePos.v1. The bubble moves FREELY
+               (owner order, 2026-11-05): anywhere on screen, clamped
+               only by the screen edges, the island and the bottom
+               bar — and it stays exactly where it is dropped. Its
+               spot is never re-derived from the window anchor: the
+               old model did that, and because the anchor clamps to
+               the window's on-screen fit, every drop left of the
+               window's width (or high on the screen) snapped back
+               to the window's corner on release. With no bubble spot
+               saved, one is derived from a saved anchor (positions
+               saved by older builds keep their meaning), and with
+               nothing saved at all the defaults are exactly what
+               they have always been: the bubble at its CSS home
+               (bottom-right, above the bottom bar) and the window
+               derived from it.
+           How the two spots interact:
+             · closed: only the bubble shows, at its own spot; the
+               anchor trails it, so the window opens hugging the
+               bubble as closely as its own clamp allows;
              · mini open: the window renders at the anchor and the
-               bubble rides attached at that same corner spot — it
-               has no position of its own, ever;
-             · grabbing EITHER part (the bubble, or the window via
-               its sustained-drag gesture) moves the anchor and the
-               whole unit travels in lockstep;
-             · closing leaves the bubble at the anchor's corner, and
-               reopening restores the window at the same anchor.
-           In the full stage and in fullscreen the bubble is not
-           part of the unit on screen: it rests at its CSS home as
-           the plain open/close toggle, and entering mini returns
-           the unit to its anchor. ---- */
+               bubble stays at its own spot;
+             · grabbing the BUBBLE moves the bubble freely; in the
+               mini state the window translates by the same travel;
+             · grabbing the WINDOW (any of its drag surfaces) moves
+               the unit in lockstep — the bubble rides at the
+               window's bottom-right corner — and on release both
+               spots settle from the window's resting place;
+             · closing leaves the bubble at its own spot, and
+               reopening restores the window at its anchor.
+           In fullscreen the bubble is not rendered at all. ---- */
         var MINI_POS_KEY = "ff2alt.surfMiniPos.v1";
         var FAB_PX = 52, UNIT_GAP = 10; /* bubble size + the fixed gap between window bottom and bubble top */
         var fabDragging = false; /* a bubble drag is in flight (declared here: miniPlace's bubble sync reads it) */
@@ -12367,6 +12401,12 @@ var STRAIN_SRC_LINKS = {
           var mpSaved = JSON.parse(lsGet(MINI_POS_KEY) || "null");
           if (mpSaved && isFinite(mpSaved.left) && isFinite(mpSaved.top)) miniPos = { left: mpSaved.left, top: mpSaved.top };
         } catch (e) { /* ignore: no saved anchor — defaults apply */ }
+        var BUBBLE_POS_KEY = "ff2alt.surfBubblePos.v1";
+        var bubblePos = null;
+        try {
+          var bpSaved2 = JSON.parse(lsGet(BUBBLE_POS_KEY) || "null");
+          if (bpSaved2 && isFinite(bpSaved2.left) && isFinite(bpSaved2.top)) bubblePos = { left: bpSaved2.left, top: bpSaved2.top };
+        } catch (e) { /* ignore: no saved bubble spot — derived from the anchor, or the CSS home */ }
         function unitBottomLimit() {
           /* The lowest y the UNIT's bottom edge (the bubble's bottom)
              may reach: just above the bottom tab bar. */
@@ -12419,11 +12459,46 @@ var STRAIN_SRC_LINKS = {
             var r = overlayEl.getBoundingClientRect();
             if (r.width) return clampUnitAnchor(r.left, r.top);
           }
+          if (bubblePos) return anchorForBubble();
           return defaultAnchor();
         }
         function saveAnchor(a) {
           miniPos = clampUnitAnchor(a.left, a.top);
           lsSet(MINI_POS_KEY, JSON.stringify(miniPos));
+          return miniPos;
+        }
+        function saveBubblePos(p) {
+          bubblePos = clampBubblePos(p.left, p.top);
+          lsSet(BUBBLE_POS_KEY, JSON.stringify(bubblePos));
+          return bubblePos;
+        }
+        function currentBubblePos() {
+          /* The bubble's resting spot: its own saved position first;
+             a spot derived from a saved window anchor for positions
+             saved by older builds; null when nothing is saved (the
+             CSS home rules). Always clamped to the free-bubble
+             bounds, so a stored spot can never rest off screen. */
+          if (bubblePos) return clampBubblePos(bubblePos.left, bubblePos.top);
+          if (miniPos) {
+            var ab = bubblePosForAnchor(clampUnitAnchor(miniPos.left, miniPos.top));
+            return clampBubblePos(ab.left, ab.top);
+          }
+          return null;
+        }
+        function anchorForBubble() {
+          var bp = currentBubblePos();
+          if (!bp) return defaultAnchor();
+          return anchorForBubblePos(bp);
+        }
+        function settleUnitFromWindow() {
+          /* A window-surface drag set the unit down: persist the
+             window's anchor AND the bubble's own spot (its attached
+             corner for that anchor), then render the bubble there. */
+          if (!overlayEl) return;
+          var rr = overlayEl.getBoundingClientRect();
+          var a = saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) });
+          saveBubblePos(bubblePosForAnchor(a));
+          placeFab();
         }
         function fabSetInline(left, top) {
           if (!fabBtn) return;
@@ -12448,27 +12523,45 @@ var STRAIN_SRC_LINKS = {
           return { left: l, top: t };
         }
         function placeFab() {
-          /* Render the bubble wherever the unit model puts it for
-             the current state. Fullscreen: the bubble is NOT rendered
-             at all — it must never float on top of the fullscreen
-             frame. No saved anchor: the CSS home — in the floating
-             window state it coincides with the attached spot by
-             construction of the default anchor. */
+          /* Render the bubble at ITS OWN spot (owner order,
+             2026-11-05: the bubble moves freely and stays where it
+             is dropped — its place is never re-derived from the
+             window anchor, which is what used to snap left-side and
+             top drops back to the window's corner). Fullscreen: the
+             bubble is NOT rendered at all — it must never float on
+             top of the fullscreen frame. Nothing saved: the CSS
+             home. */
           if (!fabBtn) return;
           if (surfFsOn()) { fabBtn.hidden = true; fabClearInline(); return; }
           fabBtn.hidden = false;
-          if (!miniPos) { fabClearInline(); return; }
-          var bp = bubblePosForAnchor(clampUnitAnchor(miniPos.left, miniPos.top));
+          var bp = currentBubblePos();
+          if (!bp) { fabClearInline(); return; }
           fabSetInline(bp.left, bp.top);
         }
         function syncFabAttached(winLeft, winTop) {
-          /* Mini stage: pin the bubble to the window's corner for a
-             window placed at (winLeft, winTop) — used on every
-             miniPlace so window drags carry the bubble in lockstep. */
+          /* Mini stage: keep the bubble where it belongs for a
+             window placed at (winLeft, winTop) — called on every
+             miniPlace.
+               · a bubble drag owns the bubble outright (it follows
+                 the finger; the window translates alongside through
+                 miniPlace) — never pin it here;
+               · a window-surface drag (gesture layer, facade,
+                 fallback card, box) carries the unit in lockstep, so
+                 the bubble rides at the window's attached corner, as
+                 it always has;
+               · otherwise the bubble simply keeps its OWN spot:
+                 opening or placing the window never yanks it. */
           if (!fabBtn || surfStage !== "mini" || surfFsOn()) return;
-          if (!miniPos && !fabDragging && !zMoveOn && !fMoveOn) { fabClearInline(); return; }
-          var g = miniGeom();
-          fabSetInline(winLeft + g.w - FAB_PX, winTop + g.h + UNIT_GAP);
+          if (fabDragging) return;
+          if (zMoveOn || fMoveOn || gMoveOn || (typeof boxDrag !== "undefined" && boxDrag && boxDrag.on)) {
+            var g = miniGeom();
+            var ap = clampBubblePos(winLeft + g.w - FAB_PX, winTop + g.h + UNIT_GAP);
+            fabSetInline(ap.left, ap.top);
+            return;
+          }
+          var bp = currentBubblePos();
+          if (!bp) { fabClearInline(); return; }
+          fabSetInline(bp.left, bp.top);
         }
         function miniPlace(left, top) {
           if (!overlayEl) return null;
@@ -12484,6 +12577,7 @@ var STRAIN_SRC_LINKS = {
           if (!overlayEl || surfStage !== "mini" || !fabBtn) return;
           if (surfFsOn()) return; /* fullscreen owns the frame right now */
           if (miniPos) { miniPlace(miniPos.left, miniPos.top); return; }
+          if (bubblePos) { var ba = anchorForBubble(); miniPlace(ba.left, ba.top); return; }
           var a = defaultAnchor();
           var g = miniGeom();
           overlayEl.style.left = a.left + "px";
@@ -12623,24 +12717,45 @@ var STRAIN_SRC_LINKS = {
           exitZoom(); /* folding the floating window away resets its zoom to the 1x full frame */
           setSurfStage("closed");
         }
-        if (fabBtn) fabBtn.addEventListener("click", function () {
+        var fabToggleQueued = false;
+        function fabToggle() {
+          var before = surfStage, fsWas = surfFs;
           if (surfStage === "closed") openSurfMini(); else closeSurf();
-        });
+          if (fsWas || surfStage !== before) return;
+          /* The stage machine's 300ms transition debounce swallowed
+             this tap (it landed just after another stage change) —
+             a deliberate tap on the bubble must never be dropped:
+             run it the moment the debounce window closes. */
+          if (fabToggleQueued) return;
+          var wait = stageAnimUntil - Date.now();
+          if (wait <= 0) return;
+          fabToggleQueued = true;
+          setTimeout(function () {
+            fabToggleQueued = false;
+            if (surfStage === before) fabToggle();
+          }, wait + 40);
+        }
+        if (fabBtn) fabBtn.addEventListener("click", fabToggle);
         window.addEventListener("resize", positionMini);
         /* --- Wave bubble drag: grabbing the bubble moves the UNIT ---
-           The bubble and the mini window are one unit on one shared
-           anchor (see the anchor block above), so the bubble drags in
-           BOTH of its states:
-             · closed — the bubble follows the finger, clamped fully
-               inside the viewport above the bottom bar; the anchor
-               trails it (the window will open at that anchor);
-             · mini open — the bubble keeps its fixed attached offset
-               and the window translates with it in lockstep through
-               miniPlace, which re-pins the bubble on every move.
-           A press that travels beyond ~8px is a drag: on release the
-           anchor is saved under ff2alt.surfMiniPos.v1 and the click
-           that follows is swallowed, so a drag never also opens or
-           folds the stream. A clean tap is untouched and keeps its
+           The bubble and the mini window are one unit (see the
+           anchor block above), so the bubble drags in BOTH of its
+           states:
+             · closed — the bubble follows the finger to its own
+               spot, clamped fully inside the viewport above the
+               bottom bar; the anchor trails it (the window will
+               open at that anchor);
+             · mini open — the bubble still follows the finger to
+               its own spot, and the window translates by the same
+               travel through miniPlace (clamped on screen); the
+               bubble is never re-pinned to the window's corner.
+           A press that travels beyond ~14px is a drag: on release
+           the bubble's spot is saved under ff2alt.surfBubblePos.v1
+           (and the anchor under ff2alt.surfMiniPos.v1), and the
+           click that follows is swallowed, so a drag never also
+           opens or folds the stream. The threshold sits above
+           ordinary fingertip drift, so a slightly wobbly tap still
+           counts as a tap. A clean tap is untouched and keeps its
            meaning (open from closed, fold from mini) via the click
            handler above. In fullscreen the bubble does not drag — it
            is hidden there entirely.
@@ -12650,6 +12765,7 @@ var STRAIN_SRC_LINKS = {
         if (fabBtn) {
           fabBtn.addEventListener("pointerdown", function (e) {
             if (surfFsOn()) { fabDrag = null; return; }
+            fabSuppressClickAt = 0; /* a fresh press supersedes any earlier drag's click-swallow window — that drag's trailing click has long since fired, so a tap now must never be eaten by it */
             var r = fabBtn.getBoundingClientRect();
             fabDrag = {
               id: e.pointerId, sx: e.clientX, sy: e.clientY,
@@ -12662,22 +12778,23 @@ var STRAIN_SRC_LINKS = {
           fabBtn.addEventListener("pointermove", function (e) {
             if (!fabDrag || e.pointerId !== fabDrag.id) return;
             var dx = e.clientX - fabDrag.sx, dy = e.clientY - fabDrag.sy;
-            if (!fabDragMoved && Math.hypot(dx, dy) <= 8) return;
+            if (!fabDragMoved && Math.hypot(dx, dy) <= 14) return;
             if (!fabDragMoved) {
               fabDragMoved = true; fabDragging = true;
               fabBtn.classList.add("is-dragging");
               if (surfStage === "mini" && overlayEl) overlayEl.classList.add("is-moving");
             }
+            /* The bubble follows the finger to its OWN spot, in both
+               states — clamped only by the screen edges, the island
+               and the bottom bar, never by the window's geometry. In
+               the mini state the window translates by the same
+               travel through miniPlace (which leaves the bubble
+               itself alone while fabDragging). */
+            var nb = clampBubblePos(fabDrag.bl + dx, fabDrag.bt + dy);
+            fabSetInline(nb.left, nb.top);
             if (surfStage === "mini") {
-              /* Move the anchor; miniPlace moves the window and
-                 re-pins this bubble at its attached offset — the
-                 finger and the bubble stay together because the
-                 offset never changes. */
               var na = clampUnitAnchor(fabDrag.anchor.left + dx, fabDrag.anchor.top + dy);
               miniPlace(na.left, na.top);
-            } else {
-              var nb = clampBubblePos(fabDrag.bl + dx, fabDrag.bt + dy);
-              fabSetInline(nb.left, nb.top);
             }
           });
           var fabDragEnd = function (e) {
@@ -12688,11 +12805,19 @@ var STRAIN_SRC_LINKS = {
             if (overlayEl) overlayEl.classList.remove("is-moving");
             if (!wasDrag) return; /* a clean tap: the click that follows does its usual work */
             fabSuppressClickAt = Date.now();
+            /* The drop spot is saved AS the bubble's own spot —
+               never round-tripped through the window anchor (that
+               round-trip clamped the anchor to the window's fit and
+               snapped left/top drops back to its corner). The anchor
+               is still derived for the window, so the player opens
+               hugging the bubble as closely as its own on-screen
+               clamp allows. */
+            var br = fabBtn.getBoundingClientRect();
+            saveBubblePos({ left: Math.round(br.left), top: Math.round(br.top) });
             if (surfStage === "mini" && overlayEl) {
               var rr = overlayEl.getBoundingClientRect();
               saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) });
             } else {
-              var br = fabBtn.getBoundingClientRect();
               saveAnchor(anchorForBubblePos({ left: br.left, top: br.top }));
             }
             placeFab();
@@ -12768,9 +12893,7 @@ var STRAIN_SRC_LINKS = {
             fMoveOn = false; fMoveOrigin = null;
             if (!overlayEl) return;
             overlayEl.classList.remove("is-moving");
-            var rr = overlayEl.getBoundingClientRect();
-            saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) }); /* the window drag moved the whole unit: the anchor (and the attached bubble) settle with it */
-            placeFab();
+            settleUnitFromWindow(); /* the window drag moved the whole unit: the anchor (and the bubble's own spot) settle with it */
           }
           facade.addEventListener("pointerdown", function (e) {
             if (e.target.closest && e.target.closest("button, a")) return;
@@ -12845,9 +12968,7 @@ var STRAIN_SRC_LINKS = {
             gMoveOn = false; gMoveOrigin = null;
             if (!overlayEl) return;
             overlayEl.classList.remove("is-moving");
-            var rr = overlayEl.getBoundingClientRect();
-            saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) }); /* the window drag moved the whole unit: the anchor (and the attached bubble) settle with it */
-            placeFab();
+            settleUnitFromWindow(); /* the window drag moved the whole unit: the anchor (and the bubble's own spot) settle with it */
           }
           fallback.addEventListener("pointerdown", function (e) {
             if (!e.isPrimary) return;
@@ -12912,9 +13033,7 @@ var STRAIN_SRC_LINKS = {
           boxDrag = null;
           if (!wasOn) return;
           overlayEl.classList.remove("is-moving");
-          var rr = overlayEl.getBoundingClientRect();
-          saveAnchor({ left: Math.round(rr.left), top: Math.round(rr.top) });
-          placeFab();
+          settleUnitFromWindow();
           surfSwallowNextClick();
         }
         if (overlayEl) {
@@ -13904,7 +14023,7 @@ var STRAIN_SRC_LINKS = {
           }
           if (swipeLabel) swipeLabel.textContent = onMore
             ? SWIPE_TITLES[cur] + " \u00b7 in More"
-            : SWIPE_TITLES[cur] + " \u00b7 " + (i + 1) + " of " + SWIPE_ORDER.length;
+            : SWIPE_TITLES[cur]; /* page name only — no numerical position counter in the header (owner order, 2026-11-05) */
           if (swipeDots) Array.prototype.forEach.call(swipeDots.children, function (d, di) { d.className = di === i ? "on" : ""; });
           if (swipePrev) swipePrev.disabled = onMore || i <= 0;
           if (swipeNext) swipeNext.disabled = onMore || i >= SWIPE_ORDER.length - 1;
