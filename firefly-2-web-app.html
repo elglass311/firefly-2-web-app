@@ -2165,6 +2165,17 @@
         background: #000; border-radius: 0; margin-top: 0;
         display: flex; flex-direction: column; justify-content: center;
       }
+      /* While the fill presentation is up, the dock's own frame is
+         neutralised: its backdrop-filter would otherwise make it the
+         containing block for the stage's fixed positioning (trapping
+         inset: 0 inside the mini window's box instead of the
+         viewport), and its gradient/border would paint as an empty
+         frame behind the black stage. */
+      .surf-dock.fs-fill-on {
+        background: transparent; border-color: transparent !important;
+        box-shadow: none;
+        -webkit-backdrop-filter: none; backdrop-filter: none;
+      }
       /* Hold-to-move armed on the floating player: a visible lift cue while the
          window follows the finger. */
       .surf-dock.mini-moving {
@@ -12228,6 +12239,17 @@ var STRAIN_SRC_LINKS = {
            been audible — before that, muted is just the start state
            (streams always start muted), never a choice to adopt. */
         var lastVolAt = 0, volResumes = 0, sawAudible = false;
+        /* soundApplied: the remembered sound choice has been applied
+           for the CURRENT stream start. The re-apply happens exactly
+           once per start (onReady / first PLAYING) and never again:
+           a later PLAYING transition — a buffer resume, or the resume
+           the volume grace itself issues right after a tap on the
+           player's own speaker — must not re-assert the remembered
+           state over the choice the viewer just made in the player's
+           own controls (that re-assert is what made the stream's
+           volume button look dead: a mute tapped in the player was
+           undone a beat later by the app's own start logic). */
+        var soundApplied = false;
         /* Auto-pick mode: "best" (live forecast conditions win), "sun"
            (the original Follow the Sun daylight pick) or "off" (no
            automatic picking at all). Best falls back to Follow the Sun
@@ -12691,6 +12713,18 @@ var STRAIN_SRC_LINKS = {
         function fsElement() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
         function syncFsUI() {
           fsActive = fsFill || fsElement() === stage;
+          /* The fill presentation is a CLASS, not just the fsFill
+             boolean: without .fs-fill on the stage (and .fs-fill-on
+             neutralising the dock frame) the fs-on state changes
+             nothing the viewer can see — the header buttons hide, the
+             wave button hides and the in-stage button appears over
+             the still-small picture's progress bar, while the stream
+             never grows. That stranded state is exactly what the
+             owner screenshotted: a fullscreen button that "doesn't
+             work". syncFsUI is the one writer of both classes, on
+             every entry and every exit path. */
+          if (stage) stage.classList.toggle("fs-fill", fsFill);
+          dock.classList.toggle("fs-fill-on", fsFill);
           dock.classList.toggle("fs-on", fsActive);
           var lbl = fsActive ? "Exit full screen" : "Watch the stream full screen";
           if (fsBtn) fsBtn.setAttribute("aria-label", lbl);
@@ -12837,7 +12871,7 @@ var STRAIN_SRC_LINKS = {
           mode = "playing";
           resetChain(); /* a spot that plays ends any recovery chain */
           clearDead(currentKey); /* a stream that plays is alive — any dead mark on it clears at once */
-          applySoundPref(null); /* a (re)started player comes up muted — put the remembered sound back */
+          if (!soundApplied) { soundApplied = true; applySoundPref(null); } /* a (re)started player comes up muted — put the remembered sound back ONCE for this start; every later PLAYING (buffering, the volume grace's resume) leaves the player's own sound state exactly as the viewer set it */
           bgPaused = false;
           loading.hidden = true;
           dwellStart = Date.now();
@@ -12925,6 +12959,7 @@ var STRAIN_SRC_LINKS = {
           bgPaused = false;
           lastVolAt = 0; /* a fresh stream starts a fresh grace window — its own unmute (applySoundPref) stamps it when the sound lands */
           sawAudible = false; /* and nothing counts as a mute choice until this stream has actually been heard */
+          soundApplied = false; /* the remembered sound is applied once for this start, then the player's own controls rule */
           /* Starting a stream never forces the player open or closed:
              summons (app open, wave button, fallback) open it themselves,
              and a Follow the Sun advance or a background resume behind a
@@ -12948,7 +12983,7 @@ var STRAIN_SRC_LINKS = {
                 host: "https://www.youtube-nocookie.com",
                 playerVars: { autoplay: 1, mute: 1, playsinline: 1, rel: 0, modestbranding: 1 },
                 events: {
-                  onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } applySoundPref(e.target); },
+                  onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } if (!soundApplied) { soundApplied = true; applySoundPref(e.target); } },
                   onStateChange: function (e) {
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
                     else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
@@ -13360,10 +13395,13 @@ var STRAIN_SRC_LINKS = {
            (A muted reading is adopted only once the stream has actually
            been heard — sawAudible — so a start-state mute, or an unmute
            the platform hasn't allowed yet, is never misread as a choice.)
-           The one heal that remains is level-only: unmuted but sitting
-           at zero volume is the known silent-drop symptom (no control
-           was touched — the mute state never changed), so the remembered
-           level is re-asserted. The watchdog also carries the grace's
+           The one heal that remains is level-only and start-only:
+           unmuted at zero volume BEFORE this stream has ever been
+           heard is the start unmute not having landed yet, so the
+           remembered level is re-asserted; once the stream has been
+           heard, a zero level is the viewer's own drag to zero and is
+           adopted like a mute — the player's volume is never pushed
+           back up over the viewer's finger. The watchdog also carries the grace's
            second chance: a player found PAUSED within ~8s of a volume
            interaction (in case the state-change event was swallowed) is
            resumed — this app never commands a pause, so a pause inside
@@ -13378,8 +13416,15 @@ var STRAIN_SRC_LINKS = {
               sawAudible = true;
               if (!soundOn) { soundOn = true; lastVolAt = Date.now(); persistSound(); syncSoundBtn(); }
               else if (vol !== soundVol) { soundVol = vol; lastVolAt = Date.now(); persistSound(); }
+            } else if (sawAudible) {
+              /* Unmuted at zero volume AFTER this stream has been
+                 heard: the viewer dragged the player's own volume to
+                 zero. That is a choice — adopt it like a mute, never
+                 heal it back up over their finger. */
+              soundOn = false; lastVolAt = Date.now(); persistSound(); syncSoundBtn();
             } else if (soundOn) {
-              /* Unmuted but at zero volume: same silent symptom, same heal. */
+              /* Never heard yet: this start's unmute simply hasn't
+                 landed — re-assert the remembered level until it does. */
               try { ytPlayer.setVolume(soundVol); } catch (e) { /* ignore */ }
             }
           } else if (soundOn && sawAudible) {
@@ -13512,6 +13557,9 @@ var STRAIN_SRC_LINKS = {
               key: currentKey,
               dead: Object.keys(deadSpots),
               fs: fsActive,
+              fsFill: fsFill,
+              stageFill: stage ? stage.classList.contains("fs-fill") : false,
+              soundApplied: soundApplied,
               autoMode: autoMode,
               fcAt: fcData ? fcData.at : 0,
               fcBest: bestForecastKey(),
