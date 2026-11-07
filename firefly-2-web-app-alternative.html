@@ -1715,6 +1715,24 @@
       .isl-rows .isl-r b { color: #fff; font-variant-numeric: tabular-nums; text-align: right; }
       .isl-btns { display: flex; flex-wrap: wrap; gap: 8px; }
       .isl-btns .btn { flex: 1 1 30%; min-height: 48px; padding: 10px 8px; font-size: 14px; width: auto; }
+      /* Diagnostics (temporary): the session event log panel inside
+         the island status card. Observe-only instrument — plain
+         monospace log lines, manually selectable text. */
+      .diag-btns { margin-top: 10px; }
+      /* The panel is a bounded flex column high in the status card:
+         the island is a fixed overlay that never scrolls, so the
+         log flexes inside a capped panel height and the Copy/Clear
+         row can never be pushed off the bottom of the screen. */
+      .diag-panel { margin-top: 10px; border: 1px solid var(--card-line); border-radius: 10px; padding: 10px; background: rgba(0, 0, 0, 0.35); display: flex; flex-direction: column; max-height: 46vh; }
+      .diag-panel[hidden] { display: none; }
+      .diag-head { flex: none; font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; color: var(--ink-soft); margin-bottom: 8px; }
+      /* The .island .diag-log selector outranks the island-wide
+         user-select:none rule on purpose: the log text MUST stay
+         manually selectable (the owner's clipboard fallback). */
+      .island .diag-log { margin: 0; flex: 1 1 auto; min-height: 60px; overflow: auto; font-family: var(--mono); font-size: 11px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; color: var(--ink); user-select: text; -webkit-user-select: text; -webkit-touch-callout: default; }
+      .diag-actions { flex: none; margin-top: 8px; }
+      .diag-note { flex: none; margin: 8px 0 0; font-size: 12px; color: var(--ink-soft); }
+      .diag-note:empty { display: none; }
       .isl-close { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: #fff; font-size: 15px; cursor: pointer; }
       .sheet { padding-top: calc(var(--isl-clear, 106px) + env(safe-area-inset-top)); }
       /* Anything scrolled into view (tab switches, Fire Up walk-ins, guide
@@ -3150,6 +3168,18 @@
             <button type="button" class="btn btn-primary" id="islConnectBtn">Connect to Firefly 2+</button>
             <button type="button" class="btn btn-stop" id="islDisconnectBtn" hidden>Disconnect</button>
           </div>
+          <div class="isl-btns diag-btns">
+            <button type="button" class="btn btn-ghost" id="diagBtn" aria-expanded="false" aria-controls="diagPanel">Diagnostics</button>
+          </div>
+          <div class="diag-panel" id="diagPanel" hidden>
+            <div class="diag-head">Diagnostics (temporary) — session event log</div>
+            <pre class="diag-log" id="diagLog" aria-label="Diagnostics event log"></pre>
+            <div class="isl-btns diag-actions">
+              <button type="button" class="btn btn-ghost" id="diagCopyBtn">Copy log</button>
+              <button type="button" class="btn btn-ghost" id="diagClearBtn">Clear</button>
+            </div>
+            <p class="diag-note" id="diagNote"></p>
+          </div>
         </div>
         <div class="isl-exp-head">
           <span class="str-mono" id="islThumb"></span>
@@ -4563,6 +4593,46 @@
         on desktop and Android. Talks to the device over Bluetooth — nothing is sent anywhere.
       </footer>
     </div>
+
+    <script>
+      /* ================= Diagnostics (temporary) =================
+         Observe-only session event log, added 2026-11-06 at the
+         owner's order (the diagnostic round) to capture — on his own
+         phone — what actually happens with YouTube control taps,
+         picture swipes and the sound auto-on, so the next fix is
+         aimed at device evidence instead of simulation. In-memory
+         only, capped at the last 200 lines, each line timestamped.
+         The surf module records: swipe-layer gestures with verdicts,
+         cycle calls with their source, player state transitions,
+         every sound call WITH a mute/volume read-back (so the log
+         shows whether the call actually TOOK), watchdog decisions,
+         and a 1-second observed-state poll (which surfaces taps he
+         makes inside the YouTube frame that the app cannot see
+         directly). The island status card's Diagnostics button shows
+         the panel (Copy / Clear; the text is also manually
+         selectable). This instrument only ever READS state — it
+         changes no player, gesture or sound behavior. Temporary by
+         design: removal comes on the owner's later word. The same
+         instrument, same line format, lives in the Main app, so a
+         log pasted from either app reads the same. */
+      window.__diag = (function () {
+        var lines = [], MAX = 200;
+        function p2(n, l) { var s = String(n); while (s.length < (l || 2)) s = "0" + s; return s; }
+        function ts() { var d = new Date(); return p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds()) + "." + p2(d.getMilliseconds(), 3); }
+        function log(cat, msg) {
+          lines.push("[" + ts() + "] " + cat + " " + msg);
+          if (lines.length > MAX) lines.splice(0, lines.length - MAX);
+          if (window.__diagRender) { try { window.__diagRender(); } catch (e) { /* panel not wired yet */ } }
+        }
+        log("diag", "log started — Diagnostics (temporary), observe-only");
+        return {
+          log: log,
+          text: function () { return lines.join("\n"); },
+          count: function () { return lines.length; },
+          clear: function () { lines = []; log("diag", "log cleared"); }
+        };
+      })();
+    </script>
 
     <script>
       (function () {
@@ -10626,6 +10696,45 @@ var STRAIN_SRC_LINKS = {
             islSetExpanded(false);
             disconnectBtn.click();
           });
+          /* Diagnostics (temporary): the status card's Diagnostics
+             button opens the session event log panel. Copy puts the
+             whole log on the clipboard; if the clipboard is
+             unavailable in this browser, the log text stays manually
+             selectable and the note says so. Observe-only: opening,
+             copying and clearing never touch player or app state
+             beyond the log itself. */
+          var diagBtnEl = document.getElementById("diagBtn");
+          var diagPanelEl = document.getElementById("diagPanel");
+          var diagLogEl = document.getElementById("diagLog");
+          var diagNoteEl = document.getElementById("diagNote");
+          if (diagBtnEl && diagPanelEl && diagLogEl && window.__diag) {
+            window.__diagRender = function () {
+              if (diagPanelEl.hidden) return;
+              diagLogEl.textContent = window.__diag.text();
+              diagLogEl.scrollTop = diagLogEl.scrollHeight;
+            };
+            diagBtnEl.addEventListener("click", function (e) {
+              e.stopPropagation(); haptics.tick();
+              diagPanelEl.hidden = !diagPanelEl.hidden;
+              diagBtnEl.setAttribute("aria-expanded", diagPanelEl.hidden ? "false" : "true");
+              if (!diagPanelEl.hidden) window.__diagRender();
+            });
+            var diagCopyEl = document.getElementById("diagCopyBtn");
+            if (diagCopyEl) diagCopyEl.addEventListener("click", function (e) {
+              e.stopPropagation(); haptics.tick();
+              var done = function (ok) { if (diagNoteEl) diagNoteEl.textContent = ok ? "Copied — paste it anywhere." : "Copy didn't work in this browser — press and hold the log above to select it manually."; };
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(window.__diag.text()).then(function () { done(true); }, function () { done(false); });
+              } else { done(false); }
+            });
+            var diagClearEl = document.getElementById("diagClearBtn");
+            if (diagClearEl) diagClearEl.addEventListener("click", function (e) {
+              e.stopPropagation(); haptics.tick();
+              window.__diag.clear();
+              if (diagNoteEl) diagNoteEl.textContent = "";
+              window.__diagRender();
+            });
+          }
           /* A tap anywhere outside the island collapses the card. */
           document.addEventListener("click", function (e) {
             if (!islExpanded) return;
@@ -11601,7 +11710,7 @@ var STRAIN_SRC_LINKS = {
         var currentKey = bestKey(new Date()) || "pipeline";
         var mode = "idle"; /* idle | loading | playing | waiting | fallback */
         var ytPlayer = null, plainFrame = false, plainBuiltMuted = true;
-        var plainMuted = true; /* plain-iframe fallback always starts muted (the Main standard); the Sound button may rebuild it audible after an explicit tap */
+        var plainMuted = true; /* plain-iframe fallback always STARTS muted (autoplay policy — the Main standard); audibility comes from the auto-on state plus the one-time first-touch rebuild below, or an explicit Sound-button tap */
         var dwellStart = 0, loadTimer = 0, slowTimer = 0;
         var manualHold = false, stoppedByUser = false, gestureArmed = false;
         var dockState = "hidden"; /* hidden | expanded — the player has no collapsed form */
@@ -11615,40 +11724,69 @@ var STRAIN_SRC_LINKS = {
            same-spot retry a manual pick gets before its fallback. */
         var chainTried = [], chainManualRetried = false;
         function resetChain() { chainTried = []; chainManualRetried = false; }
-        /* --- sound state (the ~30-second audio-drop repair) ---
-           Reported symptom: the picture keeps playing but the sound cuts
-           out after roughly 30 seconds, and a press of the phone's
-           hardware volume button brings it back. That signature is the
-           webview's audio session / the player going quiet on its own —
-           NOT a stream reload (a reload restarts the picture and stays
-           muted; the 20-minute Follow the Sun dwell also can't explain a
-           30-second cut). The app previously had no defence: sound lived
-           only inside the cross-origin player, every new player was
-           hard-started muted, and nothing re-checked the player after it
-           started. Now sound is an intent owned by THIS page:
-           soundWanted is set by the dock's Sound button (a tap in this
-           frame — the gesture iOS counts) or adopted from the player's
-           own controls, and it is applied to each new player exactly
-           ONCE per stream start (onReady / first PLAYING, guarded by
-           soundApplied) — never re-applied on a later PLAYING
-           transition or resume, so a mute or level the viewer just set
-           inside the player is never undone a beat later by the app's
-           own start logic (that re-assert is what made the stream's
-           volume button look dead in the sibling app). The 2-second
-           watchdog's sound role is adoption, not override: whatever
-           the viewer sets in the player's own speaker/volume — an
-           unmute, a mute, a new level, a deliberate drag to zero —
-           becomes the remembered choice (see the tick). The watchdog
-           still resumes a stream the webview paused on its own, and
-           that resume never touches the sound. */
-        var soundWanted = false, soundVolume = 100;
-        /* soundApplied: the remembered sound has been applied for the
-           CURRENT stream start; reset by startStream. sawAudible: this
-           stream has actually been heard (unmuted, level > 0) since it
-           started — a muted reading is adopted as the viewer's choice
-           only after that; before it, muted is just the start state
-           (streams always start muted), never a choice to adopt. */
+        /* --- sound state: AUTO-ON at every stream start (owner's
+           order, 2026-11-06: "Can we have the volume turn on
+           automatically when the stream loads?") ---
+           Every stream start turns its sound ON by itself: as soon as
+           the player reports ready/playing, autoSoundOn() unmutes it
+           and sets the viewer's remembered level (soundVolume — full
+           volume until he sets one) — no tap is ever required, and a
+           stream NEVER starts silent just because an earlier stream
+           ended muted (the remembered-muted start is gone).
+           soundWanted is this page's sound state for the CURRENT
+           stream: auto-on sets it true at every start, so the dock's
+           Sound button reads ON the moment a stream is up. Mid-stream
+           the viewer rules: whatever he sets — the dock Sound button,
+           or the player's own speaker/volume (a mute, a new level, a
+           deliberate drag to zero) — is adopted for THAT stream only
+           (the 2-second watchdog adopts, never overrides; see the
+           tick), and the NEXT stream start turns the sound on again
+           regardless. The auto-on lands exactly ONCE per start
+           (onReady / first PLAYING, guarded by soundApplied), never
+           re-applied on a later PLAYING transition or a watchdog
+           resume, so an in-player change is never undone a beat later
+           by the app's own start logic (that re-assert is what once
+           made the stream's volume button look dead).
+           Platform honesty: WebKit may refuse a programmatic unmute
+           before any user gesture on a cold auto-start. autoSoundOn
+           therefore also arms a one-time fallback (soundTouchArmed):
+           if the direct unmute did not take, the FIRST touch anywhere
+           in the app applies the same auto-on, once for that stream.
+           It is not a control — nothing new is drawn — and it stands
+           down the moment the stream is heard or the stream ends. */
+        var soundWanted = true, soundVolume = 100;
+        /* soundApplied: the auto-on has fired for the CURRENT stream
+           start; reset by startStream. sawAudible: this stream has
+           actually been heard (unmuted, level > 0) since it started —
+           a muted reading is adopted as the viewer's choice only
+           after that; before it, muted means the start state or a
+           refused unmute, never a choice to adopt. soundTouchArmed /
+           soundTouchUsed: this stream's one-time first-touch auto-on
+           fallback (armed by autoSoundOn, consumed by the first
+           touch, reset by startStream). */
         var soundApplied = false, sawAudible = false;
+        var soundTouchArmed = false, soundTouchUsed = false;
+        /* --- diagnostics (temporary): observe-only event log ---
+           window.__diag is defined by the small script ahead of the
+           app scripts; dlog only READS state and appends a line — it
+           never changes a player, gesture or sound decision. diagSnd
+           reads the player's mute/volume back AFTER a sound call, so
+           the log shows whether the call actually TOOK on the
+           device. cycleSrc names who asked for the stream start that
+           startStream is about to log (chip | swipe | fallback |
+           auto | open | play); startStream consumes it. */
+        function dlog(cat, msg) { if (window.__diag) window.__diag.log(cat, msg); }
+        function diagSnd(action) {
+          var m = "?", v = "?";
+          try {
+            if (ytPlayer && ytPlayer.isMuted) m = ytPlayer.isMuted() ? "true" : "false";
+            if (ytPlayer && ytPlayer.getVolume) v = ytPlayer.getVolume();
+          } catch (e) { /* player mid-teardown */ }
+          dlog("sound", action + " -> muted=" + m + " vol=" + v);
+        }
+        var YT_STATE_NAMES = { "-1": "UNSTARTED", "0": "ENDED", "1": "PLAYING", "2": "PAUSED", "3": "BUFFERING", "5": "CUED" };
+        function ytStateName(n) { return YT_STATE_NAMES[String(n)] || ("STATE" + n); }
+        var cycleSrc = "start";
         var soundRestores = 0, watchdogResumes = 0;
         var lastWatchdogResumeAt = 0, watchdogStandDown = false;
 
@@ -11824,7 +11962,7 @@ var STRAIN_SRC_LINKS = {
         window.addEventListener("resize", applyZoom);
         window.addEventListener("resize", syncTabbarClear);
         syncTabbarClear();
-        function cycleSurf(dir) {
+        function cycleSurf(dir, src) {
           var idx = -1;
           for (var i = 0; i < SPOTS.length; i++) if (SPOTS[i].key === currentKey) idx = i;
           if (idx === -1) idx = 0;
@@ -11837,6 +11975,7 @@ var STRAIN_SRC_LINKS = {
             if (!spotDead(candS.key)) { next = candS; break; }
           }
           if (!next) return;
+          cycleSrc = src || "cycle"; /* diagnostics (temporary): the cycle's source rides into startStream's log line */
           if (streamActive() || mode === "fallback") {
             manualHold = true; stoppedByUser = false; bgPaused = false;
             startStream(next);
@@ -11861,8 +12000,8 @@ var STRAIN_SRC_LINKS = {
         /* The fallback card's explicit escape: Prev / Next break
            step off a dead stream through the same dead-skipping
            cycle the card's flick verdict uses. */
-        if (fbPrevBtn) fbPrevBtn.addEventListener("click", function () { cycleSurf(-1); });
-        if (fbNextBtn) fbNextBtn.addEventListener("click", function () { cycleSurf(1); });
+        if (fbPrevBtn) fbPrevBtn.addEventListener("click", function () { cycleSurf(-1, "fallback"); });
+        if (fbNextBtn) fbNextBtn.addEventListener("click", function () { cycleSurf(1, "fallback"); });
 
         /* --- picture swipe (owner's order, 2026-11-06: "Don't change
            anything except add the ability to swipe left and right on
@@ -11910,30 +12049,51 @@ var STRAIN_SRC_LINKS = {
           if (!ytPlayer || plainFrame) return;
           try {
             var st = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
+            dlog("gesture", "tap handed to the player's own " + (st === 1 ? "pause" : "play") + " (state was " + ytStateName(st) + ")");
             if (st === 1 && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
             else if (ytPlayer.playVideo) ytPlayer.playVideo();
           } catch (e) { /* player mid-teardown — the tap is simply not forwarded */ }
         }
         if (swipeEl) {
           var swDown = null;
+          var swMoveLast = null; /* diagnostics (temporary): last logged move displacement, so the move log tracks travel without flooding */
           swipeEl.addEventListener("pointerdown", function (e) {
-            if (!e.isPrimary || swDown) { swDown = null; return; } /* a second finger cancels: multi-touch is never a swipe */
+            if (!e.isPrimary || swDown) { if (swDown) dlog("gesture", "second finger down — tracked gesture cancelled"); swDown = null; swMoveLast = null; return; } /* a second finger cancels: multi-touch is never a swipe */
             if (e.pointerType === "mouse" && e.button !== 0) return;
             e.preventDefault();
             try { swipeEl.setPointerCapture(e.pointerId); } catch (err) { /* capture is a nicety; the verdict reads the release point either way */ }
             swDown = { id: e.pointerId, sx: e.clientX, sy: e.clientY, t: Date.now() };
+            swMoveLast = null;
+            dlog("gesture", "down x=" + Math.round(e.clientX) + " y=" + Math.round(e.clientY) + " type=" + (e.pointerType || "?"));
+          });
+          /* Diagnostics (temporary): an observe-only move listener —
+             it records travel and changes NOTHING (no preventDefault,
+             no capture, no verdict input; swEnd still judges the
+             release point exactly as before). */
+          swipeEl.addEventListener("pointermove", function (e) {
+            if (!swDown || e.pointerId !== swDown.id) return;
+            var mdx = Math.round(e.clientX - swDown.sx), mdy = Math.round(e.clientY - swDown.sy);
+            if (swMoveLast && Math.abs(mdx - swMoveLast[0]) < 4 && Math.abs(mdy - swMoveLast[1]) < 4) return;
+            swMoveLast = [mdx, mdy];
+            dlog("gesture", "move dx=" + mdx + " dy=" + mdy);
           });
           var swEnd = function (e) {
             if (!swDown || e.pointerId !== swDown.id) return;
             var sd = swDown;
             swDown = null;
-            if (e.type !== "pointerup") return; /* pointercancel — a vertical pan the browser took for scrolling, or a cancelled touch: never a verdict */
+            swMoveLast = null;
             var dx = e.clientX - sd.sx, dy = e.clientY - sd.sy;
+            var gdx = Math.round(dx), gdy = Math.round(dy), gdt = Date.now() - sd.t;
+            if (e.type !== "pointerup") { dlog("gesture", "up dx=" + gdx + " dy=" + gdy + " dt=" + gdt + "ms verdict=cancelled"); return; } /* pointercancel — a vertical pan the browser took for scrolling, or a cancelled touch: never a verdict */
             if (Date.now() - sd.t <= 600 && Math.abs(dx) >= 48 && Math.abs(dx) >= Math.abs(dy) * 1.5) {
-              cycleSurf(dx < 0 ? 1 : -1); /* left = next break, right = previous — dead-skipping, auto-starting, exactly as chip cycling */
+              dlog("gesture", "up dx=" + gdx + " dy=" + gdy + " dt=" + gdt + "ms verdict=claimed-swipe-" + (dx < 0 ? "left" : "right") + " swallow=armed");
+              cycleSurf(dx < 0 ? 1 : -1, "swipe"); /* left = next break, right = previous — dead-skipping, auto-starting, exactly as chip cycling */
               surfSwallowNextClick(); /* the release's click is not a tap: nothing under the finger may fire */
             } else if (Math.hypot(dx, dy) <= 10) {
+              dlog("gesture", "up dx=" + gdx + " dy=" + gdy + " dt=" + gdt + "ms verdict=tap");
               surfTapToggle(); /* a clean tap: not claimed — handed to the player's own play/pause */
+            } else {
+              dlog("gesture", "up dx=" + gdx + " dy=" + gdy + " dt=" + gdt + "ms verdict=" + (Math.abs(dy) > Math.abs(dx) ? "vertical" : "unclaimed"));
             }
             /* anything else — a press, a short or vertical slide, a
                slow drag — falls through untouched and never cycles */
@@ -12021,13 +12181,14 @@ var STRAIN_SRC_LINKS = {
         function clearTimers() { if (loadTimer) { clearTimeout(loadTimer); loadTimer = 0; } if (slowTimer) { clearTimeout(slowTimer); slowTimer = 0; } }
         function destroyPlayer() {
           clearTimers();
+          disarmSoundTouch(); /* the stream is gone: its first-touch auto-on fallback goes with it */
           if (ytPlayer) { try { ytPlayer.destroy(); } catch (e) { /* ignore */ } ytPlayer = null; }
           plainFrame = false;
           frameWrap.innerHTML = "";
         }
         function onPlaying() {
           mode = "playing";
-          if (!soundApplied) { soundApplied = true; applySound(ytPlayer); } /* a (re)started player comes up muted — put the remembered sound back ONCE for this start; every later PLAYING (buffering, a watchdog resume) leaves the player's own sound state exactly as the viewer set it */
+          if (!soundApplied) { soundApplied = true; autoSoundOn(); } /* a (re)started player comes up muted — turn its sound ON once for this start; every later PLAYING (buffering, a watchdog resume) leaves the player's own sound state exactly as the viewer set it */
           if (deadSpots[currentKey]) delete deadSpots[currentKey]; /* it plays: the dead mark clears immediately */
           resetChain(); /* a spot that plays ends any recovery chain */
           bgPaused = false;
@@ -12043,14 +12204,77 @@ var STRAIN_SRC_LINKS = {
           }
           if (soundLbl) soundLbl.textContent = soundWanted ? "Sound on" : "Sound off";
         }
-        function applySound(player) {
+        /* --- auto-on: fired ONCE per stream start (guarded by
+           soundApplied at the onReady / onPlaying call sites). Turns
+           the sound ON — page state first, so the Sound button reads
+           ON — then unmutes the player at the viewer's remembered
+           level, whatever any earlier stream ended as. Also arms the
+           one-time first-touch fallback in case the platform refuses
+           this programmatic unmute on a cold auto-start. --- */
+        function autoSoundOn() {
+          soundWanted = true;
+          syncSoundBtn();
+          if (ytPlayer) {
+            try {
+              if (ytPlayer.unMute) ytPlayer.unMute();
+              if (ytPlayer.setVolume) ytPlayer.setVolume(soundVolume);
+            } catch (e) { /* ignore */ }
+            diagSnd("call unMute+setVolume(" + soundVolume + ") auto-on");
+          } else {
+            dlog("sound", "auto-on state ON (plain frame — no API read-back; audibility via first-touch rebuild)");
+          }
+          armSoundTouch();
+        }
+        function armSoundTouch() {
+          if (soundTouchArmed || soundTouchUsed) return; /* once per stream */
+          soundTouchArmed = true;
+          window.addEventListener("pointerdown", soundTouchFallback, true);
+          window.addEventListener("touchstart", soundTouchFallback, true);
+          dlog("sound", "touch-fallback armed (once, this stream)");
+        }
+        function disarmSoundTouch() {
+          if (!soundTouchArmed) return;
+          soundTouchArmed = false;
+          window.removeEventListener("pointerdown", soundTouchFallback, true);
+          window.removeEventListener("touchstart", soundTouchFallback, true);
+        }
+        function soundTouchFallback() {
+          if (!soundTouchArmed) return;
+          soundTouchUsed = true;
+          disarmSoundTouch(); /* consumed: once for this stream, whatever happens next */
+          if (mode !== "playing" && mode !== "loading") return;
+          if (sawAudible) { dlog("sound", "touch-fallback skipped — stream already heard; the viewer's own sound state stands"); return; } /* the stream WAS heard: any muting since is the viewer's own choice — never fight it */
+          if (ytPlayer) {
+            try {
+              if (ytPlayer.isMuted && !ytPlayer.isMuted()) { dlog("sound", "touch-fallback skipped — player already unmuted (the direct auto-on landed)"); return; } /* the direct auto-on landed after all */
+              if (ytPlayer.unMute) ytPlayer.unMute();
+              if (ytPlayer.setVolume) ytPlayer.setVolume(soundVolume);
+            } catch (e) { /* ignore */ }
+            diagSnd("call unMute+setVolume(" + soundVolume + ") touch-fallback");
+          } else if (plainFrame && plainMuted) {
+            /* No API to unmute through: rebuild the plain frame
+               audible — inside this genuine touch, so the webview
+               allows the unmuted autoplay it refused at load. */
+            dlog("sound", "plain rebuild mute=0 (touch-fallback)");
+            plainMuted = false;
+            if (slowTimer) { clearTimeout(slowTimer); slowTimer = 0; }
+            frameWrap.innerHTML = "";
+            buildPlainFrame(spotByKey(currentKey));
+          }
+        }
+        /* applySound: the dock Sound button's path only — pushes the
+           CURRENT soundWanted (a state the viewer just tapped to) onto
+           the live player. Stream starts never call it: they auto-on. */
+        function applySound(player, src) {
           if (!player) return;
           try {
             if (soundWanted) {
               if (player.unMute) player.unMute();
               if (player.setVolume) player.setVolume(soundVolume);
+              diagSnd("call unMute+setVolume(" + soundVolume + ") " + (src || "apply"));
             } else if (player.mute) {
               player.mute();
+              diagSnd("call mute " + (src || "apply"));
             }
           } catch (e) { /* ignore */ }
         }
@@ -12060,13 +12284,16 @@ var STRAIN_SRC_LINKS = {
            it from the page instead, within ~2 seconds. A deliberate
            pause inside the player is respected: if the viewer pauses
            again within 5 seconds of a watchdog resume, the watchdog
-           stands down until the next stream start. Sound state is NOT
-           the watchdog's to restore either: the dock Sound button and
-           the player's own speaker/volume are equals, and the player's
-           actual state is adopted, never fought (see the tick). The plain (no-API) fallback
-           player exposes no state to poll, so the watchdog can only
-           guard API players; the fallback still inherits soundWanted
-           on every rebuild. --- */
+           stands down until the next stream start. Mid-stream sound
+           state is NOT the watchdog's to restore either: the dock
+           Sound button and the player's own speaker/volume are
+           equals, and the player's actual state is adopted for that
+           stream, never fought (see the tick) — turning the sound on
+           is the stream START's job (autoSoundOn), not the watchdog's.
+           The plain (no-API) fallback player exposes no state to
+           poll, so the watchdog can only guard API players; the
+           fallback still starts muted and goes audible through the
+           first-touch rebuild or the Sound button. --- */
         function watchdogTick() {
           if (!ytPlayer || mode !== "playing" || stoppedByUser || document.hidden || dock.hidden) return;
           try {
@@ -12081,11 +12308,16 @@ var STRAIN_SRC_LINKS = {
                - unmuted at zero AFTER being heard: a deliberate drag
                  to zero inside the player — adopt it like a mute.
                - unmuted at zero BEFORE being heard, with sound
-                 wanted: this start's once-only unmute hasn't landed
-                 yet — re-assert the remembered level until it does
-                 (the one heal, and it is start-only).
+                 wanted: this start's once-only auto-on unmute hasn't
+                 landed yet — re-assert the remembered level until it
+                 does (the one heal, and it is start-only).
                - muted AFTER being heard, with sound wanted: the mute
-                 was pressed on the player's own speaker — adopt it.
+                 was pressed on the player's own speaker — adopt it
+                 (for this stream only; the next start auto-ons).
+               - muted BEFORE being heard, with sound wanted: the
+                 auto-on unmute hasn't landed or the platform refused
+                 it — never adopted as a choice; the one-time
+                 first-touch fallback stays armed to land it.
                A muted reading before the stream has ever been heard
                is just the start state, never adopted as a choice.
                (The watchdog still guards the picture below: a stream
@@ -12098,28 +12330,62 @@ var STRAIN_SRC_LINKS = {
               if (!mutedNow) {
                 if (typeof v === "number" && v > 0) {
                   sawAudible = true;
-                  if (!soundWanted) { soundWanted = true; syncSoundBtn(); } /* unmuted inside the player: adopt it */
-                  else if (v !== soundVolume) { soundVolume = v; syncSoundBtn(); } /* follow the level set inside the player */
+                  disarmSoundTouch(); /* the stream is heard: the auto-on landed, the first-touch fallback stands down */
+                  if (!soundWanted) { soundWanted = true; syncSoundBtn(); dlog("watchdog", "adopt unmute at vol=" + v + " (viewer's in-player choice, this stream only)"); } /* unmuted inside the player: adopt it */
+                  else if (v !== soundVolume) { soundVolume = v; syncSoundBtn(); dlog("watchdog", "adopt level vol=" + v + " (viewer's in-player choice, this stream only)"); } /* follow the level set inside the player */
                 } else if (sawAudible) {
-                  soundWanted = false; syncSoundBtn(); /* dragged to zero inside the player: adopt it like a mute */
+                  soundWanted = false; syncSoundBtn(); dlog("watchdog", "adopt drag-to-zero as mute (viewer's in-player choice, this stream only)"); /* dragged to zero inside the player: adopt it like a mute */
                 } else if (soundWanted && typeof v === "number" && ytPlayer.setVolume) {
                   try { ytPlayer.setVolume(soundVolume); } catch (e2) { /* ignore */ } /* start-only heal: this start's unmute hasn't landed yet */
+                  dlog("watchdog", "heal setVolume(" + soundVolume + ") — this start's unmute hasn't landed yet");
                 }
               } else if (soundWanted && sawAudible) {
-                soundWanted = false; syncSoundBtn(); /* muted inside the player: adopt it */
+                soundWanted = false; syncSoundBtn(); dlog("watchdog", "adopt mute (viewer's in-player choice, this stream only — the next start auto-ons again)"); /* muted inside the player: adopt it */
+              } else if (soundWanted) {
+                /* Muted and never yet heard: the start's auto-on unmute
+                   hasn't landed (or the platform refused it before any
+                   gesture). NOT the viewer's choice — never adopt it.
+                   The one-time first-touch fallback stays armed and
+                   applies the auto-on at his first touch. */
+                armSoundTouch();
               }
             }
             var st = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : -1;
             if (st === 2 && !watchdogStandDown) { /* 2 = YT.PlayerState.PAUSED */
               var now = Date.now();
-              if (lastWatchdogResumeAt && now - lastWatchdogResumeAt < 5000) { watchdogStandDown = true; return; }
+              if (lastWatchdogResumeAt && now - lastWatchdogResumeAt < 5000) { watchdogStandDown = true; dlog("watchdog", "stand down — the viewer re-paused right after a resume; his pause stands until the next stream start"); return; }
               lastWatchdogResumeAt = now;
               watchdogResumes++;
               if (ytPlayer.playVideo) ytPlayer.playVideo(); /* resume the picture only — the player's sound state stays exactly as the viewer left it */
+              dlog("watchdog", "resume playVideo (the webview paused it on its own; sound untouched)");
             }
           } catch (e) { /* player mid-teardown — next tick re-checks */ }
         }
         setInterval(watchdogTick, 2000);
+        /* --- diagnostics (temporary): 1-second observed-state poll.
+           While a stream is up, read the player's state + mute +
+           volume once a second and log ONLY when the reading changes
+           — a tap the viewer makes inside the YouTube frame (its own
+           speaker, volume, play/pause) is invisible to this page's
+           events, but it shows up here as an observed change, in
+           order, between the app's own logged actions. Pure
+           observation: the poll never calls a player method that
+           changes anything. --- */
+        var diagPollLast = "";
+        setInterval(function () {
+          if (!ytPlayer || document.hidden) return;
+          if (mode !== "playing" && mode !== "loading") return;
+          try {
+            var ps = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : "?";
+            var pm = ytPlayer.isMuted ? (ytPlayer.isMuted() ? "true" : "false") : "?";
+            var pv = ytPlayer.getVolume ? ytPlayer.getVolume() : "?";
+            var snap = ps + "|" + pm + "|" + pv;
+            if (snap !== diagPollLast) {
+              diagPollLast = snap;
+              dlog("poll", "state=" + ps + " (" + ytStateName(ps) + ") muted=" + pm + " vol=" + pv);
+            }
+          } catch (e) { /* player mid-teardown */ }
+        }, 1000);
         function onWaitingGesture() {
           if (mode === "playing" || mode === "fallback") return;
           mode = "waiting";
@@ -12172,7 +12438,7 @@ var STRAIN_SRC_LINKS = {
             if (!chainManualRetried) {
               chainManualRetried = true;
               setNow("<strong>" + failedSpot.name + "</strong> didn't load — retrying it once…");
-              startStream(failedSpot, true);
+              cycleSrc = "auto"; startStream(failedSpot, true);
               return;
             }
             showFallback(kind, [failedSpot.name]);
@@ -12184,7 +12450,7 @@ var STRAIN_SRC_LINKS = {
           if (nextKey) {
             var ns = spotByKey(nextKey);
             setNow("<strong>" + failedSpot.name + "</strong> didn't load — moving on to <strong>" + ns.name + "</strong> (Follow the Sun order).");
-            startStream(ns, true);
+            cycleSrc = "auto"; startStream(ns, true);
           } else {
             showFallback(kind, chainTried.map(function (k) { return spotByKey(k).name; }));
           }
@@ -12193,7 +12459,7 @@ var STRAIN_SRC_LINKS = {
           plainFrame = true;
           plainBuiltMuted = plainMuted; /* the mute state baked into this frame's URL — a later volume change rebuilds only if THIS flips */
           var f = document.createElement("iframe");
-          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (plainMuted ? "1" : "0") + "&playsinline=1&rel=0&modestbranding=1"; /* YouTube's own control bar renders (no controls parameter): its buttons take the viewer's taps directly. The frame is ALWAYS built muted (the Main standard): an autoplay=1 embed created unmuted is refused by the webview's autoplay policy and lands paused, which is exactly why cycled streams used to sit still until tapped. The Sound button may rebuild it audible after an explicit tap (plainMuted follows the tap). */
+          f.src = "https://www.youtube-nocookie.com/embed/" + spot.id + "?autoplay=1&mute=" + (plainMuted ? "1" : "0") + "&playsinline=1&rel=0&modestbranding=1"; /* YouTube's own control bar renders (no controls parameter): its buttons take the viewer's taps directly. The frame is ALWAYS built muted (the Main standard): an autoplay=1 embed created unmuted is refused by the webview's autoplay policy and lands paused, which is exactly why cycled streams used to sit still until tapped. Audibility arrives via the auto-on state: the one-time first-touch fallback, or an explicit Sound-button tap, rebuilds it with plainMuted=false from inside a real gesture. */
           f.title = spot.name + " live surf cam";
           f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
           f.setAttribute("allowfullscreen", "");
@@ -12202,11 +12468,16 @@ var STRAIN_SRC_LINKS = {
           slowTimer = setTimeout(function () { if (mode === "loading") onPlaying(); }, 4000);
         }
         function startStream(spot, keepChain) {
+          dlog("cycle", "src=" + cycleSrc + " " + currentKey + " -> " + spot.key); /* diagnostics (temporary): every cycle call, with its source and from -> to breaks */
+          cycleSrc = "start";
+          diagPollLast = ""; /* the new stream's first poll reading always logs */
           exitZoom(); /* every spot change — Follow the Sun, recovery chain, manual pick, replay — resets zoom */
           watchdogStandDown = false; /* a fresh stream re-arms the watchdog's pause-resume */
           lastWatchdogResumeAt = 0;
-          soundApplied = false; /* the remembered sound is applied once for this start, then the player's own controls rule */
+          soundApplied = false; /* the auto-on fires once for this start, then the player's own controls rule for the rest of the stream */
           sawAudible = false; /* this stream has not been heard yet — a muted reading is its start state, not a choice */
+          soundTouchUsed = false; /* this stream gets its own one-time first-touch auto-on fallback */
+          plainMuted = true; /* a fresh plain frame always starts muted (autoplay policy); its audibility comes from the auto-on state plus the first-touch rebuild, never from a stale audible build left over from an earlier stream */
           if (!keepChain) resetChain();
           currentKey = spot.key;
           bgPaused = false;
@@ -12240,10 +12511,11 @@ var STRAIN_SRC_LINKS = {
                    the frame's bottom edge, so no part of the bar ever
                    sits under an app-made layer.
                    Sound set inside the player is the
-                   viewer's choice: the watchdog adopts it (see the
-                   sound state note), and the remembered sound is
-                   applied exactly once per stream start (onReady /
-                   first PLAYING, guarded by soundApplied), never
+                   viewer's choice for that stream: the watchdog
+                   adopts it (see the sound state note). The sound
+                   itself turns ON automatically exactly once per
+                   stream start (autoSoundOn, onReady / first
+                   PLAYING, guarded by soundApplied) — never
                    re-applied over an in-player change. */
                 /* The embed is ALWAYS created muted with autoplay on
                    (the Main standard): an autoplay embed created
@@ -12252,17 +12524,18 @@ var STRAIN_SRC_LINKS = {
                    lands CUED/PAUSED, which is why a cycled stream
                    used to sit on its poster until tapped. onReady
                    therefore mutes and calls playVideo() FIRST, and
-                   only then is the remembered sound applied, exactly
-                   once for this start. */
+                   only then does the auto-on unmute it at the
+                   viewer's level, exactly once for this start. */
                 playerVars: { autoplay: 1, mute: 1, playsinline: 1, rel: 0, modestbranding: 1 },
                 events: {
-                  onReady: function (e) { try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } if (!soundApplied) { soundApplied = true; applySound(e.target); } },
+                  onReady: function (e) { dlog("state", "READY " + spot.key); try { e.target.mute(); e.target.playVideo(); } catch (err) { /* ignore */ } if (!soundApplied) { soundApplied = true; autoSoundOn(); } },
                   onStateChange: function (e) {
+                    dlog("state", ytStateName(e.data) + " (" + e.data + ") " + currentKey);
                     if (e.data === YT.PlayerState.PLAYING) onPlaying();
                     else if (e.data === YT.PlayerState.ENDED) handleStreamFailure("ended");
                     else if ((e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.CUED) && mode === "loading") onWaitingGesture();
                   },
-                  onError: function () { handleStreamFailure("error"); }
+                  onError: function () { dlog("state", "ERROR " + currentKey); handleStreamFailure("error"); }
                 }
               });
             } catch (err) { buildPlainFrame(spot); return; }
@@ -12295,7 +12568,7 @@ var STRAIN_SRC_LINKS = {
           bgPaused = false;
           currentKey = key;
           var spot = spotByKey(key);
-          if (autoOn) { startStream(spot); }
+          if (autoOn) { if (cycleSrc === "start") cycleSrc = "chip"; startStream(spot); } /* a direct pick is a chip pick unless a cycle source already claimed this start */
           else {
             if (surfStage === "closed") setSurfStage("mini");
             showDock();
@@ -12305,7 +12578,7 @@ var STRAIN_SRC_LINKS = {
         }
         playBtn.addEventListener("click", function () {
           stoppedByUser = false;
-          startStream(spotByKey(currentKey));
+          cycleSrc = "play"; startStream(spotByKey(currentKey));
         });
         /* --- Opening Surf Break starts the player: tapping the wave
            button IS opening Surf Break, so the stream loads by itself —
@@ -12328,7 +12601,7 @@ var STRAIN_SRC_LINKS = {
             renderChips();
           }
           showDock();
-          startStream(spotByKey(currentKey));
+          cycleSrc = "open"; startStream(spotByKey(currentKey));
           if (fcStale()) fetchForecast(); /* keep the Best-conditions pick fresh while he watches */
         }
         /* --- Surf Break: floating wave button + floating player + PAGE ---
@@ -12410,6 +12683,7 @@ var STRAIN_SRC_LINKS = {
         document.addEventListener("click", function (e) {
           if (Date.now() < surfSwallowClickUntil) {
             surfSwallowClickUntil = 0;
+            dlog("gesture", "trailing click swallowed");
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
@@ -12956,7 +13230,8 @@ var STRAIN_SRC_LINKS = {
                  a slow press — falls through untouched. */
               var fdx = e.clientX - bd.sx, fdy = e.clientY - bd.sy;
               if (Date.now() - bd.t <= 600 && Math.abs(fdx) >= 48 && Math.abs(fdx) >= Math.abs(fdy) * 1.5) {
-                cycleSurf(fdx < 0 ? 1 : -1);
+                dlog("gesture", "fallback-flick dx=" + Math.round(fdx) + " dy=" + Math.round(fdy) + " verdict=claimed-swipe-" + (fdx < 0 ? "left" : "right") + " swallow=armed");
+                cycleSurf(fdx < 0 ? 1 : -1, "fallback");
                 surfSwallowNextClick();
               }
             }
@@ -12985,20 +13260,28 @@ var STRAIN_SRC_LINKS = {
         /* Sound button: the tap happens in THIS frame, inside a real user
            gesture — the strongest claim a web page can make on iOS's
            audio session, unlike a tap on the speaker icon inside the
-           cross-origin player. Toggling records the intent first, then
+           cross-origin player. Toggling records the choice first, then
            applies it to the live player; with the plain fallback (no
-           API to unmute through) the frame is rebuilt with the new mute
-           setting, still inside this same gesture. When no stream is
-           loaded the intent is simply kept for the next start. */
+           API to unmute through) the frame is rebuilt IN PLACE with
+           the tapped mute setting, still inside this same gesture —
+           deliberately NOT via startStream, whose fresh-start auto-on
+           would undo an explicit Sound-off tap. The tap rules the
+           current stream only: the next stream start turns the sound
+           on again by itself (the auto-on), whatever this tap chose. */
         if (soundBtn) soundBtn.addEventListener("click", function () {
           soundWanted = !soundWanted;
+          dlog("sound", "sound-btn -> " + (soundWanted ? "ON" : "OFF") + " (this stream only — the next start auto-ons)");
           watchdogStandDown = false;
           if (ytPlayer) {
-            applySound(ytPlayer);
+            applySound(ytPlayer, "sound-btn");
             if (soundWanted && ytPlayer.playVideo) { try { ytPlayer.playVideo(); } catch (e) { /* ignore */ } }
           } else if (plainFrame && (mode === "playing" || mode === "loading")) {
-            plainMuted = !soundWanted; /* an explicit Sound tap is the one thing that may rebuild the plain frame audible (the Main standard) */
-            startStream(spotByKey(currentKey), true);
+            plainMuted = !soundWanted; /* the rebuilt frame carries the tapped state */
+            dlog("sound", "plain rebuild mute=" + (plainMuted ? "1" : "0") + " (sound-btn)");
+            if (slowTimer) { clearTimeout(slowTimer); slowTimer = 0; }
+            frameWrap.innerHTML = "";
+            buildPlainFrame(spotByKey(currentKey));
+            soundApplied = true; /* already applied by construction — the frame's onPlaying must not auto-on over this tap */
           }
           syncSoundBtn();
           if (mode === "playing" || mode === "loading") {
@@ -13015,7 +13298,7 @@ var STRAIN_SRC_LINKS = {
             openSurfMini(); /* the floating player opens over this page and starts by itself */
           }
         });
-        retryBtn.addEventListener("click", function () { stoppedByUser = false; startStream(spotByKey(currentKey)); });
+        retryBtn.addEventListener("click", function () { stoppedByUser = false; cycleSrc = "fallback"; startStream(spotByKey(currentKey)); });
         backBtn.addEventListener("click", function () { unload(); setNow(nowText("Showing:")); });
         autoSwitch.addEventListener("click", function () {
           /* The switch is the on/off face of the Auto choice below it:
@@ -13037,7 +13320,7 @@ var STRAIN_SRC_LINKS = {
         function arm() {
           gestureArmed = true;
           if (mode === "waiting" && ytPlayer && ytPlayer.playVideo) {
-            try { applySound(ytPlayer); ytPlayer.playVideo(); } catch (e) { /* ignore */ }
+            try { applySound(ytPlayer, "first-gesture"); ytPlayer.playVideo(); } catch (e) { /* ignore */ }
             loadTimer = setTimeout(function () { if (mode === "waiting") handleStreamFailure("error"); }, 6000);
           }
         }
@@ -13059,7 +13342,7 @@ var STRAIN_SRC_LINKS = {
             var bkI = bestForecastKey();
             if (bkI) {
               if (dwell >= DWELL_MS && bkI !== currentKey) {
-                startStream(spotByKey(bkI));
+                cycleSrc = "auto"; startStream(spotByKey(bkI));
                 setNow(nowText("Best conditions moved on — now showing:"));
               }
               return;
@@ -13069,7 +13352,7 @@ var STRAIN_SRC_LINKS = {
           if (!cur.day || dwell >= DWELL_MS) {
             var nxt = nextDaylightKey(date, currentKey);
             if (nxt && nxt !== currentKey) {
-              startStream(spotByKey(nxt));
+              cycleSrc = "auto"; startStream(spotByKey(nxt));
               setNow(nowText("Follow the Sun moved on — now showing:"));
             } else if (!cur.day) {
               setNow("No break is in daylight right now — keeping <strong>" + spotByKey(currentKey).name + "</strong> on. Pick any spot in this card whenever you like.");
@@ -13094,7 +13377,7 @@ var STRAIN_SRC_LINKS = {
           } else if (bgSuspended) {
             bgSuspended = false;
             if (!stoppedByUser && dockVisible() && autoOn) {
-              startStream(spotByKey(currentKey));
+              cycleSrc = "auto"; startStream(spotByKey(currentKey));
             } else {
               syncDockChrome();
             }
@@ -13183,7 +13466,7 @@ var STRAIN_SRC_LINKS = {
           if (autoMode !== "best" || manualHold || stoppedByUser) return;
           if (!streamActive() || !dockVisible()) return;
           var bk = bestForecastKey();
-          if (bk && bk !== currentKey) startStream(spotByKey(bk));
+          if (bk && bk !== currentKey) { cycleSrc = "auto"; startStream(spotByKey(bk)); }
         }
         /* ---- In-app charts: the HOURLY Open-Meteo series, drawn here ----
            Each break's fetch keeps the hourly series (3+ days) alongside
@@ -13554,7 +13837,7 @@ var STRAIN_SRC_LINKS = {
           currentKey = key;
           openSurfPage();
           if (surfStage === "closed") setSurfStage("mini");
-          startStream(spotByKey(key));
+          cycleSrc = "open"; startStream(spotByKey(key));
         }
         function syncAutoModeUI() {
           if (autoSwitch) autoSwitch.setAttribute("aria-checked", autoOn ? "true" : "false");
@@ -13586,7 +13869,7 @@ var STRAIN_SRC_LINKS = {
             if (b) currentKey = b;
             renderChips();
             showDock();
-            startStream(spotByKey(currentKey));
+            cycleSrc = "auto"; startStream(spotByKey(currentKey));
             if (fcStale()) fetchForecast();
           }
         }
@@ -13638,6 +13921,9 @@ var STRAIN_SRC_LINKS = {
               soundVolume: soundVolume,
               soundApplied: soundApplied,
               sawAudible: sawAudible,
+              soundTouchArmed: soundTouchArmed,
+              soundTouchUsed: soundTouchUsed,
+              diagCount: window.__diag ? window.__diag.count() : -1,
               soundMuted: (ytPlayer && ytPlayer.isMuted) ? ytPlayer.isMuted() : null,
               soundRestores: soundRestores,
               watchdogResumes: watchdogResumes,
