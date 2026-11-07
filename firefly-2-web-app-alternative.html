@@ -2918,8 +2918,8 @@
          is untouched: this applies to the fullscreen presentation
          only, on both the native :fullscreen element and the
          fill-viewport fallback. */
-      .surf-dock:fullscreen .surf-fs-btn, .surf-dock.surf-fs-fake .surf-fs-btn { display: inline-flex; }
-      .surf-dock:fullscreen {
+      .surf-dock:fullscreen .surf-fs-btn, .surf-dock:-webkit-full-screen .surf-fs-btn, .surf-dock.surf-fs-fake .surf-fs-btn { display: inline-flex; }
+      .surf-dock:fullscreen, .surf-dock:-webkit-full-screen {
         background: #000; width: 100%; height: 100%; max-width: 100%;
         display: flex; flex-direction: column; justify-content: center;
         overflow-y: auto; border-radius: 0;
@@ -2937,6 +2937,31 @@
         padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
       body.surf-fs-lock { overflow: hidden; }
+      /* Fullscreen frame fit (owner order, 2026-11-07): the env()
+         padding above insets the dock, but in LANDSCAPE the padded
+         width × 9/16 can exceed the padded height — an uncapped
+         16:9 frame would spill past the top and bottom of the
+         padded box (and justify-content: center centres that
+         overflow INTO the padding, under the cutout's edge). So in
+         fullscreen — both presentations — the stage is also
+         width-capped by the padded height (minus the player box's
+         own 2px of border): the frame then sits inside the padded
+         box on all four sides in both orientations. When the zoom
+         bar is open in fullscreen it takes vertical room too, so
+         its height comes off the cap as well; :has is already used
+         in this stylesheet, and engines without it keep the base
+         cap. Portrait is unaffected (the cap exceeds the width). */
+      .surf-dock:fullscreen .surf-stage,
+      .surf-dock:-webkit-full-screen .surf-stage,
+      .surf-dock.surf-fs-fake .surf-stage {
+        width: 100%; margin-left: auto; margin-right: auto;
+        max-width: calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2px) * 16 / 9);
+      }
+      .surf-dock:fullscreen:has(.surf-zoombar:not([hidden])) .surf-stage,
+      .surf-dock:-webkit-full-screen:has(.surf-zoombar:not([hidden])) .surf-stage,
+      .surf-dock.surf-fs-fake:has(.surf-zoombar:not([hidden])) .surf-stage {
+        max-width: calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 112px) * 16 / 9);
+      }
       .surf-overlay.is-moving .surf-overlay-sheet { outline: 2px solid var(--ember); outline-offset: -2px; }
       /* Owned tag toggle on strain cards */
       .str-own {
@@ -12923,8 +12948,10 @@ var STRAIN_SRC_LINKS = {
           dock.classList.add("surf-fs-fake");
           document.body.classList.add("surf-fs-lock");
           syncFsBtns(); applyZoom();
+          diagFsSettled("enter"); /* diagnostics (temporary): fullscreen geometry line */
         }
         function fakeFsExit() {
+          diagFs("exit"); /* diagnostics (temporary): capture the fullscreen geometry before teardown */
           surfFs = false; surfFsFake = false;
           dock.classList.remove("surf-fs-fake");
           document.body.classList.remove("surf-fs-lock");
@@ -12951,15 +12978,78 @@ var STRAIN_SRC_LINKS = {
         }
         function toggleSurfFullscreen() { if (surfFs || fsElementNow()) exitSurfFullscreen(); else enterSurfFullscreen(); }
         function onFsChange() {
-          if (fsElementNow() === dock) { surfFs = true; surfFsFake = false; }
+          if (fsElementNow() === dock) { surfFs = true; surfFsFake = false; diagFsSettled("enter"); /* diagnostics (temporary): fullscreen geometry line */ }
           else if (surfFs && !surfFsFake) {
             surfFs = false;
+            /* diagnostics (temporary): exit line — the geometry is
+               already back to the floating window here, so the line
+               carries the last in-fullscreen snapshot (refreshed on
+               enter, rotation and resize) plus the restored
+               viewport. */
+            dlog("fs", "exit mode=native lastFs " + (fsGeoCache || "n/a") + " vpNow=" + window.innerWidth + "x" + window.innerHeight);
+            fsGeoCache = "";
             if (surfStage === "mini") positionMini();
           }
           syncFsBtns(); applyZoom();
         }
         document.addEventListener("fullscreenchange", onFsChange);
         document.addEventListener("webkitfullscreenchange", onFsChange);
+        /* --- diagnostics (temporary): fullscreen geometry ---
+           Observe-only (owner order, 2026-11-07): on fullscreen
+           ENTER, on fullscreen EXIT, and on ORIENTATION CHANGE
+           while in fullscreen, one log line records the
+           orientation, the viewport size, the four safe-area
+           insets as actually resolved on THIS device (read off a
+           probe element padded by env(safe-area-inset-*)), the
+           dock's own resolved padding, and the stage and stream
+           frame rects — the numbers that prove from the owner's
+           own phone that the picture clears the Dynamic Island /
+           cutout on every side. It only ever READS layout; it
+           changes no fullscreen, player or gesture behavior. */
+        var fsProbe = document.createElement("div");
+        fsProbe.setAttribute("aria-hidden", "true");
+        fsProbe.style.cssText = "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);";
+        document.body.appendChild(fsProbe);
+        var fsGeoCache = "";
+        function fsRectStr(el) {
+          if (!el) return "none";
+          var r = el.getBoundingClientRect();
+          return Math.round(r.left) + "," + Math.round(r.top) + " " + Math.round(r.width) + "x" + Math.round(r.height);
+        }
+        function fsPx(v) { var n = parseFloat(v); return isNaN(n) ? 0 : Math.round(n * 10) / 10; }
+        function fsGeoFields() {
+          var cs = window.getComputedStyle(fsProbe);
+          var dcs = window.getComputedStyle(dock);
+          var ori = (window.screen && screen.orientation && screen.orientation.type) ? screen.orientation.type : (window.innerWidth >= window.innerHeight ? "landscape" : "portrait");
+          var frameEl = (frameWrap && frameWrap.getBoundingClientRect().width) ? frameWrap : facade;
+          return "orient=" + ori
+            + " vp=" + window.innerWidth + "x" + window.innerHeight
+            + " insets(t/r/b/l)=" + fsPx(cs.paddingTop) + "/" + fsPx(cs.paddingRight) + "/" + fsPx(cs.paddingBottom) + "/" + fsPx(cs.paddingLeft)
+            + " dockPad(t/r/b/l)=" + fsPx(dcs.paddingTop) + "/" + fsPx(dcs.paddingRight) + "/" + fsPx(dcs.paddingBottom) + "/" + fsPx(dcs.paddingLeft)
+            + " dock=" + fsRectStr(dock)
+            + " stage=" + fsRectStr(stage)
+            + " frame=" + fsRectStr(frameEl);
+        }
+        function diagFs(tag) {
+          var f = fsGeoFields();
+          if (surfFs) fsGeoCache = f;
+          dlog("fs", tag + " mode=" + (surfFsFake ? "fake" : "native") + " " + f);
+        }
+        function diagFsSettled(tag) {
+          /* Two frames: the fullscreen layout (and the fallback's
+             fixed box) must be fully laid out before the rects mean
+             anything. */
+          requestAnimationFrame(function () { requestAnimationFrame(function () { diagFs(tag); }); });
+        }
+        window.addEventListener("orientationchange", function () {
+          if (!surfFs) return;
+          /* Orientation geometry settles late on phones; read it
+             once the new viewport is real. */
+          setTimeout(function () { if (surfFs) diagFs("rotate"); }, 350);
+        });
+        window.addEventListener("resize", function () {
+          if (surfFs) fsGeoCache = fsGeoFields(); /* keep the exit line's snapshot fresh — no log line */
+        });
         var stageAnimUntil = 0;
         function setSurfStage(next) {
           if (!overlayEl) return;
