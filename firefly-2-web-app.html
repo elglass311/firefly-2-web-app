@@ -2214,7 +2214,17 @@
          API path or the .fs-fill webview fallback. The picture is a
          little smaller; that trade is the owner's stated choice.
          viewport-fit=cover is set, so the insets are real device
-         values, not zeros. The floating mini window is untouched. */
+         values, not zeros. The floating mini window is untouched.
+         EXCEPT in the owner's webview (Bluefy/WKWebView), where the
+         device evidence (2026-11-07) shows env() resolving to 0 in
+         the .fs-fill presentation — the picture ran edge to edge
+         under the island. So the fill presentation alone pads by
+         the EFFECTIVE per-side values the surf script applies as
+         the --fsp-* custom properties below: max(env(), an
+         island-class floor) with the floor on the cutout side only
+         (top in portrait, left at orientation angle 90, right at
+         270). Native fullscreen keeps env() alone, exactly as
+         before. */
       .surf-stage:fullscreen, .surf-stage:-webkit-full-screen {
         background: #000; border-radius: 0; margin-top: 0;
         display: flex; flex-direction: column; justify-content: center;
@@ -2226,7 +2236,11 @@
         background: #000; border-radius: 0; margin-top: 0;
         display: flex; flex-direction: column; justify-content: center;
         box-sizing: border-box;
-        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        /* Effective padding applied by the surf script (applyFsPad):
+           max(env(), island floor) per side, floor on the cutout
+           side only. The env() fallbacks keep this rule correct
+           even before/without the script's values. */
+        padding: var(--fsp-t, env(safe-area-inset-top)) var(--fsp-r, env(safe-area-inset-right)) var(--fsp-b, env(safe-area-inset-bottom)) var(--fsp-l, env(safe-area-inset-left));
       }
       /* In fullscreen the 16/9 picture surfaces are ALSO capped by
          the padded box's height (owner's Dynamic Island order,
@@ -2241,9 +2255,18 @@
          inside the padded box in both orientations, on both
          fullscreen presentations. The floating mini window is
          untouched (fullscreen selectors only). */
-      .surf-stage:fullscreen .surf-frame-wrap, .surf-stage:-webkit-full-screen .surf-frame-wrap, .surf-stage.fs-fill .surf-frame-wrap,
-      .surf-stage:fullscreen .surf-facade, .surf-stage:-webkit-full-screen .surf-facade, .surf-stage.fs-fill .surf-facade {
+      .surf-stage:fullscreen .surf-frame-wrap, .surf-stage:-webkit-full-screen .surf-frame-wrap,
+      .surf-stage:fullscreen .surf-facade, .surf-stage:-webkit-full-screen .surf-facade {
         width: min(100%, calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 16 / 9));
+        margin-left: auto; margin-right: auto;
+      }
+      /* The fill presentation caps by its EFFECTIVE top/bottom
+         padding instead (the --fsp-* values: max(env(), island
+         floor) per side), so the frame stays inside the padded
+         box when the floor is what supplies the clearance — e.g.
+         portrait, where the floor sits on top. */
+      .surf-stage.fs-fill .surf-frame-wrap, .surf-stage.fs-fill .surf-facade {
+        width: min(100%, calc((100dvh - var(--fsp-t, env(safe-area-inset-top)) - var(--fsp-b, env(safe-area-inset-bottom))) * 16 / 9));
         margin-left: auto; margin-right: auto;
       }
       /* While the fill presentation is up, the dock's own frame is
@@ -12993,6 +13016,21 @@ var STRAIN_SRC_LINKS = {
            control inside fullscreen; the system exit gesture lands in
            the same sync via fullscreenchange. */
         var fsActive = false, fsFill = false;
+        var fsIslandEl = document.getElementById("island");
+        function syncIslandFs() {
+          if (!fsIslandEl) return;
+          /* The black status pill hides while EITHER fullscreen
+             presentation is up — the same treatment the wave button
+             gets in syncFab() — so no app chrome sits across the
+             stream's picture (the owner's screenshot showed the pill
+             laid over the top of the fill-presentation picture); it
+             returns on exit. In native fullscreen the pill sits
+             outside the fullscreen element and is never painted
+             anyway; this makes the fill presentation match. */
+          var hidePill = fsActive;
+          fsIslandEl.style.display = hidePill ? "none" : "";
+          fsIslandEl.setAttribute("aria-hidden", hidePill ? "true" : "false");
+        }
         function fsElement() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
         function syncFsUI() {
           var fsWas = fsActive;
@@ -13015,6 +13053,8 @@ var STRAIN_SRC_LINKS = {
           if (miniExpandBtn) miniExpandBtn.setAttribute("aria-label", lbl);
           syncZoomUI(); /* zoom state stays consistent inside fullscreen */
           syncFab(); /* the wave button hides while fullscreen is up and returns on exit */
+          syncIslandFs(); /* the black status pill hides while fullscreen is up and returns on exit */
+          applyFsPad(); /* fill presentation only: (re)apply the effective stage padding — max(env(), island floor) per side */
           if (!fsActive && dockState === "mini") positionMini();
           /* Diagnostics geometry lines (observe-only): one line per
              fullscreen ENTER and EXIT, measured after the stage has
@@ -13061,11 +13101,16 @@ var STRAIN_SRC_LINKS = {
            carrying: the orientation, the viewport size, the four
            safe-area insets AS RESOLVED ON THIS DEVICE (px — read
            off a hidden probe element padded by env(safe-area-inset-*),
-           so the numbers are the device's own, never assumed), and
-           the stage and stream-frame rects. The owner's pasted log
-           is what proves the picture clears the cutout with real
-           numbers. Observe-only, like every diag() line: it reads
-           layout, it never changes any. --- */
+           so the numbers are the device's own, never assumed), the
+           EFFECTIVE padding actually applied to the stage (effPad —
+           the stage's own computed padding: env() alone in native
+           fullscreen, max(env(), island floor) per side in the fill
+           presentation, so the log shows which mechanism carried
+           the clearance and by how many px), and the stage and
+           stream-frame rects. The owner's pasted log is what proves
+           the picture clears the cutout with real numbers.
+           Observe-only, like every diag() line: it reads layout,
+           it never changes any. --- */
         var fsProbeEl = null, fsOrientLoggedAt = 0;
         function fsProbe() {
           if (!fsProbeEl) {
@@ -13082,27 +13127,88 @@ var STRAIN_SRC_LINKS = {
           var r = el.getBoundingClientRect();
           return "@" + Math.round(r.left) + "," + Math.round(r.top) + " " + Math.round(r.width) + "x" + Math.round(r.height);
         }
+        /* --- fill-presentation island floor (owner's Dynamic Island
+           order, 2026-11-07) ---
+           In the owner's webview (Bluefy/WKWebView) the .fs-fill
+           presentation runs with env(safe-area-inset-*) resolving
+           to 0, so env() padding alone left the picture edge to
+           edge under the Dynamic Island. In the FILL presentation
+           only, the stage's padding per side is therefore the
+           GREATER of the device env() inset and an island-class
+           floor applied to the cutout side only: the island sits
+           on the device's top edge, so the floor lands on TOP in
+           portrait, LEFT at orientation angle 90 and RIGHT at 270.
+           59px is the Dynamic Island clearance on the owner's
+           iPhone 14 Pro Max (its resolved safe-area inset on the
+           island side). The values ride in as the --fsp-* custom
+           properties the .fs-fill rules read; native fullscreen
+           never sets them and keeps env() alone. --- */
+        var FS_ISLAND_FLOOR_PX = 59;
+        function fsOrientationAngle() {
+          var a = null;
+          try {
+            if (window.screen && screen.orientation && typeof screen.orientation.angle === "number") a = screen.orientation.angle;
+            else if (typeof window.orientation === "number") a = window.orientation;
+          } catch (e) { /* ignore */ }
+          if (a === null || isNaN(a)) return 0;
+          return ((Math.round(a) % 360) + 360) % 360;
+        }
+        function fsEffectivePad() {
+          var cs = window.getComputedStyle(fsProbe());
+          var pad = {
+            t: fsInsetPx(cs.paddingTop), r: fsInsetPx(cs.paddingRight),
+            b: fsInsetPx(cs.paddingBottom), l: fsInsetPx(cs.paddingLeft)
+          };
+          if (fsFill) {
+            var ang = fsOrientationAngle();
+            if (ang === 90) pad.l = Math.max(pad.l, FS_ISLAND_FLOOR_PX);
+            else if (ang === 270) pad.r = Math.max(pad.r, FS_ISLAND_FLOOR_PX);
+            else pad.t = Math.max(pad.t, FS_ISLAND_FLOOR_PX);
+          }
+          return pad;
+        }
+        function applyFsPad() {
+          if (!stage) return;
+          if (!fsFill) {
+            stage.style.removeProperty("--fsp-t");
+            stage.style.removeProperty("--fsp-r");
+            stage.style.removeProperty("--fsp-b");
+            stage.style.removeProperty("--fsp-l");
+            return;
+          }
+          var p = fsEffectivePad();
+          stage.style.setProperty("--fsp-t", p.t + "px");
+          stage.style.setProperty("--fsp-r", p.r + "px");
+          stage.style.setProperty("--fsp-b", p.b + "px");
+          stage.style.setProperty("--fsp-l", p.l + "px");
+        }
         function diagFsGeometry(what) {
           try {
             var cs = window.getComputedStyle(fsProbe());
+            var sp = stage ? window.getComputedStyle(stage) : null;
             var orient = (window.screen && screen.orientation && screen.orientation.type) ? screen.orientation.type : (window.innerWidth >= window.innerHeight ? "landscape" : "portrait");
             diag("fs", what +
               " mode=" + (fsFill ? "fill-viewport" : (fsElement() ? "native" : "none")) +
               " orient=" + orient +
               " viewport=" + window.innerWidth + "x" + window.innerHeight +
               " insets(px) T" + fsInsetPx(cs.paddingTop) + " R" + fsInsetPx(cs.paddingRight) + " B" + fsInsetPx(cs.paddingBottom) + " L" + fsInsetPx(cs.paddingLeft) +
+              " effPad(px) T" + (sp ? fsInsetPx(sp.paddingTop) : 0) + " R" + (sp ? fsInsetPx(sp.paddingRight) : 0) + " B" + (sp ? fsInsetPx(sp.paddingBottom) : 0) + " L" + (sp ? fsInsetPx(sp.paddingLeft) : 0) +
               " stage=" + fsRectText(stage) +
               " frame=" + fsRectText(frameWrap));
           } catch (e) { /* diagnostics must never break the app */ }
         }
         window.addEventListener("orientationchange", function () {
           if (!fsActive) return;
+          /* The island floor follows the NEW orientation's cutout
+             side at once, then again once rotation settles. */
+          applyFsPad();
           /* Rotation settles a beat after the event: measure the
              NEW orientation's geometry, and only while still in
              fullscreen. Deduped against engines that fire the
              event (or its screen.orientation twin below) twice. */
           setTimeout(function () {
             if (!fsActive) return;
+            applyFsPad();
             var now = Date.now();
             if (now - fsOrientLoggedAt < 300) return;
             fsOrientLoggedAt = now;
@@ -13112,8 +13218,10 @@ var STRAIN_SRC_LINKS = {
         if (window.screen && screen.orientation && screen.orientation.addEventListener) {
           screen.orientation.addEventListener("change", function () {
             if (!fsActive) return;
+            applyFsPad();
             setTimeout(function () {
               if (!fsActive) return;
+              applyFsPad();
               var now = Date.now();
               if (now - fsOrientLoggedAt < 300) return;
               fsOrientLoggedAt = now;
