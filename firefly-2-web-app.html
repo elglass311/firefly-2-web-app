@@ -2228,6 +2228,24 @@
         box-sizing: border-box;
         padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
+      /* In fullscreen the 16/9 picture surfaces are ALSO capped by
+         the padded box's height (owner's Dynamic Island order,
+         completed 2026-11-07): width alone — the flex content
+         width — makes the frame taller than the content box in
+         landscape (on the owner's phone ≈458px of picture against
+         ≈409px of box), and flex items never shrink below their
+         content size, so the picture would overflow the top and
+         bottom padding and leave the safe box even with all four
+         insets padded. Capping the width by the height left
+         between the top and bottom insets keeps the WHOLE frame
+         inside the padded box in both orientations, on both
+         fullscreen presentations. The floating mini window is
+         untouched (fullscreen selectors only). */
+      .surf-stage:fullscreen .surf-frame-wrap, .surf-stage:-webkit-full-screen .surf-frame-wrap, .surf-stage.fs-fill .surf-frame-wrap,
+      .surf-stage:fullscreen .surf-facade, .surf-stage:-webkit-full-screen .surf-facade, .surf-stage.fs-fill .surf-facade {
+        width: min(100%, calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 16 / 9));
+        margin-left: auto; margin-right: auto;
+      }
       /* While the fill presentation is up, the dock's own frame is
          neutralised: its backdrop-filter would otherwise make it the
          containing block for the stage's fixed positioning (trapping
@@ -12977,6 +12995,7 @@ var STRAIN_SRC_LINKS = {
         var fsActive = false, fsFill = false;
         function fsElement() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
         function syncFsUI() {
+          var fsWas = fsActive;
           fsActive = fsFill || fsElement() === stage;
           /* The fill presentation is a CLASS, not just the fsFill
              boolean: without .fs-fill on the stage (and .fs-fill-on
@@ -12997,6 +13016,13 @@ var STRAIN_SRC_LINKS = {
           syncZoomUI(); /* zoom state stays consistent inside fullscreen */
           syncFab(); /* the wave button hides while fullscreen is up and returns on exit */
           if (!fsActive && dockState === "mini") positionMini();
+          /* Diagnostics geometry lines (observe-only): one line per
+             fullscreen ENTER and EXIT, measured after the stage has
+             been laid out in its new presentation. */
+          if (fsActive !== fsWas) {
+            if (fsActive) requestAnimationFrame(function () { if (fsActive) diagFsGeometry("FS ENTER"); });
+            else diagFsGeometry("FS EXIT");
+          }
         }
         function enterStreamFs() {
           if (fsActive || !stage) return;
@@ -13027,6 +13053,74 @@ var STRAIN_SRC_LINKS = {
         document.addEventListener("fullscreenchange", syncFsUI);
         document.addEventListener("webkitfullscreenchange", syncFsUI);
         if (fsBtn) fsBtn.addEventListener("click", function () { toggleStreamFs(); });
+
+        /* --- fullscreen geometry → Diagnostics (owner's Dynamic
+           Island proof, 2026-11-07) ---
+           On fullscreen ENTER, EXIT (hooked in syncFsUI above) and
+           on ORIENTATION CHANGE while fullscreen, one log line
+           carrying: the orientation, the viewport size, the four
+           safe-area insets AS RESOLVED ON THIS DEVICE (px — read
+           off a hidden probe element padded by env(safe-area-inset-*),
+           so the numbers are the device's own, never assumed), and
+           the stage and stream-frame rects. The owner's pasted log
+           is what proves the picture clears the cutout with real
+           numbers. Observe-only, like every diag() line: it reads
+           layout, it never changes any. --- */
+        var fsProbeEl = null, fsOrientLoggedAt = 0;
+        function fsProbe() {
+          if (!fsProbeEl) {
+            fsProbeEl = document.createElement("div");
+            fsProbeEl.setAttribute("aria-hidden", "true");
+            fsProbeEl.style.cssText = "position:fixed;left:0;top:0;width:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);";
+            document.body.appendChild(fsProbeEl);
+          }
+          return fsProbeEl;
+        }
+        function fsInsetPx(v) { var f = parseFloat(v); return isNaN(f) ? 0 : Math.round(f); }
+        function fsRectText(el) {
+          if (!el) return "n/a";
+          var r = el.getBoundingClientRect();
+          return "@" + Math.round(r.left) + "," + Math.round(r.top) + " " + Math.round(r.width) + "x" + Math.round(r.height);
+        }
+        function diagFsGeometry(what) {
+          try {
+            var cs = window.getComputedStyle(fsProbe());
+            var orient = (window.screen && screen.orientation && screen.orientation.type) ? screen.orientation.type : (window.innerWidth >= window.innerHeight ? "landscape" : "portrait");
+            diag("fs", what +
+              " mode=" + (fsFill ? "fill-viewport" : (fsElement() ? "native" : "none")) +
+              " orient=" + orient +
+              " viewport=" + window.innerWidth + "x" + window.innerHeight +
+              " insets(px) T" + fsInsetPx(cs.paddingTop) + " R" + fsInsetPx(cs.paddingRight) + " B" + fsInsetPx(cs.paddingBottom) + " L" + fsInsetPx(cs.paddingLeft) +
+              " stage=" + fsRectText(stage) +
+              " frame=" + fsRectText(frameWrap));
+          } catch (e) { /* diagnostics must never break the app */ }
+        }
+        window.addEventListener("orientationchange", function () {
+          if (!fsActive) return;
+          /* Rotation settles a beat after the event: measure the
+             NEW orientation's geometry, and only while still in
+             fullscreen. Deduped against engines that fire the
+             event (or its screen.orientation twin below) twice. */
+          setTimeout(function () {
+            if (!fsActive) return;
+            var now = Date.now();
+            if (now - fsOrientLoggedAt < 300) return;
+            fsOrientLoggedAt = now;
+            diagFsGeometry("FS ORIENT");
+          }, 150);
+        });
+        if (window.screen && screen.orientation && screen.orientation.addEventListener) {
+          screen.orientation.addEventListener("change", function () {
+            if (!fsActive) return;
+            setTimeout(function () {
+              if (!fsActive) return;
+              var now = Date.now();
+              if (now - fsOrientLoggedAt < 300) return;
+              fsOrientLoggedAt = now;
+              diagFsGeometry("FS ORIENT");
+            }, 150);
+          });
+        }
 
         window.addEventListener("resize", applyZoom);
         /* --- break cycling ---
