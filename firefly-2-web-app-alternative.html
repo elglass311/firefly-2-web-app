@@ -2878,6 +2878,15 @@
          inline for engines without :has support.) */
       .surf-overlay-sheet:has(.surf-dock:fullscreen) .surf-mini-controls,
       .surf-overlay-sheet:has(.surf-dock.surf-fs-fake) .surf-mini-controls { display: none !important; }
+      /* While either fullscreen presentation is active, the app's own
+         black status pill (the in-app island) must not sit across the
+         top of the picture: it hides for exactly that state, exactly
+         like the header strip above and the wave bubble, and returns
+         on exit. (The surf script's syncFsBtns applies the same
+         toggle inline for engines without :has support.) */
+      body:has(.surf-dock:fullscreen) .island,
+      body:has(.surf-dock:-webkit-full-screen) .island,
+      body:has(.surf-dock.surf-fs-fake) .island { display: none !important; }
       .surf-mini-btn {
         appearance: none; cursor: pointer; font: inherit;
         width: 34px; height: 34px; border-radius: 50%; flex: none;
@@ -11976,6 +11985,7 @@ var STRAIN_SRC_LINKS = {
         function syncZoomUI() {
           if (zoomBtn) zoomBtn.setAttribute("aria-pressed", zoomOn ? "true" : "false");
           if (zoomBar) zoomBar.hidden = !zoomOn;
+          if (typeof applyFakeFsPad === "function") applyFakeFsPad(); /* fake fullscreen only: the stage cap accounts for the zoom bar's height */
           applyZoom();
         }
         function enterZoom() { if (dockState !== "expanded") return; zoomOn = true; syncZoomUI(); }
@@ -12923,6 +12933,16 @@ var STRAIN_SRC_LINKS = {
            changed by fullscreen: exiting returns to the floating
            window exactly as it was. ---- */
         var surfFs = false, surfFsFake = false;
+        var fsIslandEl = document.getElementById("island");
+        /* Island-class clearance floor for the fill-viewport fallback
+           (owner order, 2026-11-07): on the owner's iPhone 14 Pro Max
+           the Dynamic Island side resolves a 59px safe-area inset
+           when env() works at all; in his webview env() can resolve
+           to 0, so the fake presentation takes the GREATER of env()
+           and this floor on the cutout side. Native fullscreen never
+           uses the floor — env() alone there. */
+        var FS_ISLAND_FLOOR = 59;
+        var fsFloorNow = { t: 0, r: 0, b: 0, l: 0 };
         var fsBtn = document.getElementById("surfFsBtn");
         var dockFsBtn = document.getElementById("surfDockFsBtn");
         function surfFsOn() { return surfFs; }
@@ -12941,12 +12961,70 @@ var STRAIN_SRC_LINKS = {
              stylesheet's mini-stage rule owns it again) when
              fullscreen exits. */
           if (miniControlsEl) miniControlsEl.style.display = surfFs ? "none" : "";
+          /* No app chrome over the fullscreen picture: the black
+             status pill (the in-app island) hides for exactly the
+             fullscreen state — native element or fill-viewport
+             fallback alike, both set surfFs — and is restored
+             exactly as before (inline display cleared) on exit.
+             The fullscreen exit control is inside the dock and
+             stays: it belongs to the presentation. */
+          if (fsIslandEl) fsIslandEl.style.display = surfFs ? "none" : "";
           placeFab(); /* fullscreen: the bubble is hidden; exiting re-attaches it at the window's corner (or frees it at its own spot if the feed is closed) */
+        }
+        /* Fill-viewport fallback clearance (owner order, 2026-11-07):
+           the fake presentation cannot rely on env() alone — in the
+           owner's webview (WKWebView/Bluefy) env(safe-area-inset-*)
+           resolves to 0 and the picture ran edge to edge under the
+           Dynamic Island. So, in the fake presentation ONLY, the
+           dock's padding is set inline to the GREATER of env() and
+           an orientation-aware floor on the cutout side: the island
+           sits on the device's top edge, so portrait → top,
+           landscape angle 90 → left, angle 270 → right, using
+           island-class geometry for his iPhone 14 Pro Max (59px).
+           The stage's width cap is recomputed from the same
+           effective insets so the frame sits wholly inside the
+           padded box. Native fullscreen never calls this: it keeps
+           the stylesheet's env()-only padding, untouched. */
+        function fsFloorForOrientation() {
+          var f = { t: 0, r: 0, b: 0, l: 0 };
+          var ang = null;
+          if (window.screen && screen.orientation && typeof screen.orientation.angle === "number") ang = screen.orientation.angle;
+          else if (typeof window.orientation === "number") ang = window.orientation;
+          if (ang !== null) ang = ((ang % 360) + 360) % 360;
+          if (ang === 90) f.l = FS_ISLAND_FLOOR;
+          else if (ang === 270) f.r = FS_ISLAND_FLOOR;
+          else f.t = FS_ISLAND_FLOOR; /* portrait (0/180) or angle unknown: the island is on top */
+          return f;
+        }
+        function applyFakeFsPad() {
+          if (!surfFsFake) return;
+          var cs = window.getComputedStyle(fsProbe);
+          var f = fsFloorForOrientation();
+          fsFloorNow = f;
+          var effT = Math.max(fsPx(cs.paddingTop), f.t);
+          var effR = Math.max(fsPx(cs.paddingRight), f.r);
+          var effB = Math.max(fsPx(cs.paddingBottom), f.b);
+          var effL = Math.max(fsPx(cs.paddingLeft), f.l);
+          dock.style.padding = effT + "px " + effR + "px " + effB + "px " + effL + "px";
+          /* Same height cap as the stylesheet's fullscreen rule,
+             but from the EFFECTIVE insets (and minus the zoom bar's
+             height while it is open, mirroring the :has rule). */
+          if (stage) {
+            var zb = (zoomBar && !zoomBar.hidden) ? 112 : 0;
+            var availH = window.innerHeight - effT - effB - 2 - zb;
+            stage.style.maxWidth = Math.max(0, Math.round(availH * 16 / 9)) + "px";
+          }
+        }
+        function clearFakeFsPad() {
+          fsFloorNow = { t: 0, r: 0, b: 0, l: 0 };
+          dock.style.padding = "";
+          if (stage) stage.style.maxWidth = "";
         }
         function fakeFsEnter() {
           surfFs = true; surfFsFake = true;
           dock.classList.add("surf-fs-fake");
           document.body.classList.add("surf-fs-lock");
+          applyFakeFsPad(); /* effective island clearance before the first geometry line */
           syncFsBtns(); applyZoom();
           diagFsSettled("enter"); /* diagnostics (temporary): fullscreen geometry line */
         }
@@ -12955,6 +13033,7 @@ var STRAIN_SRC_LINKS = {
           surfFs = false; surfFsFake = false;
           dock.classList.remove("surf-fs-fake");
           document.body.classList.remove("surf-fs-lock");
+          clearFakeFsPad(); /* the floating window's own layout is exactly as before */
           syncFsBtns();
           if (surfStage === "mini") positionMini();
           applyZoom();
@@ -13026,6 +13105,8 @@ var STRAIN_SRC_LINKS = {
             + " vp=" + window.innerWidth + "x" + window.innerHeight
             + " insets(t/r/b/l)=" + fsPx(cs.paddingTop) + "/" + fsPx(cs.paddingRight) + "/" + fsPx(cs.paddingBottom) + "/" + fsPx(cs.paddingLeft)
             + " dockPad(t/r/b/l)=" + fsPx(dcs.paddingTop) + "/" + fsPx(dcs.paddingRight) + "/" + fsPx(dcs.paddingBottom) + "/" + fsPx(dcs.paddingLeft)
+            + " effPad(t/r/b/l)=" + fsPx(dcs.paddingTop) + "/" + fsPx(dcs.paddingRight) + "/" + fsPx(dcs.paddingBottom) + "/" + fsPx(dcs.paddingLeft)
+            + " floor(t/r/b/l)=" + fsFloorNow.t + "/" + fsFloorNow.r + "/" + fsFloorNow.b + "/" + fsFloorNow.l
             + " dock=" + fsRectStr(dock)
             + " stage=" + fsRectStr(stage)
             + " frame=" + fsRectStr(frameEl);
@@ -13045,10 +13126,10 @@ var STRAIN_SRC_LINKS = {
           if (!surfFs) return;
           /* Orientation geometry settles late on phones; read it
              once the new viewport is real. */
-          setTimeout(function () { if (surfFs) diagFs("rotate"); }, 350);
+          setTimeout(function () { if (surfFs) { if (surfFsFake) applyFakeFsPad(); /* the cutout side follows the new orientation before the geometry line reads it */ diagFs("rotate"); } }, 350);
         });
         window.addEventListener("resize", function () {
-          if (surfFs) fsGeoCache = fsGeoFields(); /* keep the exit line's snapshot fresh — no log line */
+          if (surfFs) { if (surfFsFake) applyFakeFsPad(); fsGeoCache = fsGeoFields(); } /* keep the exit line's snapshot fresh — no log line */
         });
         var stageAnimUntil = 0;
         function setSurfStage(next) {
